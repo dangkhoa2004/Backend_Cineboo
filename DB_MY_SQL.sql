@@ -118,6 +118,8 @@ CREATE TABLE NhanVien (
     NgaySinh DATE NOT NULL,
     GioiTinh INT NOT NULL,
     Email VARCHAR(100) NOT NULL,
+    TaiKhoan VARCHAR(100) NOT NULL,
+    MatKhau VARCHAR(100) NOT NULL,
     DanToc VARCHAR(50) NULL,
     DiaChi VARCHAR(255) NOT NULL,
     TrangThai INT,
@@ -128,6 +130,7 @@ CREATE TABLE NhanVien (
 CREATE TABLE KhachHang (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     ID_PhanLoai INT,
+    MaKhachHang VARCHAR(15) NOT NULL,
     Ten VARCHAR(15) NOT NULL,
     TenDem VARCHAR(50) NULL,
     Ho VARCHAR(50) NOT NULL,
@@ -135,6 +138,8 @@ CREATE TABLE KhachHang (
     SoDienThoai VARCHAR(10) NOT NULL,
     GioiTinh INT NOT NULL,
     Email VARCHAR(255) NOT NULL,
+    TaiKhoan VARCHAR(100) NOT NULL,
+    MatKhau VARCHAR(100) NOT NULL,
     DanToc VARCHAR(75) NULL,
     DiaChi VARCHAR(255) NOT NULL,
     Diem INT,
@@ -255,8 +260,12 @@ VALUES
     ('PT02', 'Thanh toán thẻ', 1),
     -- Thêm các phương thức thanh toán khác tương tự
     ('PT10', 'Chuyển khoản ngân hàng', 1);
-INSERT INTO KhachHang (ID_PhanLoai, Ten, TenDem, Ho, NgaySinh, SoDienThoai, GioiTinh, Email, DanToc, DiaChi, Diem, TrangThai)
+INSERT INTO KhachHang (ID_PhanLoai, MaKhachHang, Ten, TenDem, Ho, NgaySinh, SoDienThoai, GioiTinh, Email, TaiKhoan, MatKhau, DanToc, DiaChi, Diem, TrangThai)
 VALUES 
-    (1, 'Hoàng', 'Đức', 'Nguyễn', '1995-05-15', '0987654321', 1, 'hoang.nguyen@example.com', 'Kinh', '789 XYZ, Hà Nội', 200, 1),
+    (1,'KH001', 'Hoàng', 'Đức', 'Nguyễn', '1995-05-15', '0987654321', 1, 'hoang.nguyen@example.com','kh01','123123', 'Kinh', '789 XYZ, Hà Nội', 200, 1),
     -- Thêm các khách hàng khác tương tự
-    (2, 'Mai', 'Thị', 'Phạm', '1988-08-08', '0912345678', 0, 'mai.pham@example.com', 'Kinh', '987 UVW, Hà Nội', 300, 1);
+    (2,'KH002', 'Mai', 'Thị', 'Phạm', '1988-08-08', '0912345678', 0, 'mai.pham@example.com', 'Kinh','kh02','123123','987 UVW, Hà Nội', 300, 1);
+INSERT INTO NhanVien (ID_ChucVu, MaNhanVien, Ten, TenDem, Ho, NgaySinh, GioiTinh, Email, TaiKhoan, MatKhau, DanToc, DiaChi, TrangThai)
+VALUES 
+    (1, 'NV001', 'Linh', 'Thị', 'Nguyễn', '1990-01-01', 1, 'linh.nguyen@example.com', 'linh.nguyen', '123123', 'Kinh', '123 ABC, Hà Nội', 1),
+    (2, 'NV002', 'An', 'Văn', 'Trần', '1985-06-15', 1, 'an.tran@example.com', 'an.tran', '123123', 'Kinh', '456 DEF, Hà Nội', 1),
