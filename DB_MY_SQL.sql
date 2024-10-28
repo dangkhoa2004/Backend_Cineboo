@@ -4,181 +4,189 @@ USE DatVeXemPhimCineBoo;
 
 -- Bảng PhanLoaiChucVu
 CREATE TABLE PhanLoaiChucVu (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaChucVu VARCHAR(15) NOT NULL,
-    TenChucVu VARCHAR(150) NOT NULL,
-    TrangThai INT
+                                ID INT AUTO_INCREMENT PRIMARY KEY,
+                                MaChucVu VARCHAR(15) NOT NULL,
+                                TenChucVu VARCHAR(150) NOT NULL,
+                                TrangThai INT
 );
 
 -- Bảng PhanLoaiKhachHang
 CREATE TABLE PhanLoaiKhachHang (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaKhachHang VARCHAR(15) NOT NULL,
-    LoaiKhachHang VARCHAR(100) NOT NULL,
-    TrangThai INT
+                                   ID INT AUTO_INCREMENT PRIMARY KEY,
+                                   MaKhachHang VARCHAR(15) NOT NULL,
+                                   LoaiKhachHang VARCHAR(100) NOT NULL,
+                                   TrangThai INT
 );
 
 -- Bảng Voucher
 CREATE TABLE Voucher (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaVoucher VARCHAR(15) NOT NULL,
-    GiaTriDoi INT NOT NULL,
-    TruTienPhanTram INT,
-    TruTienSo DECIMAL(18,2),
-    SoTienGiam DECIMAL(18,2),
-    SoTienToiThieu DECIMAL(18,2),
-    GiamToiDa DECIMAL(18,2),
-    NgayBatDau DATE,
-    NgayKetThuc DATE,
-    TrangThai INT
+                         ID INT AUTO_INCREMENT PRIMARY KEY,
+                         MaVoucher VARCHAR(15) NOT NULL,
+                         GiaTriDoi INT NOT NULL,
+                         TruTienPhanTram INT,
+                         TruTienSo DECIMAL(18,2),
+                         SoTienGiam DECIMAL(18,2),
+                         SoTienToiThieu DECIMAL(18,2),
+                         GiamToiDa DECIMAL(18,2),
+                         NgayBatDau DATE,
+                         NgayKetThuc DATE,
+                         TrangThai INT
 );
 
 -- Bảng Phim
 CREATE TABLE Phim (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaPhim VARCHAR(15) NOT NULL,
-    TenPhim VARCHAR(255) NOT NULL,
-    AnhPhim VARCHAR(255) NOT NULL,
-    DienVien VARCHAR(255) NOT NULL,
-    TheLoai VARCHAR(200) NOT NULL,
-    Nam INT NOT NULL,
-    NoiDungMoTa TEXT NULL,
-    Trailer VARCHAR(255) NULL,
-    ThoiLuong INT NOT NULL,
-    QuocGia VARCHAR(100) NOT NULL,
-    NoiDung TEXT NULL,
-    GioiHanDoTuoi INT NOT NULL,
-    TrangThai INT
+                      ID INT AUTO_INCREMENT PRIMARY KEY,
+                      MaPhim VARCHAR(15) NOT NULL,
+                      TenPhim VARCHAR(255) NOT NULL,
+                      AnhPhim VARCHAR(255) NOT NULL,
+                      DienVien VARCHAR(255) NOT NULL,
+                      TheLoai VARCHAR(200) NOT NULL,
+                      Nam INT NOT NULL,
+                      NoiDungMoTa TEXT,
+                      Trailer VARCHAR(255),
+                      NgayRaMat DATE NOT NULL,
+                      ThoiLuong INT NOT NULL,
+                      QuocGia VARCHAR(100) NOT NULL,
+                      NoiDung TEXT,
+                      GioiHanDoTuoi INT NOT NULL,
+                      TrangThai INT
 );
 
 -- Bảng PhongChieu
 CREATE TABLE PhongChieu (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaPhong VARCHAR(15) NOT NULL,
-    TongSoGhe INT NOT NULL,
-    TrangThai INT
+                            ID INT AUTO_INCREMENT PRIMARY KEY,
+                            MaPhong VARCHAR(15) NOT NULL,
+                            TongSoGhe INT NOT NULL,
+                            TrangThai INT
 );
 
 -- Bảng Ghe
 CREATE TABLE Ghe (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaGhe VARCHAR(15) NOT NULL,
-    GiaTien DECIMAL(18,2) NOT NULL,
-    ID_PhongChieu INT,
-    TrangThai INT,
-    FOREIGN KEY (ID_PhongChieu) REFERENCES PhongChieu(ID)
+                     ID INT AUTO_INCREMENT PRIMARY KEY,
+                     MaGhe VARCHAR(15) NOT NULL,
+                     GiaTien DECIMAL(18,2) NOT NULL,
+                     ID_PhongChieu INT,
+                     TrangThai INT,
+                     FOREIGN KEY (ID_PhongChieu) REFERENCES PhongChieu(ID) ON DELETE CASCADE
 );
 
 -- Bảng SuatChieu
 CREATE TABLE SuatChieu (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaSuatChieu VARCHAR(15) NOT NULL,
-    ThoiGianChieu DATETIME NOT NULL,
-    ID_Phim INT,
-    ID_PhongChieu INT,
-    TrangThai INT,
-    FOREIGN KEY (ID_Phim) REFERENCES Phim(ID),
-    FOREIGN KEY (ID_PhongChieu) REFERENCES PhongChieu(ID)
+                           ID INT AUTO_INCREMENT PRIMARY KEY,
+                           MaSuatChieu VARCHAR(15) NOT NULL,
+                           ThoiGianChieu DATETIME NOT NULL,
+                           ID_Phim INT,
+                           ID_PhongChieu INT,
+                           TrangThai INT,
+                           FOREIGN KEY (ID_Phim) REFERENCES Phim(ID) ON DELETE CASCADE,
+                           FOREIGN KEY (ID_PhongChieu) REFERENCES PhongChieu(ID) ON DELETE CASCADE
 );
 
 -- Bảng TheLoaiPhim
 CREATE TABLE TheLoaiPhim (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaTLPhim VARCHAR(15) NOT NULL,
-    TenTheLoai VARCHAR(100) NOT NULL,
-    TrangThai INT
+                             ID INT AUTO_INCREMENT PRIMARY KEY,
+                             MaTLPhim VARCHAR(15) NOT NULL,
+                             TenTheLoai VARCHAR(100) NOT NULL,
+                             TrangThai INT
 );
 
 -- Bảng DanhSachTLPhim
 CREATE TABLE DanhSachTLPhim (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    ID_Phim INT,
-    ID_TLPhim INT,
-    TrangThai INT,
-    FOREIGN KEY (ID_Phim) REFERENCES Phim(ID),
-    FOREIGN KEY (ID_TLPhim) REFERENCES TheLoaiPhim(ID)
+                                ID INT AUTO_INCREMENT PRIMARY KEY,
+                                ID_Phim INT,
+                                ID_TLPhim INT,
+                                TrangThai INT,
+                                FOREIGN KEY (ID_Phim) REFERENCES Phim(ID) ON DELETE CASCADE,
+                                FOREIGN KEY (ID_TLPhim) REFERENCES TheLoaiPhim(ID) ON DELETE CASCADE
 );
 
 -- Bảng PTTT
 CREATE TABLE PTTT (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    MaPTTT VARCHAR(15) NOT NULL,
-    TenPTTT VARCHAR(200) NOT NULL,
-    TrangThai INT
+                      ID INT AUTO_INCREMENT PRIMARY KEY,
+                      MaPTTT VARCHAR(15) NOT NULL,
+                      TenPTTT VARCHAR(200) NOT NULL,
+                      TrangThai INT
 );
 
 -- Bảng NhanVien
 CREATE TABLE NhanVien (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    ID_ChucVu INT,
-    MaNhanVien VARCHAR(15) NOT NULL,
-    Ten VARCHAR(100) NOT NULL,
-    TenDem VARCHAR(100) NOT NULL,
-    Ho VARCHAR(50) NOT NULL,
-    NgaySinh DATE NOT NULL,
-    GioiTinh INT NOT NULL,
-    Email VARCHAR(100) NOT NULL,
-    DanToc VARCHAR(50) NULL,
-    DiaChi VARCHAR(255) NOT NULL,
-    TrangThai INT,
-    FOREIGN KEY (ID_ChucVu) REFERENCES PhanLoaiChucVu(ID)
+                          ID INT AUTO_INCREMENT PRIMARY KEY,
+                          ID_ChucVu INT,
+                          MaNhanVien VARCHAR(15) NOT NULL,
+                          Ten VARCHAR(100) NOT NULL,
+                          TenDem VARCHAR(100) NOT NULL,
+                          Ho VARCHAR(50) NOT NULL,
+                          NgaySinh DATE NOT NULL,
+                          GioiTinh INT NOT NULL,
+                          Email VARCHAR(100) NOT NULL,
+                          TaiKhoan VARCHAR(100) NOT NULL,
+                          MatKhau VARCHAR(100) NOT NULL,
+                          DanToc VARCHAR(50),
+                          DiaChi VARCHAR(255) NOT NULL,
+                          TrangThai INT,
+                          FOREIGN KEY (ID_ChucVu) REFERENCES PhanLoaiChucVu(ID) ON DELETE SET NULL
 );
 
 -- Bảng KhachHang
 CREATE TABLE KhachHang (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    ID_PhanLoai INT,
-    Ten VARCHAR(15) NOT NULL,
-    TenDem VARCHAR(50) NULL,
-    Ho VARCHAR(50) NOT NULL,
-    NgaySinh DATE NOT NULL,
-    SoDienThoai VARCHAR(10) NOT NULL,
-    GioiTinh INT NOT NULL,
-    Email VARCHAR(255) NOT NULL,
-    DanToc VARCHAR(75) NULL,
-    DiaChi VARCHAR(255) NOT NULL,
-    Diem INT,
-    TrangThai INT,
-    FOREIGN KEY (ID_PhanLoai) REFERENCES PhanLoaiKhachHang(ID)
+                           ID INT AUTO_INCREMENT PRIMARY KEY,
+                           ID_PhanLoai INT,
+                           MaKhachHang VARCHAR(15) NOT NULL,
+                           Ten VARCHAR(15) NOT NULL,
+                           TenDem VARCHAR(50),
+                           Ho VARCHAR(50) NOT NULL,
+                           NgaySinh DATE NOT NULL,
+                           SoDienThoai VARCHAR(10) NOT NULL,
+                           GioiTinh INT NOT NULL,
+                           Email VARCHAR(255) NOT NULL,
+                           TaiKhoan VARCHAR(100) NOT NULL,
+                           MatKhau VARCHAR(100) NOT NULL,
+                           DanToc VARCHAR(75),
+                           DiaChi VARCHAR(255) NOT NULL,
+                           Diem INT,
+                           TrangThai INT,
+                           FOREIGN KEY (ID_PhanLoai) REFERENCES PhanLoaiKhachHang(ID) ON DELETE SET NULL
 );
 
 -- Bảng KhoQua
 CREATE TABLE KhoQua (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    ID_KhachHang INT,
-    ID_Voucher INT,
-    FOREIGN KEY (ID_KhachHang) REFERENCES KhachHang(ID),
-    FOREIGN KEY (ID_Voucher) REFERENCES Voucher(ID)
+                        ID INT AUTO_INCREMENT PRIMARY KEY,
+                        ID_KhachHang INT,
+                        ID_Voucher INT,
+                        FOREIGN KEY (ID_KhachHang) REFERENCES KhachHang(ID) ON DELETE CASCADE,
+                        FOREIGN KEY (ID_Voucher) REFERENCES Voucher(ID) ON DELETE CASCADE
 );
 
 -- Bảng HoaDon
 CREATE TABLE HoaDon (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    ID_KhachHang INT,
-    ID_Phim INT,
-    ID_Voucher INT,
-    ID_PTTT INT,
-    MaHoaDon VARCHAR(15) NOT NULL,
-    SoLuong INT NOT NULL,
-    ThoiGianThanhToan DATETIME,
-    Diem INT NOT NULL,
-    TongSoTien DECIMAL(18,2) NOT NULL,
-    TrangThai INT,
-    FOREIGN KEY (ID_KhachHang) REFERENCES KhachHang(ID),
-    FOREIGN KEY (ID_Phim) REFERENCES Phim(ID),
-    FOREIGN KEY (ID_Voucher) REFERENCES Voucher(ID),
-    FOREIGN KEY (ID_PTTT) REFERENCES PTTT(ID)
+                        ID INT AUTO_INCREMENT PRIMARY KEY,
+                        ID_KhachHang INT,
+                        ID_Phim INT,
+                        ID_Voucher INT,
+                        ID_PTTT INT,
+                        MaHoaDon VARCHAR(15) NOT NULL,
+                        SoLuong INT NOT NULL,
+                        ThoiGianThanhToan DATETIME,
+                        Diem INT NOT NULL,
+                        TongSoTien DECIMAL(18,2) NOT NULL,
+                        TrangThai INT,
+                        FOREIGN KEY (ID_KhachHang) REFERENCES KhachHang(ID) ON DELETE CASCADE,
+                        FOREIGN KEY (ID_Phim) REFERENCES Phim(ID) ON DELETE CASCADE,
+                        FOREIGN KEY (ID_Voucher) REFERENCES Voucher(ID) ON DELETE CASCADE,
+                        FOREIGN KEY (ID_PTTT) REFERENCES PTTT(ID) ON DELETE CASCADE
 );
 
 -- Bảng ChiTietHoaDon
 CREATE TABLE ChiTietHoaDon (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    ID_HoaDon INT,
-    ID_Ghe INT,
-    TrangThai INT,
-    FOREIGN KEY (ID_HoaDon) REFERENCES HoaDon(ID),
-    FOREIGN KEY (ID_Ghe) REFERENCES Ghe(ID)
+                               ID INT AUTO_INCREMENT PRIMARY KEY,
+                               ID_HoaDon INT,
+                               ID_Ghe INT,
+                               TrangThai INT,
+                               FOREIGN KEY (ID_HoaDon) REFERENCES HoaDon(ID) ON DELETE CASCADE,
+                               FOREIGN KEY (ID_Ghe) REFERENCES Ghe(ID) ON DELETE CASCADE
 );
+
+-- Thêm dữ liệu vào bảng PhanLoaiChucVu
 INSERT INTO PhanLoaiChucVu (MaChucVu, TenChucVu, TrangThai)
 VALUES
     ('CV001', 'Quản lý', 1),
@@ -191,6 +199,8 @@ VALUES
     ('CV008', 'Nhân viên thu ngân', 1),
     ('CV009', 'Nhân viên kế toán', 1),
     ('CV010', 'Nhân viên Marketing', 1);
+
+-- Thêm dữ liệu vào bảng PhanLoaiKhachHang
 INSERT INTO PhanLoaiKhachHang (MaKhachHang, LoaiKhachHang, TrangThai)
 VALUES
     ('KH001', 'Thành viên thường', 1),
@@ -203,72 +213,116 @@ VALUES
     ('KH008', 'Thành viên Gia đình', 1),
     ('KH009', 'Thành viên Doanh nghiệp', 1),
     ('KH010', 'Thành viên Khách mời', 1);
+
+-- Thêm dữ liệu vào bảng Voucher
 INSERT INTO Voucher (MaVoucher, GiaTriDoi, TruTienPhanTram, TruTienSo, SoTienGiam, SoTienToiThieu, GiamToiDa, NgayBatDau, NgayKetThuc, TrangThai)
 VALUES
     ('VC001', 500, 10, NULL, 50000, 100000, 50000, '2024-01-01', '2024-12-31', 1),
     ('VC002', 1000, NULL, 20000, 0, 50000, 20000, '2024-01-01', '2024-06-30', 1),
-    ('VC003', 700, 5, NULL, 35000, 70000, 30000, '2024-01-01', '2024-06-30', 1),
-    ('VC004', 800, NULL, 30000, 0, 80000, 30000, '2024-01-01', '2024-12-31', 1),
-    ('VC005', 1500, 20, NULL, 75000, 120000, 50000, '2024-01-01', '2024-12-31', 1),
-    ('VC006', 600, NULL, 25000, 0, 60000, 20000, '2024-01-01', '2024-09-30', 1),
-    ('VC007', 100, NULL, NULL, 15000, 50000, 15000, '2024-01-01', '2024-04-30', 1),
-    ('VC008', 200, 8, NULL, 25000, 70000, 30000, '2024-01-01', '2024-05-31', 1),
-    ('VC009', 300, NULL, 40000, 0, 80000, 35000, '2024-01-01', '2024-08-31', 1),
-    ('VC010', 900, 15, NULL, 45000, 90000, 50000, '2024-01-01', '2024-12-31', 1);
-INSERT INTO Phim (MaPhim, TenPhim, AnhPhim, DienVien, TheLoai, Nam, NoiDungMoTa, Trailer, ThoiLuong, QuocGia, GioiHanDoTuoi, TrangThai)
+    ('VC003', 700, 5, NULL, 100000, 200000, 100000, '2024-02-01', '2024-05-31', 1);
+
+-- Thêm dữ liệu vào bảng Phim
+INSERT INTO Phim (MaPhim, TenPhim, AnhPhim, DienVien, TheLoai, Nam, NoiDungMoTa, Trailer, NgayRaMat, ThoiLuong, QuocGia, NoiDung, GioiHanDoTuoi, TrangThai)
 VALUES
-    ('P001', 'Biệt Đội Siêu Anh Hùng', 'https://anhphim.com/1.jpg', 'Chris Evans, Robert Downey Jr.', 'Hành động, Phiêu lưu', 2019, 'Phim hành động hấp dẫn', 'https://trailer.com/1', 120, 'Mỹ', 1, 1),
-    ('P002', 'Sát Thủ John Wick', 'https://anhphim.com/2.jpg', 'Keanu Reeves', 'Hành động, Hình sự', 2014, 'Phim sát thủ nổi tiếng', 'https://trailer.com/2', 130, 'Mỹ', 2, 1),
-    -- Thêm các phim khác tương tự
-    ('P010', 'Chúa Tể Những Chiếc Nhẫn', 'https://anhphim.com/10.jpg', 'Elijah Wood, Viggo Mortensen', 'Phiêu lưu, Kỳ ảo', 2001, 'Hành trình tiêu diệt chiếc nhẫn', 'https://trailer.com/10', 178, 'New Zealand', 1, 1);
+    ('PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 'The Loai A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '30/12/2024', 120, 'Viet Nam', 'Noi dung phim A', 18, 1),
+    ('PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 'The Loai B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '28/10/2024', 150, 'My', 'Noi dung phim B', 15, 1),
+    ('PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 'The Loai C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '14/10/2024', 90, 'Han Quoc', 'Noi dung phim C', 12, 1);
+
+-- Thêm dữ liệu vào bảng PhongChieu
 INSERT INTO PhongChieu (MaPhong, TongSoGhe, TrangThai)
 VALUES
-    ('PC01', 100, 1),
-    ('PC02', 150, 1),
-    ('PC10', 75, 1);
+    ('PC001', 100, 1),
+    ('PC002', 150, 1),
+    ('PC003', 200, 1);
+
+-- Thêm dữ liệu vào bảng Ghe
 INSERT INTO Ghe (MaGhe, GiaTien, ID_PhongChieu, TrangThai)
 VALUES
-    ('S1', 70000, 1, 1),
-    ('S2', 70000, 1, 1),
-    ('S3', 70000, 2, 1);
+    ('GHE001', 50000, 1, 1),
+    ('GHE002', 50000, 1, 1),
+    ('GHE003', 50000, 1, 1),
+    ('GHE004', 50000, 1, 1),
+    ('GHE005', 50000, 1, 1),
+    ('GHE006', 50000, 1, 1),
+    ('GHE007', 50000, 2, 1),
+    ('GHE008', 50000, 2, 1),
+    ('GHE009', 50000, 2, 1),
+    ('GHE010', 50000, 2, 1);
+
+-- Thêm dữ liệu vào bảng SuatChieu
 INSERT INTO SuatChieu (MaSuatChieu, ThoiGianChieu, ID_Phim, ID_PhongChieu, TrangThai)
 VALUES
-    ('SC001', '2024-11-01 14:30:00', 1, 1, 1),
-    ('SC002', '2024-11-01 17:30:00', 2, 1, 1),
-    -- Thêm các suất chiếu khác tương tự
-    ('SC010', '2024-11-01 20:00:00', 3, 2, 1);
+    ('SC001', '2024-01-01 18:00:00', 1, 1, 1),
+    ('SC002', '2024-01-02 20:00:00', 2, 1, 1),
+    ('SC003', '2024-01-03 21:00:00', 3, 2, 1);
+
+-- Thêm dữ liệu vào bảng TheLoaiPhim
 INSERT INTO TheLoaiPhim (MaTLPhim, TenTheLoai, TrangThai)
 VALUES
-    ('TL01', 'Hành động', 1),
-    ('TL02', 'Kinh dị', 1),
-    -- Thêm các thể loại phim khác tương tự
-    ('TL10', 'Hoạt hình', 1);
+    ('TL001', 'Hành động', 1),
+    ('TL002', 'Hài hước', 1),
+    ('TL003', 'Kinh dị', 1),
+    ('TL004', 'Tâm lý', 1),
+    ('TL005', 'Tình cảm', 1);
+
+-- Thêm dữ liệu vào bảng DanhSachTLPhim
 INSERT INTO DanhSachTLPhim (ID_Phim, ID_TLPhim, TrangThai)
 VALUES
     (1, 1, 1),
-    (2, 2, 1),
-    -- Thêm các cặp phim - thể loại khác tương tự
-    (3, 3, 1);
+    (1, 2, 1),
+    (2, 1, 1),
+    (2, 3, 1),
+    (3, 4, 1),
+    (3, 5, 1);
+
+-- Thêm dữ liệu vào bảng PTTT
 INSERT INTO PTTT (MaPTTT, TenPTTT, TrangThai)
 VALUES
-    ('PT01', 'Thanh toán tiền mặt', 1),
-    ('PT02', 'Thanh toán thẻ', 1),
-    -- Thêm các phương thức thanh toán khác tương tự
-    ('PT10', 'Chuyển khoản ngân hàng', 1);
-INSERT INTO KhachHang (ID_PhanLoai, Ten, TenDem, Ho, NgaySinh, SoDienThoai, GioiTinh, Email, DanToc, DiaChi, Diem, TrangThai)
+    ('PT001', 'Tiền mặt', 1),
+    ('PT002', 'Thẻ tín dụng', 1),
+    ('PT003', 'Chuyển khoản', 1);
+
+-- Thêm dữ liệu vào bảng NhanVien
+INSERT INTO NhanVien (ID_ChucVu, MaNhanVien, Ten, TenDem, Ho, NgaySinh, GioiTinh, Email, TaiKhoan, MatKhau, DanToc, DiaChi, TrangThai)
 VALUES
-    (1, 'Hoàng', 'Đức', 'Nguyễn', '1995-05-15', '0987654321', 1, 'hoang.nguyen@example.com', 'Kinh', '789 XYZ, Hà Nội', 200, 1),
-    -- Thêm các khách hàng khác tương tự
-    (2, 'Mai', 'Thị', 'Phạm', '1988-08-08', '0912345678', 0, 'mai.pham@example.com', 'Kinh', '987 UVW, Hà Nội', 300, 1);
+    (1, 'NV001', 'Nguyen', 'Van', 'A', '1990-01-01', 1, 'nv1@example.com', 'taikhoan1', 'matkhau1', 'Kinh', 'Dia chi 1', 1),
+    (2, 'NV002', 'Le', 'Thi', 'B', '1992-02-02', 0, 'nv2@example.com', 'taikhoan2', 'matkhau2', 'Kinh', 'Dia chi 2', 1);
 
+-- Thêm dữ liệu vào bảng KhachHang
+INSERT INTO KhachHang (ID_PhanLoai, MaKhachHang, Ten, TenDem, Ho, NgaySinh, SoDienThoai, GioiTinh, Email, TaiKhoan, MatKhau, DanToc, DiaChi, Diem, TrangThai)
+VALUES
+    (1, 'KH001', 'Nguyen', 'Van', 'D', '1995-05-05', '0900000001', 1, 'kh1@example.com', 'kh1', 'mk1', 'Kinh', 'Dia chi khach 1', 100, 1),
+    (2, 'KH002', 'Le', 'Thi', 'E', '1996-06-06', '0900000002', 0, 'kh2@example.com', 'kh2', 'mk2', 'Kinh', 'Dia chi khach 2', 200, 1);
 
+-- Thêm dữ liệu vào bảng KhoQua
+INSERT INTO KhoQua (ID_KhachHang, ID_Voucher)
+VALUES
+    (1, 1),
+    (2, 2);
+
+-- Thêm dữ liệu vào bảng HoaDon
+INSERT INTO HoaDon (ID_KhachHang, ID_Phim, ID_Voucher, ID_PTTT, MaHoaDon, SoLuong, ThoiGianThanhToan, Diem, TongSoTien, TrangThai)
+VALUES
+    (1, 1, 1, 1, 'HD001', 2, '2024-01-01 19:00:00', 10, 100000, 1),
+    (2, 2, 2, 2, 'HD002', 1, '2024-01-02 21:00:00', 20, 200000, 1);
+
+-- Thêm dữ liệu vào bảng ChiTietHoaDon
+INSERT INTO ChiTietHoaDon (ID_HoaDon, ID_Ghe, TrangThai)
+VALUES
+    (1, 1, 1),
+    (1, 2, 1),
+    (2, 3, 1),
+    (2, 4, 1);
 
 CREATE TABLE DoTuoi(
-    ID INT PRIMARY KEY AUTO_INCREMENT,
-    MaDoTuoi VARCHAR(25),
-    TenDoTuoi VARCHAR(5),
+                       ID INT PRIMARY KEY AUTO_INCREMENT,
+                       MaDoTuoi VARCHAR(25),
+                       TenDoTuoi VARCHAR(5),
 );
+ALTER TABLE PHIM
+    ADD CONSTRAINT `FK_PHIM_DOTUOI` FOREIGN KEY (GioiHanDoTuoi) REFERENCES dotuoi (ID);
 
 INSERT INTO DoTuoi VALUES (1,"DT001","R15"),
 INSERT INTO DoTuoi VALUES (2,"DT002","R18"),
 INSERT INTO DoTuoi VALUES (3, "DT002","R13"),
+
