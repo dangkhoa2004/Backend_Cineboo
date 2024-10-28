@@ -5,14 +5,16 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- *
  * @author 04dkh
  */
 @Entity
-@Table(name = "PhanLoaiKhachHang")
+@Table(name = "PHANLOAIKHACHHANG")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,13 +23,19 @@ public class PhanLoaiKhachHang {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false, length = 15)
+
+    @Column(nullable = false, length = 15, name = "MAKHACHHANG")
     private String maKhachHang;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, name = "LOAIKHACHHANG")
     private String loaiKhachHang;
 
-    private Integer trangThai;
+
+    //Sử dụng Transient để tạm thời bỏ qua thuộc tính này
+    //Lý do: trùng lặp tên cột PhanLoaiKhachHang và KhachHang, 2 bảng đều có cột tên là TrangThai
+    @Column(name = "TRANGTHAI")
+    @Transient
+    private Integer trangThaiPhanLoaiKhachHang;
 }
