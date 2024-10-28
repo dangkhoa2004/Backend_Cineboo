@@ -5,6 +5,7 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
+import java.time.*;
 import lombok.*;
 
 /**
@@ -41,6 +42,7 @@ public class Phim {
     private Integer nam;
     private String noiDungMoTa;
     private String trailer;
+    private LocalDateTime ngayRaMat;
     private Integer thoiLuong;
     private String quocGia;
     private String noiDung;
