@@ -26,7 +26,7 @@ public class JWTUtil {
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public static String extractUsername(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(secret.getBytes())
                 .parseClaimsJws(token)  // Correct method call to parse the token
