@@ -5,8 +5,14 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
-import java.time.*;
+
+import java.util.Date;
+import java.util.List;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 
 /**
  *
@@ -22,30 +28,58 @@ public class Phim {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false, length = 15)
+    //Trường dữ liệu nên được tự động khởi tạo thay vì nhập tay
+    @Column(name = "MAPHIM")
     private String maPhim;
 
-    @Column(nullable = false, length = 255)
+    @NotBlank(message = "Thiếu tên phim")
+    @Column(name = "TENPHIM")
     private String tenPhim;
 
-    @Column(nullable = false, length = 255)
+    @NotBlank(message = "Thiếu ảnh phim")
+    @Column(name = "ANHPHIM")
     private String anhPhim;
 
-    @Column(nullable = false, length = 255)
+    @NotBlank(message = "Thiếu diễn viên")
+    @Column(name = "DIENVIEN")
     private String dienVien;
 
-    @Column(nullable = false, length = 200)
-    private String theLoai;
+    @OneToMany(mappedBy = "phim")
+    private List<DanhSachTLPhim> danhSachTLPhims;
 
+
+    @Range(min = 1888, max = 2999,message = "Năm sản xuất phải từ 1888-2999")
+    @Column(name = "NAM")
     private Integer nam;
+
+    @Column(name = "NOIDUNGMOTA")
     private String noiDungMoTa;
+
+    @Column(name = "TRAILER")
     private String trailer;
-    private LocalDateTime ngayRaMat;
+
+    @NotNull(message = "Thiếu Ngày ra mắt")
+    @Column(name = "NGAYRAMAT")
+    private Date ngayRaMat;
+
+    @Range(min =1,message = "Thời lượng phải lớn hơn 1")
+    @Column(name = "THOILUONG")
     private Integer thoiLuong;
+
+    @NotBlank(message = "Thiếu Quốc gia")
+    @Column(name = "QUOCGIA")
     private String quocGia;
+
+    @Column(name = "NOIDUNG")
     private String noiDung;
-    private Integer gioiHanDoTuoi;
+
+    @NotNull(message = "Thiếu giới hạn độ tuổi")
+    @ManyToOne
+    @JoinColumn(name = "GIOIHANDOTUOI")
+    private DoTuoi gioiHanDoTuoi;
+
+    @Column(name = "TRANGTHAI")
     private Integer trangThai;
 }
