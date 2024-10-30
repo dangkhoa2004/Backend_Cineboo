@@ -19,7 +19,6 @@ public class RepoUtility {
      * Trả về ResponseEntity.ok(Object) nếu thành công
      * Người dùng tự cast Object để sử dụng
      */
-
     public static ResponseEntity findById(Long id, JpaRepository repository) {
         if (id == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được ID SuatChieu");
@@ -79,5 +78,4 @@ public class RepoUtility {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi không xác định");
         }
     }
-
 }
