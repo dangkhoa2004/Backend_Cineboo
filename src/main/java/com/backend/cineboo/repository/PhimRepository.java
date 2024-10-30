@@ -11,7 +11,5 @@ import java.util.Optional;
 public interface PhimRepository extends JpaRepository<Phim,Long> {
     @Query(value = "SELECT MAX(ID) FROM Phim",nativeQuery = true)
     Long getMaxTableId();
-
-    //    @Query(value="SELECT * FROM PHIM WHERE MAPHIM=? LIMIT 1")
     Optional<Phim> findByMaPhim(String maPhim);
 }
