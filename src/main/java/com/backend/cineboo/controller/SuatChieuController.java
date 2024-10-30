@@ -143,7 +143,7 @@ public class SuatChieuController {
      * Trả về ResponseEntity(notFound) nếu bản ghi không tồn tại
      * Trả về ResponseEntity(INTERNAL_SERVER_ERROR) nếu lỗi khác
      */
-    @GetMapping("/find/{columnName}/{id}")
+    @GetMapping("/{columnName}/{value}")
     public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
         //do something
         ResponseEntity response = RepoUtility.findByCustomColumn(suatChieuRepository, columnName, value);
