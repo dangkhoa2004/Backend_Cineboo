@@ -25,7 +25,7 @@ public class DanhSachTLPhim {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @JsonBackReference
+//    @JsonBackReference
 //    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "ID_PHIM")
