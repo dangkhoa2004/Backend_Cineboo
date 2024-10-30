@@ -4,6 +4,8 @@
  */
 package com.backend.cineboo.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +14,7 @@ import lombok.*;
  * @author 04dkh
  */
 @Entity
-@Table(name = "DanhSachTLPhim")
+@Table(name = "DANHSACHTLPHIM")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -23,13 +25,18 @@ public class DanhSachTLPhim {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @JsonBackReference
+//    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "ID_Phim")
+    @JoinColumn(name = "ID_PHIM")
     private Phim phim;
 
     @ManyToOne
-    @JoinColumn(name = "ID_TLPhim")
+    @JoinColumn(name = "ID_TLPHIM")
     private TheLoaiPhim theLoaiPhim;
 
+    @Column(name = "TRANGTHAI")
     private Integer trangThai;
+
+
 }

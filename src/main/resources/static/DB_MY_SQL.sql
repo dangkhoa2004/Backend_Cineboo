@@ -40,7 +40,6 @@ CREATE TABLE Phim (
     TenPhim VARCHAR(255) NOT NULL,
     AnhPhim VARCHAR(255) NOT NULL,
     DienVien VARCHAR(255) NOT NULL,
-    TheLoai VARCHAR(200) NOT NULL,
     Nam INT NOT NULL,
     NoiDungMoTa TEXT,
     Trailer VARCHAR(255),
@@ -222,11 +221,11 @@ VALUES
     ('VC003', 700, 5, NULL, 100000, 200000, 100000, '2024-02-01', '2024-05-31', 1);
 
 -- Thêm dữ liệu vào bảng Phim
-INSERT INTO Phim (MaPhim, TenPhim, AnhPhim, DienVien, TheLoai, Nam, NoiDungMoTa, Trailer, NgayRaMat, ThoiLuong, QuocGia, NoiDung, GioiHanDoTuoi, TrangThai)
+INSERT INTO Phim (MaPhim, TenPhim, AnhPhim, DienVien, Nam, NoiDungMoTa, Trailer, NgayRaMat, ThoiLuong, QuocGia, NoiDung, GioiHanDoTuoi, TrangThai)
 VALUES 
-    ('PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 'The Loai A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '30/12/2024', 120, 'Viet Nam', 'Noi dung phim A', 18, 1),
-    ('PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 'The Loai B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '28/10/2024', 150, 'My', 'Noi dung phim B', 15, 1),
-    ('PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 'The Loai C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '14/10/2024', 90, 'Han Quoc', 'Noi dung phim C', 12, 1);
+    ('PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '30/12/2024', 120, 'Viet Nam', 'Noi dung phim A', 18, 1),
+    ('PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '28/10/2024', 150, 'My', 'Noi dung phim B', 15, 1),
+    ('PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '14/10/2024', 90, 'Han Quoc', 'Noi dung phim C', 12, 1);
 
 -- Thêm dữ liệu vào bảng PhongChieu
 INSERT INTO PhongChieu (MaPhong, TongSoGhe, TrangThai)
@@ -313,3 +312,14 @@ VALUES
     (1, 2, 1),
     (2, 3, 1),
     (2, 4, 1);
+CREATE TABLE DoTuoi(
+                       ID INT PRIMARY KEY AUTO_INCREMENT,
+                       MaDoTuoi VARCHAR(25),
+                       TenDoTuoi VARCHAR(5),
+);
+ALTER TABLE PHIM
+    ADD CONSTRAINT `FK_PHIM_DOTUOI` FOREIGN KEY (GioiHanDoTuoi) REFERENCES dotuoi (ID);
+
+INSERT INTO DoTuoi VALUES (1,"DT001","R15"),
+INSERT INTO DoTuoi VALUES (2,"DT002","R18"),
+INSERT INTO DoTuoi VALUES (3, "DT002","R13"),
