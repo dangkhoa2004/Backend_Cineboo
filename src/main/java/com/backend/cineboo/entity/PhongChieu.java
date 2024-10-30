@@ -12,7 +12,7 @@ import lombok.*;
  * @author 04dkh
  */
 @Entity
-@Table(name = "PhanLoaiKhachHang")
+@Table(name = "PHONGCHIEU")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -23,9 +23,12 @@ public class PhongChieu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 15)
+    @Column(name="MAPHONG")
     private String maPhong;
 
+    @Column(name="TONGSOGHE")
     private Integer tongSoGhe;
+
+    @Column(name="TRANGTHAI")
     private Integer trangThai;
 }
