@@ -1,6 +1,7 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.entity.DoTuoi;
+import com.backend.cineboo.entity.Phim;
 import com.backend.cineboo.entity.SuatChieu;
 import com.backend.cineboo.entity.SuatChieu;
 import com.backend.cineboo.repository.SuatChieuRepository;
@@ -54,9 +55,11 @@ public class SuatChieuController {
     //Vì không tách bảng trạng thai
     @PutMapping("/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
-        ResponseEntity response = RepoUtility.findById(id,suatChieuRepository);
+        ResponseEntity response = RepoUtility.findById(id, suatChieuRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
-            return ResponseEntity.status(HttpStatus.OK).body("Disable Suất chi thành công");
+            SuatChieu suatChieu = (SuatChieu) response.getBody();
+            suatChieu.setTrangThai(0);
+            return ResponseEntity.status(HttpStatus.OK).body("Disable SuatChieu thành công");
         }
         return response;
     }
