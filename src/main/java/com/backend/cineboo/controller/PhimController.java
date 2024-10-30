@@ -63,6 +63,7 @@ public class PhimController {
         if (response.getStatusCode().is2xxSuccessful()) {
             Phim phim = (Phim) response.getBody();
             phim.setTrangThai(0);
+            phimRepository.save(phim);
             return ResponseEntity.status(HttpStatus.OK).body("Disable phim thành công");
         }
         return response;
