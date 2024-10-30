@@ -61,6 +61,8 @@ public class PhimController {
     public ResponseEntity disable(@PathVariable Long id) {
         ResponseEntity response = RepoUtility.findById(id, phimRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
+            Phim phim = (Phim) response.getBody();
+            phim.setTrangThai(0);
             return ResponseEntity.status(HttpStatus.OK).body("Disable phim thành công");
         }
         return response;
