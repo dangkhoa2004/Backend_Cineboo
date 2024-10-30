@@ -4,6 +4,7 @@
  */
 package com.backend.cineboo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -47,6 +48,7 @@ public class Phim {
     private String dienVien;
 
     @OneToMany(mappedBy = "phim")
+    @JsonIgnoreProperties("phim")
     private List<DanhSachTLPhim> danhSachTLPhims;
 
 
