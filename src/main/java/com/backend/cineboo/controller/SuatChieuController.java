@@ -30,7 +30,6 @@ public class SuatChieuController {
     private final String idPrefix = "MSC00";
 
     /**
-     * Hiển thị danh sách assssssssss
      *
      * @return Trả về danh sách suatChieu.
      * Trả về một danh sách kiểu List với size = 0 nếu thất bại
@@ -59,6 +58,7 @@ public class SuatChieuController {
         if (response.getStatusCode().is2xxSuccessful()) {
             SuatChieu suatChieu = (SuatChieu) response.getBody();
             suatChieu.setTrangThai(0);
+            suatChieuRepository.save(suatChieu);
             return ResponseEntity.status(HttpStatus.OK).body("Disable SuatChieu thành công");
         }
         return response;
