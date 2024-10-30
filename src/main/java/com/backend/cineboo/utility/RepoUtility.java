@@ -21,11 +21,11 @@ public class RepoUtility {
      */
     public static ResponseEntity findById(Long id, JpaRepository repository) {
         if (id == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được ID SuatChieu");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được ID");
         }
         Object object = repository.findById(id).orElse(null);
         if (object == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("SuatChieu không tồn tại");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bản ghi không tồn tại");
         }
         return ResponseEntity.ok(object);
     }
