@@ -186,6 +186,7 @@ public class PhimController {
      */
     @GetMapping("/find/{columnName}/{value}")
     public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
+        //do something
         ResponseEntity response = RepoUtility.findByCustomColumn(phimRepository, columnName, value);
         return response;
     }
