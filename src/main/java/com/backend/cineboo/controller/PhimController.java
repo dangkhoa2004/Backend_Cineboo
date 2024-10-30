@@ -7,6 +7,7 @@ import com.backend.cineboo.repository.DanhSachTLPhimReposiory;
 import com.backend.cineboo.repository.PhimRepository;
 import com.backend.cineboo.repository.TheLoaiPhimRepository;
 import com.backend.cineboo.utility.EntityValidator;
+import com.backend.cineboo.utility.RepoUtility;
 import jakarta.validation.Valid;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,7 @@ public class PhimController {
     //Vì không tách bảng trạng thai
     @PutMapping("/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
-        ResponseEntity response = getPhim(id);
+        ResponseEntity response = RepoUtility.findById(id, phimRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             return ResponseEntity.status(HttpStatus.OK).body("Disable phim thành công");
         }
@@ -82,7 +83,7 @@ public class PhimController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-        ResponseEntity response = getPhim(id);
+        ResponseEntity response = RepoUtility.findById(id, phimRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             Phim toBeUpdated = (Phim) response.getBody();
             toBeUpdated.setMaPhim("MVS00" + phimRepository.getMaxTableId());
@@ -141,7 +142,7 @@ public class PhimController {
         Long phimId = toBeAdded.getId();
 
         //Lượt qua Phim.DanhSachTLPhim
-        for(DanhSachTLPhim ds: phim.getDanhSachTLPhims()){
+        for (DanhSachTLPhim ds : phim.getDanhSachTLPhims()) {
             //Lấy ID TheLoaiPhim để lưu vào DanhSachTLPhim sau đó
             Long theLoaiPhimId = ds.getTheLoaiPhim().getId();
             //Tạo bản ghi mới
@@ -167,30 +168,27 @@ public class PhimController {
      */
     @GetMapping("/find/{id}")
     public ResponseEntity find(@PathVariable Long id) {
-        ResponseEntity response = getPhim(id);
+        ResponseEntity response = RepoUtility.findById(id, phimRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             return ResponseEntity.ok(phimRepository.save((Phim) response.getBody()));
         }
         return response;
     }
 
-
     /**
-     * Tìm kiếm phim theo Repo, phương thức private
-     *
-     * @param id
-     * @return Trả về Bad Request nếu ID Null.
-     * Trả về Not found nếu phim không tồn tại.
-     * Trả về ResponseEntity.ok(Phim) nếu thành công
+     * Hỗ trợ tìm kiểm theo tên cột và giá trị của cột
+     * @param  columnName
+     * @param  value
+     * @return Trả về ResponseEntity(200) nếu thành  công
+     * Trả về ResponseEntity(badRequest) nếu cột không tồn tại
+     * Trả về ResponseEntity(notFound) nếu bản ghi không tồn tại
+     * Trả về ResponseEntity(INTERNAL_SERVER_ERROR) nếu lỗi khác
      */
-    private ResponseEntity getPhim(Long id) {
-        if (id == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được ID Phim");
-        }
-        Phim phim = phimRepository.findById(id).orElse(null);
-        if (phim == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Phim không tồn tại");
-        }
-        return ResponseEntity.ok(phim);
+    @GetMapping("/find/{columnName}/{value}")
+    public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
+        //do something
+        ResponseEntity response = RepoUtility.findByCustomColumn(phimRepository, columnName, value);
+        return response;
     }
+
 }
