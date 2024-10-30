@@ -7,7 +7,6 @@ import org.springframework.validation.FieldError;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-//Shanks D Rat
 public class EntityValidator {
 
     /**
@@ -16,7 +15,6 @@ public class EntityValidator {
      * @param bindingResult
      * @return Map chứa các lỗi(key) và thông tin lỗi(value)
      */
-
     public static Map validateFields(BindingResult bindingResult) {
         List<FieldError> fe = bindingResult.getFieldErrors();
         if (!CollectionUtils.isEmpty(fe)) {
