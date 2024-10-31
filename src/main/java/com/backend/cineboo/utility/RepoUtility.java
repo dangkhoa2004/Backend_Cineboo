@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 
 public class RepoUtility {
@@ -19,14 +20,13 @@ public class RepoUtility {
      * Trả về ResponseEntity.ok(Object) nếu thành công
      * Người dùng tự cast Object để sử dụng
      */
-
     public static ResponseEntity findById(Long id, JpaRepository repository) {
         if (id == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được ID SuatChieu");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được ID");
         }
         Object object = repository.findById(id).orElse(null);
         if (object == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("SuatChieu không tồn tại");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bản ghi không tồn tại");
         }
         return ResponseEntity.ok(object);
     }
@@ -36,7 +36,7 @@ public class RepoUtility {
      * @param columnName
      * @param value
      * @param <T>
-     * @return Trả về ResponseEntity(200) nếu thành  công.
+     * @return Trả về ResponseEntity(200) nếu thành  công kèm List<Entity> hoặc <Entity>.
      * Trả về ResponseEntity(badRequest) nếu cột không tồn tại.
      * Trả về ResponseEntity(notFound) nếu bản ghi không tồn tại.
      * Trả về ResponseEntity(INTERNAL_SERVER_ERROR) nếu lỗi khác.
@@ -61,13 +61,24 @@ public class RepoUtility {
             }
 
             // Invoke the method if it exists
-            Optional<T> result = (Optional<T>) method.invoke(repository, value);
+            Object result = method.invoke(repository, value);
 
-            return result
-                    .<ResponseEntity<?>>map(entity -> ResponseEntity.ok(entity)) // Return entity if present
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("Không tồn tại bản ghi cần tìm")); // Return error message if not found
-
+            // Check if the result is a list or an optional
+            if (result instanceof List) {
+                List<T> resultList = (List<T>) result;
+                return resultList.isEmpty()
+                        ? ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tồn tại bản ghi cần tìm")
+                        : ResponseEntity.ok(resultList);
+            } else if (result instanceof Optional) {
+                Optional<T> optionalResult = (Optional<T>) result;
+                return optionalResult
+                        .<ResponseEntity<?>>map(entity -> ResponseEntity.ok(entity)) // Return entity if present
+                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("Không tồn tại bản ghi cần tìm")); // Return error message if not found
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Phương thức tìm kiếm không trả về kiểu dữ liệu hợp lệ");
+            }
         } catch (ReflectiveOperationException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi thực hiện tìm kiếm bằng phản chiếu");
@@ -79,5 +90,4 @@ public class RepoUtility {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi không xác định");
         }
     }
-
 }
