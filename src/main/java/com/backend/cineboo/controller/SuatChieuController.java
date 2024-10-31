@@ -148,7 +148,6 @@ public class SuatChieuController {
      */
     @GetMapping("/{columnName}/{value}")
     public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
-        //do something
         ResponseEntity response = RepoUtility.findByCustomColumn(suatChieuRepository, columnName, value);
         return response;
     }
