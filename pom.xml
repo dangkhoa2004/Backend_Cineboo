@@ -98,8 +98,18 @@
             <artifactId>commons-collections</artifactId>
             <version>3.2.2</version>
         </dependency>
-
         <!--        UTILITY-->
+
+<!--        Documentation-->
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
+
+        <!--        Documentation-->
 
     </dependencies>
 
