@@ -19,16 +19,25 @@ public class SecurityConfig {
                 .csrf().disable()
                 .cors().disable()
                 .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST,"api/user/login").permitAll()
-                .requestMatchers(HttpMethod.GET,"phim/get").permitAll()
-                .requestMatchers(HttpMethod.GET,"/phim/get").permitAll()
-                .requestMatchers(HttpMethod.PUT,"phim/disable").permitAll()
-                .requestMatchers(HttpMethod.PUT,"phim/disable/**").permitAll()
-                .requestMatchers(HttpMethod.PUT,"phim/update/id").permitAll()
-                .requestMatchers(HttpMethod.PUT,"phim/update/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/phim/find/**").permitAll()
-                .requestMatchers(HttpMethod.POST,"phim/add").permitAll()
-                .requestMatchers(HttpMethod.PUT,"phim/update").permitAll()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/api-docs/swagger-config",
+                        "/api-docs",
+                        "/swagger-resources/**",
+                        "/swagger-resources",
+                        "/swagger-ui/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "api/user/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "phim/get").permitAll()
+                .requestMatchers(HttpMethod.GET, "/phim/get").permitAll()
+                .requestMatchers(HttpMethod.PUT, "phim/disable").permitAll()
+                .requestMatchers(HttpMethod.PUT, "phim/disable/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "phim/update/id").permitAll()
+                .requestMatchers(HttpMethod.PUT, "phim/update/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/phim/find/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "phim/add").permitAll()
+                .requestMatchers(HttpMethod.PUT, "phim/update").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
