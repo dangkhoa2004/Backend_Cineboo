@@ -57,7 +57,7 @@ public class SuatChieuController {
         ResponseEntity response = RepoUtility.findById(id, suatChieuRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             SuatChieu suatChieu = (SuatChieu) response.getBody();
-            suatChieu.setTrangThai(0);
+            suatChieu.setTrangThaiSuatChieu(0);
             suatChieuRepository.save(suatChieu);
             return ResponseEntity.status(HttpStatus.OK).body("Disable SuatChieu thành công");
         }
@@ -87,7 +87,7 @@ public class SuatChieuController {
             toBeUpdated.setMaSuatChieu(idPrefix + suatChieuRepository.getMaxTableId());
              toBeUpdated.setPhongChieu(suatChieu.getPhongChieu());
              toBeUpdated.setThoiGianChieu(suatChieu.getThoiGianChieu());
-             toBeUpdated.setTrangThai(suatChieu.getTrangThai());
+             toBeUpdated.setTrangThaiSuatChieu(suatChieu.getTrangThaiSuatChieu());
              toBeUpdated.setPhim(suatChieu.getPhim());
             return ResponseEntity.status(HttpStatus.OK).body(suatChieuRepository.save(toBeUpdated));
         }
@@ -146,7 +146,7 @@ public class SuatChieuController {
      * Trả về ResponseEntity(notFound) nếu bản ghi không tồn tại
      * Trả về ResponseEntity(INTERNAL_SERVER_ERROR) nếu lỗi khác
      */
-    @GetMapping("/{columnName}/{value}")
+    @GetMapping("find/{columnName}/{value}")
     public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
         ResponseEntity response = RepoUtility.findByCustomColumn(suatChieuRepository, columnName, value);
         return response;

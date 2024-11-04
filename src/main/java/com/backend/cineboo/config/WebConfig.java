@@ -14,6 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
     //Thêm đường dẫn đang gọi API vào đây để tránh CORS
     private final List<String> allowedOrigins =
             List.of("http://localhost:5173",
+                    "http://192.168.1.3:3000",
+                    "http://localhost:3000",
+                    "http://localhost:3001",
                     "http://example-client.com");
 
     @Bean

@@ -12,7 +12,7 @@ import lombok.*;
  * @author 04dkh
  */
 @Entity
-@Table(name = "Ghe")
+@Table(name = "GHE")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -20,16 +20,18 @@ import lombok.*;
 public class Ghe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false, length = 15)
+    @Column(name="MAGHE")
     private String maGhe;
 
+    @Column(name="GIATIEN")
     private BigDecimal giaTien;
 
     @ManyToOne
-    @JoinColumn(name = "ID_PhongChieu")
+    @JoinColumn(name = "ID_PHONGCHIEU")
     private PhongChieu phongChieu;
 
-    private Integer trangThai;
+    @Column(name="TRANGTHAIGHE")
+    private Integer trangThaiGhe;
 }

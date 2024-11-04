@@ -213,7 +213,7 @@ public class PhimController {
     public ResponseEntity find(@PathVariable Long id) {
         ResponseEntity response = RepoUtility.findById(id, phimRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
-            return ResponseEntity.ok(phimRepository.save((Phim) response.getBody()));
+            return ResponseEntity.ok(((Phim) response.getBody()));
         }
         return response;
     }
