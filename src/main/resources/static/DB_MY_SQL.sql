@@ -363,9 +363,9 @@ INSERT INTO DoTuoi(ID,MaDoTuoi,TenDoTuoi)  VALUES (3, "DT003","R13");
 -- Thêm dữ liệu vào bảng Phim
 INSERT INTO Phim (MaPhim, TenPhim, AnhPhim, DienVien, Nam, NoiDungMoTa, Trailer, NgayRaMat, ThoiLuong, QuocGia, NoiDung, GioiHanDoTuoi, TrangThai)
 VALUES
-    ('PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '30/12/2024', 120, 'Viet Nam', 'Noi dung phim A', 1, 1),
-    ('PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '28/10/2024', 150, 'My', 'Noi dung phim B', 2, 1),
-    ('PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '14/10/2024', 90, 'Han Quoc', 'Noi dung phim C', 2, 1);
+    ('PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '2024-01-01', 120, 'Viet Nam', 'Noi dung phim A', 1, 1),
+    ('PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '2024-01-01', 150, 'My', 'Noi dung phim B', 2, 1),
+    ('PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1);
 
 INSERT INTO SuatChieu (MaSuatChieu, ThoiGianChieu, ID_Phim, ID_PhongChieu, TrangThaiSuatChieu)
 VALUES
