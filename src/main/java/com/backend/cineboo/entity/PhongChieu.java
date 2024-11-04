@@ -21,7 +21,7 @@ public class PhongChieu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name="MAPHONG")
     private String maPhong;
@@ -29,6 +29,6 @@ public class PhongChieu {
     @Column(name="TONGSOGHE")
     private Integer tongSoGhe;
 
-    @Column(name="TRANGTHAI")
-    private Integer trangThai;
+    @Column(name="TRANGTHAIPHONGCHIEU")
+    private Integer trangThaiPhongChieu;
 }
