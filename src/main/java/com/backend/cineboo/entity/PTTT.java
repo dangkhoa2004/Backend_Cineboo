@@ -21,13 +21,14 @@ public class PTTT {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false, length = 15)
+    @Column(name = "MAPTTT")
     private String maPTTT;
 
-    @Column(nullable = false, length = 200)
+    @Column(name = "TENPTTT")
     private String tenPTTT;
 
-    private Integer trangThai;
+    @Column(name = "TRANGTHAIPTTT")
+    private Integer trangThaiPTTT;
 }
