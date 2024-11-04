@@ -37,6 +37,6 @@ public class SuatChieu {
     @JoinColumn(name = "ID_PHONGCHIEU")
     private PhongChieu phongChieu;
 
-    @Column(name="TRANGTHAI")
-    private Integer trangThai;
+    @Column(name="TRANGTHAISUATCHIEU")
+    private Integer trangThaiSuatChieu;
 }
