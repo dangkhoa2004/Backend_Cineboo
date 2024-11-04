@@ -5,14 +5,16 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 
 /**
  *
  * @author 04dkh
  */
 @Entity
-@Table(name = "Ghe")
+@Table(name = "CHITIETHOADON")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,15 +23,19 @@ public class ChiTietHoaDon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "ID_HoaDon")
+    @JoinColumn(name = "ID_HOADON")
+    @NotNull
     private HoaDon hoaDon;
 
     @ManyToOne
-    @JoinColumn(name = "ID_Ghe")
+    @JoinColumn(name = "ID_GHE")
+    @NotNull
     private Ghe ghe;
 
-    private Integer trangThai;
+    @Range(min = 0)
+    @Column(name ="TRANGTHAICHITIETHOADON")
+    private Integer trangThaiChiTietHoaDon;
 }
