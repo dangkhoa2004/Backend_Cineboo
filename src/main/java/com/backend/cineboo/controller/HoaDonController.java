@@ -6,7 +6,9 @@ import com.backend.cineboo.repository.ChiTietHoaDonRepository;
 import com.backend.cineboo.repository.HoaDonRepository;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -26,6 +28,12 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/hoadon")
+@OpenAPIDefinition(
+        info = @Info(
+                title = "PhimAPI",
+                version = "0.1",
+                description = "Controller thực hiện quá trình giao dịch và xử lý hoá đơn"
+        ))
 public class HoaDonController {
     @Autowired
     HoaDonRepository hoaDonRepository;
@@ -100,10 +108,12 @@ public class HoaDonController {
     //Receive valid HoaDon Object from FrontEnd(from a Form or something)
     //And then perform save() right away
     //Instead of creating new instance of HoaDon and setting each field
-    @Operation(summary = "Cập nhật hoaDon",
-            description = "Chỉ yêu cầu Thông tin cơ bản của HoaDon, các nested object chỉ cần ID")
+
+    @Operation(summary = "Cập nhật HoaDon",
+            description = "Chỉ yêu cầu thông tin của HoaDon, bao gồm cả ID, và ID của các nested objects\n\n"
+                    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Entity vừa cập nhật"),
+            @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PutMapping("/update/{id}")
@@ -129,7 +139,15 @@ public class HoaDonController {
         return response;
     }
 
+    @Operation(summary = "Xử lý số tiền hoá đơn",
+            description = "Tính số tiền tổng của hoá đơn dựa trên ChiTietHoaDon và Voucher\n\n" +
+                    "Và gửi cho người dùng số tiền cuối cùng")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PutMapping("/verify-invoice/{id}")
+
     public ResponseEntity showFinalInvoiceBeforePayment(@PathVariable Long id) {
         //Hiển thị hoá đơn cuối cùng cho người dùng xem
         //Để họ dựa vào đó mà thanh toán/chuyển khoản

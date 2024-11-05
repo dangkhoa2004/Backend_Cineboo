@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @Controller
 @RequestMapping("/phongchieu")
 public class PhongChieuController {
@@ -25,24 +29,28 @@ public class PhongChieuController {
     @Autowired
     PhongChieuRepository phongChieuRepository;
 
-
-
-
-
+    @Operation(summary = "Lấy danh sách phòng chiếu",
+            description = "Trả về danh sách tất cả phòng chiếu trong hệ thống.")
     @GetMapping("/get")
     public ResponseEntity<List<PhongChieu>> get(){
         return ResponseEntity.ok((List<PhongChieu>)phongChieuRepository.findAll());
     }
+
+    @Operation(summary = "Vô hiệu hóa phòng chiếu",
+            description = "Đặt trạng thái phòng chiếu thành không khả dụng bằng cách sử dụng ID.")
     @PutMapping("/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
         ResponseEntity response = RepoUtility.findById(id, phongChieuRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             PhongChieu phongChieu = (PhongChieu) response.getBody();
             phongChieuRepository.save(phongChieu);
-            return ResponseEntity.status(HttpStatus.OK).body("Disable danhsachtheloai thành công");
+            return ResponseEntity.status(HttpStatus.OK).body("Disable phòng chiếu thành công");
         }
         return response;
     }
+
+    @Operation(summary = "Thêm phòng chiếu mới",
+            description = "Thêm một phòng chiếu mới vào hệ thống.")
     @PutMapping("/add")
     public ResponseEntity add(@Valid @RequestBody PhongChieu phongChieu, BindingResult bindingResult){
         Map<String,String> errors = EntityValidator.validateFields(bindingResult);
@@ -51,6 +59,9 @@ public class PhongChieuController {
         }
         return ResponseEntity.ok(phongChieuRepository.save(phongChieu));
     }
+
+    @Operation(summary = "Cập nhật thông tin phòng chiếu",
+            description = "Cập nhật thông tin phòng chiếu dựa trên ID phòng chiếu.")
     @PutMapping("/update/{id}")
     public ResponseEntity update(@Valid @RequestBody PhongChieu phongChieu, BindingResult bindingResult, @PathVariable("id") Long id) {
         Map errors = EntityValidator.validateFields(bindingResult);
@@ -68,6 +79,9 @@ public class PhongChieuController {
         }
         return response;
     }
+
+    @Operation(summary = "Tìm kiếm phòng chiếu theo ID",
+            description = "Tìm kiếm phòng chiếu bằng ID và trả về thông tin phòng chiếu.")
     @GetMapping("/find/{id}")
     public ResponseEntity find(@PathVariable Long id) {
         ResponseEntity response = RepoUtility.findById(id, phongChieuRepository);
