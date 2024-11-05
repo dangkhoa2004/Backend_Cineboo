@@ -23,11 +23,11 @@ CREATE TABLE Voucher (
                          GiaTriDoi INT NOT NULL,
                          TruTienPhanTram INT,
                          TruTienSo DECIMAL(18,2),
-                         SoTienGiam DECIMAL(18,2),
                          SoTienToiThieu DECIMAL(18,2),
                          GiamToiDa DECIMAL(18,2),
                          NgayBatDau DATE,
                          NgayKetThuc DATE,
+                         SoLuong INT,
                          TrangThaiVoucher INT
 );
 
@@ -220,11 +220,11 @@ VALUES
     ('KH010', 'Thành viên Khách mời', 1);
 
 -- Thêm dữ liệu vào bảng Voucher
-INSERT INTO Voucher (MaVoucher, GiaTriDoi, TruTienPhanTram, TruTienSo, SoTienGiam, SoTienToiThieu, GiamToiDa, NgayBatDau, NgayKetThuc, TrangThaiVoucher)
+INSERT INTO Voucher (MaVoucher, GiaTriDoi, TruTienPhanTram, TruTienSo, SoTienGiam, SoTienToiThieu, GiamToiDa, NgayBatDau, NgayKetThuc, SoLuong, TrangThaiVoucher)
 VALUES
-    ('VC001', 500, 10, NULL, 50000, 100000, 50000, '2024-01-01', '2024-12-31', 1),
-    ('VC002', 1000, NULL, 20000, 0, 50000, 20000, '2024-01-01', '2024-06-30', 1),
-    ('VC003', 700, 5, NULL, 100000, 200000, 100000, '2024-02-01', '2024-05-31', 1);
+    ('VC001', 500, 10, NULL, 50000, 100000, 50000, '2024-01-01', '2024-12-31',500, 1),
+    ('VC002', 1000, NULL, 20000, 0, 50000, 20000, '2024-01-01', '2024-06-30', 150, 1),
+    ('VC003', 700, 5, NULL, 100000, 200000, 100000, '2024-02-01', '2024-05-31', 9, 1);
 
 
 -- Thêm dữ liệu vào bảng PhongChieu
@@ -288,11 +288,11 @@ VALUES
     ('KH010', 'Thành viên Khách mời', 1);
 
 -- Thêm dữ liệu vào bảng Voucher
-INSERT INTO Voucher (MaVoucher, GiaTriDoi, TruTienPhanTram, TruTienSo, SoTienGiam, SoTienToiThieu, GiamToiDa, NgayBatDau, NgayKetThuc, TrangThaiVoucher)
+INSERT INTO Voucher (MaVoucher, GiaTriDoi, TruTienPhanTram, TruTienSo, SoTienToiThieu, GiamToiDa, NgayBatDau, NgayKetThuc, TrangThaiVoucher)
 VALUES
-    ('VC001', 500, 10, NULL, 50000, 100000, 50000, '2024-01-01', '2024-12-31', 1),
-    ('VC002', 1000, NULL, 20000, 0, 50000, 20000, '2024-01-01', '2024-06-30', 1),
-    ('VC003', 700, 5, NULL, 100000, 200000, 100000, '2024-02-01', '2024-05-31', 1);
+    ('VC001', 500, 10, NULL, 100000, 50000, '2024-01-01', '2024-12-31', 1),
+    ('VC002', 1000, NULL, 125200, 50000, 20000, '2024-01-01', '2024-06-30', 1),
+    ('VC003', 700, 5, NULL, 200000, 100000, '2024-02-01', '2024-05-31', 1);
 
 
 -- Thêm dữ liệu vào bảng PhongChieu
