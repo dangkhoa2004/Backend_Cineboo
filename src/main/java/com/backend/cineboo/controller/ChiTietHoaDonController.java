@@ -7,7 +7,9 @@ import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.repository.ChiTietHoaDonRepository;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -26,6 +28,12 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/cthoadon")
+@OpenAPIDefinition(
+        info = @Info(
+                title = "ChiTietHoaDonAPI",
+                version = "0.1",
+                description = "Controller xử lý bảng ChiTietHoaDon"
+        ))
 public class ChiTietHoaDonController {
     @Autowired
     ChiTietHoaDonRepository chiTietHoaDonRepository;
