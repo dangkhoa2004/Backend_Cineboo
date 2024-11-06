@@ -31,4 +31,11 @@ public interface GheRepository extends JpaRepository<Ghe,Long> {
 
     @Query(value="SELECT * FROM Ghe WHERE ID_PhongChieu = ?",nativeQuery = true)
     List<Ghe> findByID_PhongChieu(String id_PhongChieu);
+
+    @Query(value ="SELECT Ghe.ID,Ghe.MaGhe,Ghe.GiaTien,Ghe.ID_PhongChieu,Ghe.TrangThaiGhe " +
+            "FROM `ghe`" +
+            "JOIN `phongchieu` ON `ghe`.`ID_PhongChieu` = `phongchieu`.`ID`" +
+            "JOIN `suatchieu` ON `phongchieu`.`ID` = `suatchieu`.`ID_PhongChieu`" +
+            "WHERE `suatchieu`.`ID` = ?;",nativeQuery = true)
+    List<Ghe> findByID_SuatChieu(String id_suatChieu);
 }
