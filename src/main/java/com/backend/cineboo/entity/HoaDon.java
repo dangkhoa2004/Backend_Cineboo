@@ -78,8 +78,10 @@ public class HoaDon {
     @Column(name = "DIEM")
     private Integer diem;
 
+    //If value is not null, it must adhere to these checks below
     @DecimalMin(value = "1.0")
     @Digits(integer=18, fraction=2)
+//    @NotNull/ DO NOT UNCOMMENT THIS IF YOU WANT TO BE ABLE TO MAKE A BLANK INVOICE
     @Column(name = "TONGSOTIEN")
     private BigDecimal tongSoTien;
 
