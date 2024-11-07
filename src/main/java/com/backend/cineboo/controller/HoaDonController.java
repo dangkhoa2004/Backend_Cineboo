@@ -190,6 +190,7 @@ public class HoaDonController {
             description = "Chỉ yêu cầu thông tin của HoaDon và ID của các nested objects\n\n" +
                     "Lưu ý: Số lượng được tính theo số bản ghi chi tiết hoá đơn\n\n" +
                     "Lưu ý: Tổng số tền được tinh theo tổng giá tiền hiện tại của Ghế\n\n" +
+                    "Lưu ý: Thời gian thanh toán lấy từ object HoaDop tu Parameter\n\n" +
                     "Lưu ý: Thời gian thanh toán sẽ được cập nhật khi thanh toán thành công\n\n" +
                     "Lưu ý: Số lượng được tính theo số bản ghi chi tiết hoá đơn\n\n" +
                     "Lưu ý: Trạng thái mặc định là 0\n\n" +
@@ -234,7 +235,7 @@ public class HoaDonController {
         blankHoaDon.setPhim(hoaDon.getPhim());
         blankHoaDon.setVoucher(hoaDon.getVoucher());
         blankHoaDon.setSoLuong(hoaDon.getChiTietHoaDonList().size());
-        blankHoaDon.setThoiGianThanhToan(null);
+        blankHoaDon.setThoiGianThanhToan(hoaDon.getThoiGianThanhToan());
         blankHoaDon.setDiem(0);
         blankHoaDon.setTongSoTien(new BigDecimal(0));
         blankHoaDon.setTrangThaiHoaDon(0);
