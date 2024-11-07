@@ -143,6 +143,14 @@
             <version>1.0.3</version>
         </dependency>
 <!--        PAYOS Dependencies-->
+<!--        NGROK for Publishing API Stuff-->
+        <dependency>
+            <groupId>com.ngrok</groupId>
+            <artifactId>ngrok-java</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <!--        NGROK for Publishing API Stuff-->
+
     </dependencies>
 
     <build>

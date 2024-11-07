@@ -3,6 +3,9 @@ package com.backend.cineboo.controller;
 import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.repository.HoaDonRepository;
 import com.backend.cineboo.utility.RepoUtility;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,15 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import vn.payos.PayOS;
+import vn.payos.exception.PayOSException;
 import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.ItemData;
 import vn.payos.type.PaymentData;
+import vn.payos.type.PaymentLinkData;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +36,7 @@ public class CheckoutController {
     @Autowired
     private final PayOS payOS;
 
+
     @Autowired
     HoaDonRepository hoaDonRepository;
 
@@ -41,12 +46,12 @@ public class CheckoutController {
     }
 
 
-    @RequestMapping(value = "/success")
+    @GetMapping(value = "/success")
     public String Success() {
         return "success";
     }
 
-    @RequestMapping(value = "/cancel")
+    @GetMapping(value = "/cancel")
     public String Cancel() {
         return "cancel";
     }
@@ -85,11 +90,11 @@ public class CheckoutController {
                 final String productName = hoaDon.getPhim().getTenPhim() + hoaDon.getPhim().getGioiHanDoTuoi().getTenDoTuoi();
 
                 StringBuilder details = new StringBuilder();
-
-                hoaDon.getChiTietHoaDonList().stream()
-                        .map(e -> e.getGhe().getMaGhe())
-                        .map(maGhe -> String.valueOf(Integer.parseInt(maGhe.replaceAll("[^\\d-]|-(?=\\D)", "")))) // Convert to integer to strip leading zeros
-                        .forEach(maGhe -> details.append("G").append(maGhe)); // Append each processed `maGhe` with a space
+                details.append(hoaDon.getId());
+                details.append("_");
+                details.append(hoaDon.getMaHoaDon());
+                details.append("_");
+                details.append(hoaDon.getKhachHang().getMaKhachHang());
 
 
                 // Calculate expiration time (5 minutes after the current time)
@@ -99,16 +104,16 @@ public class CheckoutController {
                 //So NO EXPIRATION!
 
                 final String description = details.toString();
-                final String returnUrl = baseUrl + "/success";
-                final String cancelUrl = baseUrl + "/cancel";
+                final String returnUrl = baseUrl + "/payos/success";
+                final String cancelUrl = baseUrl + "/payos/cancel";
                 final Integer quantity = hoaDon.getSoLuong();
 //                final int price = hoaDon.getTongSoTien().intValue();
                 final int price = 1000;
                 // Gen order code
                 String currentTimeString = String.valueOf(new Date().getTime());
                 String maHoaDon = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
-                long orderCode =  Long.parseLong(currentTimeString.substring(currentTimeString.length() - 6));
-                orderCode = Long.valueOf(String.valueOf(orderCode)+maHoaDon);
+                long orderCode = Long.parseLong(currentTimeString.substring(currentTimeString.length() - 6));
+                orderCode = Long.valueOf(maHoaDon);
                 ItemData item = ItemData.builder().name(productName).quantity(quantity).price(price).build();
 
 
@@ -120,7 +125,7 @@ public class CheckoutController {
                 CheckoutResponseData data = payOS.createPaymentLink(paymentData);
                 String checkoutUrl = data.getCheckoutUrl();
                 Map urls = new HashMap<>();
-                urls.put("paymentData",paymentData);
+                urls.put("paymentData", paymentData);
                 urls.put("payment", checkoutUrl);
                 urls.put("success", returnUrl);
                 urls.put("cancel", cancelUrl);
@@ -145,5 +150,105 @@ public class CheckoutController {
         }
         url += contextPath;
         return url;
+    }
+
+    @DeleteMapping("/cancel/{orderId}")
+    public ResponseEntity<?> cancelPayment(
+            @PathVariable Long orderId,
+            @RequestParam(value = "cancellationReason", required = false) String cancellationReason) {
+
+        try {
+            // Default to a generic cancellation reason if none is provided
+            String reason = (cancellationReason != null && !cancellationReason.isEmpty())
+                    ? cancellationReason
+                    : "No specific reason provided";
+
+            // Call the cancelPaymentLink method with the resolved reason
+            PaymentLinkData cancel = payOS.cancelPaymentLink(orderId, reason);
+            String maHoaDon = "HD00" + orderId;
+            HoaDon hoaDon = hoaDonRepository.getByMaHoaDon(maHoaDon).orElse(null);
+            if (cancel != null) {
+                //After a successful delete operation on Bank side
+                //Change status From Database too
+                if (hoaDon != null) {
+                    hoaDon.setTrangThaiHoaDon(2);
+                    hoaDonRepository.save(hoaDon);
+                } else {
+                    cancel.setCancellationReason(cancel.getCancellationReason() + ". Đã huỷ hoá Đơn Online, nhưng Hoá đơn không tồn tại trong Database");
+                }
+                return ResponseEntity.ok(cancel);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("No response from cancel operation");
+            }
+
+        } catch (PayOSException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("Too many cancel requests sent to API");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while canceling the order");
+        }
+    }
+
+    @GetMapping("/get/{orderId}")
+    public ResponseEntity<?> getPaymentByOrderId(@PathVariable Long orderId) {
+
+        try {
+            // Default to a generic cancellation reason if none is provided
+
+
+            // Call the cancelPaymentLink method with the resolved reason
+            PaymentLinkData getPayment = payOS.getPaymentLinkInformation(orderId);
+
+            if (getPayment != null) {
+                return ResponseEntity.ok(getPayment);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("No response from get operation");
+            }
+
+        } catch (PayOSException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("Too many cancel requests sent to API");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while canceling the order");
+        }
+    }
+
+    @PostMapping(path = "/confirm-webhook")
+    public ResponseEntity confirmWebhook(@RequestBody String requestBody) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            // Chuyển đổi requestBody thành JsonNode
+            JsonNode jsonNode = objectMapper.readTree(requestBody);
+            JsonNode dataNode = jsonNode.get("data");
+            System.out.println(jsonNode);
+            // Access the "id" field inside the "data" node
+            String maHoaDon = "HD00" + dataNode.get("orderCode").asText();
+            HoaDon hoaDon = hoaDonRepository.getByMaHoaDon(maHoaDon).orElse(null);
+            if (hoaDon != null) {
+                hoaDon.setThoiGianThanhToan(LocalDateTime.now());
+                hoaDon.setTrangThaiHoaDon(1);
+                hoaDon.getChiTietHoaDonList().stream().forEach(e -> e.setTrangThaiChiTietHoaDon(1));
+                //Thêm điểm vào ĐÂY
+                //Thay vào số 0
+                hoaDon.setDiem(hoaDon.getDiem() + 0);
+                hoaDonRepository.save(hoaDon);
+            } else {
+                throw new Exception("Thanh toán thành công nhưng Hoá đơn không tồn tại trong DB");
+            }
+            // Trả về phản hồi đã được đóng gói trong ResponseEntity\
+            return ResponseEntity.status(HttpStatus.OK).body(jsonNode);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
+        }
+
     }
 }
