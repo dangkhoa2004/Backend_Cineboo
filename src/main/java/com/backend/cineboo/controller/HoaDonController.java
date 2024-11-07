@@ -188,6 +188,12 @@ public class HoaDonController {
      */
     @Operation(summary = "Thêm HoaDon rỗng mới",
             description = "Chỉ yêu cầu thông tin của HoaDon và ID của các nested objects\n\n" +
+                    "Lưu ý: Số lượng được tính theo số bản ghi chi tiết hoá đơn\n\n" +
+                    "Lưu ý: Tổng số tền được tinh theo tổng giá tiền hiện tại của Ghế\n\n" +
+                    "Lưu ý: Thời gian thanh toán lấy từ object HoaDop tu Parameter\n\n" +
+                    "Lưu ý: Thời gian thanh toán sẽ được cập nhật khi thanh toán thành công\n\n" +
+                    "Lưu ý: Số lượng được tính theo số bản ghi chi tiết hoá đơn\n\n" +
+                    "Lưu ý: Trạng thái mặc định là 0\n\n" +
                     "Không yêu cầu PTTT")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
@@ -228,8 +234,8 @@ public class HoaDonController {
         blankHoaDon.setChiTietHoaDonList(hoaDon.getChiTietHoaDonList());
         blankHoaDon.setPhim(hoaDon.getPhim());
         blankHoaDon.setVoucher(hoaDon.getVoucher());
-        blankHoaDon.setSoLuong(hoaDon.getSoLuong());
-        blankHoaDon.setThoiGianThanhToan(null);
+        blankHoaDon.setSoLuong(hoaDon.getChiTietHoaDonList().size());
+        blankHoaDon.setThoiGianThanhToan(hoaDon.getThoiGianThanhToan());
         blankHoaDon.setDiem(0);
         blankHoaDon.setTongSoTien(new BigDecimal(0));
         blankHoaDon.setTrangThaiHoaDon(0);
@@ -254,6 +260,7 @@ public class HoaDonController {
         }
         return true;
     }
+
 
     /**
      * Tìm kếm hoaDon theo ID

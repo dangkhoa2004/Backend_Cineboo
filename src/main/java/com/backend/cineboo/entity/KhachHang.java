@@ -24,6 +24,9 @@ public class KhachHang {
     @JoinColumn(name = "ID_PHANLOAI")
     private PhanLoaiKhachHang phanLoaiKhachHang;
 
+    @Column(name="MAKHACHHANG")
+    private String maKhachHang;
+
     @Column(name = "TEN") // Specify the uppercase column name
     private String ten;
 

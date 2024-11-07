@@ -28,6 +28,11 @@ public class SecurityConfig {
                         "/swagger-resources/**",
                         "/swagger-resources",
                         "/swagger-ui/**").permitAll()
+                .requestMatchers(HttpMethod.POST,"/payos/**").permitAll()
+                .requestMatchers(HttpMethod.POST,"/css/**").permitAll()
+                .requestMatchers(HttpMethod.POST,"/payos/test").permitAll()
+                .requestMatchers(HttpMethod.GET,"/payos/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/payos/test").permitAll()
                 .requestMatchers(HttpMethod.POST, "api/user/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "phim/get").permitAll()
                 .requestMatchers(HttpMethod.GET, "/phim/get").permitAll()
@@ -38,7 +43,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/phim/find/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "phim/add").permitAll()
                 .requestMatchers(HttpMethod.PUT, "phim/update").permitAll()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
