@@ -1,7 +1,9 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.entity.HoaDon;
+import com.backend.cineboo.entity.KhachHang;
 import com.backend.cineboo.repository.HoaDonRepository;
+import com.backend.cineboo.repository.KhachHangRepository;
 import com.backend.cineboo.utility.RepoUtility;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +25,7 @@ import vn.payos.type.ItemData;
 import vn.payos.type.PaymentData;
 import vn.payos.type.PaymentLinkData;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -33,12 +36,15 @@ import java.util.Map;
 @RequestMapping("/payos")
 public class CheckoutController {
 
-    @Autowired
+
     private final PayOS payOS;
 
 
     @Autowired
     HoaDonRepository hoaDonRepository;
+
+    @Autowired
+    KhachHangRepository khachHangRepository;
 
     public CheckoutController(PayOS payOS) {
         super();
@@ -55,7 +61,7 @@ public class CheckoutController {
     public String Cancel() {
         return "cancel";
     }
-
+    //The above two methods are for running on local
 
     @Operation(summary = "Chuyển hướng tới trang thanh toán",
             description = "Điều hướng Client(API Caller) trực tiếp thay vì trả về ResponseEntity chứa URL")
@@ -74,7 +80,11 @@ public class CheckoutController {
     @Operation(summary = "Trả về URLs liên quan tới thanh toán",
             description = "Trả về ResponseEntity cho Client(API Caller)\n\n" +
                     "Chỉ chứa thông tin cơ bản cần thiết\n\n" +
-                    "Liên hệ lập trình viên để đưa thêm thông tin vào\n\n")
+                    "Liên hệ lập trình viên để đưa thêm thông tin vào\n\n"+
+                    "LƯU Ý: Mỗi MÃ HOÁ ĐƠN CHỈ ĐƯỢC TẠO 1 LINK THANH TOÁN\n\n"+
+                    "LƯU Ý: CÓ THỂ FAKE HOÁ ĐƠN MỚI ĐỂ THANH TOÁN\n\n"+
+                    "LƯU Ý: HOẶC ĐỢI HOÁ ĐƠN CŨ HẾT HẠN(XEM TRÊN PAYOS)\n\n"
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Tạo URL thanh toán thành công"),
             @ApiResponse(responseCode = "500", description = "Lỗi khởi tạo URL thanh toán")
@@ -152,7 +162,16 @@ public class CheckoutController {
         return url;
     }
 
-    @DeleteMapping("/cancel/{orderId}")
+
+    @Operation(summary = "huỷ hoá đơn thanh toán",
+            description = "Nhận dữ liệu trả về từ PayOS khi thanh huỷ thành công\n\n" +
+                    "Và thực hiện thay đổi dữ liệu trong DB\n\n" )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hoá đơn thanh toán"),
+            @ApiResponse(responseCode = "500", description = "Không tìm được Hoá đơn thanh toán"),
+            @ApiResponse(responseCode = "429", description = "Quá nhiều request được gửi"),
+    })
+    @PutMapping("/cancel/{orderId}")
     public ResponseEntity<?> cancelPayment(
             @PathVariable Long orderId,
             @RequestParam(value = "cancellationReason", required = false) String cancellationReason) {
@@ -193,6 +212,14 @@ public class CheckoutController {
         }
     }
 
+    @Operation(summary = "Tìm hoá đơn thanh toán bằng Mã hoá đơn của HoaDon",
+            description = "Nhận dữ liệu trả về từ PayOS khi thanh toán thành công\n\n" +
+                    "Và thực hiện ngắt Webhook\n\n" )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hoá đơn thanh toán"),
+            @ApiResponse(responseCode = "500", description = "Không tìm được Hoá đơn thanh toán"),
+            @ApiResponse(responseCode = "429", description = "Quá nhiều request được gửi"),
+    })
     @GetMapping("/get/{orderId}")
     public ResponseEntity<?> getPaymentByOrderId(@PathVariable Long orderId) {
 
@@ -221,7 +248,13 @@ public class CheckoutController {
         }
     }
 
-    @PostMapping(path = "/confirm-webhook")
+    @Operation(summary = "Hàm nhận dữ liệu trả về từ PayOS",
+            description = "Nhận dữ liệu trả về từ PayOS khi thanh toán thành công\n\n" +
+                    "Và thực hiện ngắt Webhook\n\n" )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Đã thanh toán"),
+    })
+            @PostMapping(path = "/confirm-webhook")
     public ResponseEntity confirmWebhook(@RequestBody String requestBody) {
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -234,15 +267,16 @@ public class CheckoutController {
             String maHoaDon = "HD00" + dataNode.get("orderCode").asText();
             HoaDon hoaDon = hoaDonRepository.getByMaHoaDon(maHoaDon).orElse(null);
             if (hoaDon != null) {
+                //Set setable stuff
                 hoaDon.setThoiGianThanhToan(LocalDateTime.now());
                 hoaDon.setTrangThaiHoaDon(1);
                 hoaDon.getChiTietHoaDonList().stream().forEach(e -> e.setTrangThaiChiTietHoaDon(1));
                 //Thêm điểm vào ĐÂY
                 //Thay vào số 0
-                hoaDon.setDiem(hoaDon.getDiem() + 0);
+                int point = hoaDon.getDiem() + (hoaDon.getTongSoTien().multiply(BigDecimal.ONE.divide(BigDecimal.TEN.multiply(BigDecimal.TEN)))).intValue();
+                hoaDon.setDiem(point);
+                hoaDon.getKhachHang().setDiem(point);
                 hoaDonRepository.save(hoaDon);
-            } else {
-                throw new Exception("Thanh toán thành công nhưng Hoá đơn không tồn tại trong DB");
             }
             // Trả về phản hồi đã được đóng gói trong ResponseEntity\
             return ResponseEntity.status(HttpStatus.OK).body(jsonNode);
