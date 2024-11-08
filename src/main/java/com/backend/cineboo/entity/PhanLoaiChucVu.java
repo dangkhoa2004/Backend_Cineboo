@@ -12,7 +12,7 @@ import lombok.*;
  * @author 04dkh
  */
 @Entity
-@Table(name = "PhanLoaiChucVu")
+@Table(name = "PHANLOAICHUCVU")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,13 +21,15 @@ public class PhanLoaiChucVu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false, length = 15)
+
+    @Column(nullable = false, length = 15,name="MACHUCVU")
     private String maChucVu;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false, length = 150, name="TENCHUCVU")
     private String tenChucVu;
 
-    private Integer trangThai;
+    @Column(name="TRANGTHAIPHANLOAICHUCVU")
+    private Integer trangThaiPhanLoaiChucVu;
 }

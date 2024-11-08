@@ -1,6 +1,8 @@
 package com.backend.cineboo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,45 +26,61 @@ public class KhachHang {
     @JoinColumn(name = "ID_PHANLOAI")
     private PhanLoaiKhachHang phanLoaiKhachHang;
 
-    @Column(name="MAKHACHHANG")
+    @JsonIgnoreProperties("matKhau")
+    @OneToOne
+    @JoinColumn(name = "ID_TAIKHOAN")
+    private TaiKhoan taiKhoan;
+
+    @NotBlank
+    @Size(max = 15)
+    @Column(name = "MAKHACHHANG", nullable = false)
     private String maKhachHang;
 
-    @Column(name = "TEN") // Specify the uppercase column name
+    @NotBlank
+    @Size(max = 15)
+    @Column(name = "TEN", nullable = false)
     private String ten;
 
-    @Column(name = "TENDEM") // Specify the uppercase column name
+    @Size(max = 50)
+    @Column(name = "TENDEM")
     private String tenDem;
 
-    @Column(name = "HO") // Specify the uppercase column name
+    @NotBlank
+    @Size(max = 50)
+    @Column(name = "HO", nullable = false)
     private String ho;
 
-    @Column(name = "NGAYSINH") // Specify the uppercase column name
+    @NotNull
+    @Column(name = "NGAYSINH", nullable = false)
     private LocalDate ngaySinh;
 
-    @Column(name = "SODIENTHOAI") // Specify the uppercase column name
+    @NotBlank
+    @Size(min = 10, max = 10)
+    @Column(name = "SODIENTHOAI", nullable = false)
     private String soDienThoai;
 
-    @Column(name = "GIOITINH") // Specify the uppercase column name
+    @NotNull
+    @Column(name = "GIOITINH", nullable = false)
     private Integer gioiTinh;
 
-    @Column(name = "EMAIL") // Specify the uppercase column name
+    @NotBlank
+    @Email
+    @Size(max = 255)
+    @Column(name = "EMAIL", nullable = false)
     private String email;
 
-    @Column(name = "TAIKHOAN") // Specify the uppercase column name
-    private String taiKhoan;
-
-    @Column(name = "MATKHAU") // Specify the uppercase column name
-    private String matKhau;
-
-    @Column(name = "DANTOC") // Specify the uppercase column name
+    @Size(max = 75)
+    @Column(name = "DANTOC")
     private String danToc;
 
-    @Column(name = "DIACHI") // Specify the uppercase column name
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "DIACHI", nullable = false)
     private String diaChi;
 
-    @Column(name = "DIEM") // Specify the uppercase column name
+    @Column(name = "DIEM")
     private Integer diem;
 
-    @Column(name = "TRANGTHAI") // Specify the uppercase column name
+    @Column(name = "TRANGTHAIKHACHHANG")
     private Integer trangThaiKhachHang;
 }
