@@ -9,14 +9,14 @@ import org.springframework.context.annotation.PropertySource;
 @SpringBootApplication
 public class Application {
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
-		PublicMeBaby ngrokService = new PublicMeBaby();
-		String ngrokUrl = ngrokService.startNgrok();
-		System.out.println("Tạo tài khoản PayOS");
-		System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");
-		System.out.println("Điển URL phía dưới vào mục Webhook");
-		System.out.println("URL public: " + ngrokUrl+"/payos/confirm-webhook");
+//		PublicMeBaby ngrokService = new PublicMeBaby();
+//		String ngrokUrl = ngrokService.startNgrok();
+//		System.out.println("Tạo tài khoản PayOS");
+//		System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");
+//		System.out.println("Điển URL phía dưới vào mục Webhook");
+//		System.out.println("URL public: " + ngrokUrl+"/payos/confirm-webhook");
 	}
 
 }
