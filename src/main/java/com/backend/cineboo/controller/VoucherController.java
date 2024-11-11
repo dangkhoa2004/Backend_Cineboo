@@ -130,8 +130,10 @@ public class VoucherController {
         return response;
     }
 
-    @Operation(summary = "Find voucher by column and value",
-            description = "Supports searching by column name and value.")
+    @Operation(summary = "Phương thức hỗ trợ tìm kiếm theo cột",
+            description = "Hỗ trợ các cột sau:\n\n" +
+                    "findByMaVoucher: column=MaVoucher, value = ?\n\n")
+
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity"),
             @ApiResponse(responseCode = "404", description = "Not found"),
@@ -148,7 +150,7 @@ public class VoucherController {
             @ApiResponse(responseCode = "200", description = "Entity"),
             @ApiResponse(responseCode = "404", description = "Not found"),
             @ApiResponse(responseCode = "500", description = "Internal error")})
-    @GetMapping("/availability/{id}")
+    @GetMapping("/availability/{maVoucher}")
     public ResponseEntity isVoucherAvailable(@PathVariable String maVoucher) {
         Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
         if (voucher != null) {
@@ -184,22 +186,22 @@ public class VoucherController {
                 || now.isAfter(end)
                 || now.isBefore(start)
                 || trangThai == 0
-        ){
+        ) {
             return null;
         }
-            if (voucher.getTruTienPhanTram() != null) {
-                BigDecimal discountPercentage = BigDecimal.valueOf(voucher.getTruTienPhanTram()).divide(BigDecimal.valueOf(100)); // Assuming it is a percentage
-                BigDecimal discountAmount = originalPrice.multiply(discountPercentage);
-                if(discountAmount.compareTo(maximum)>0){
-                    discountAmount=maximum;
-                }
-                finalPrice = originalPrice.subtract(discountAmount);
-            } else if (voucher.getTruTienSo() != null) {
-                BigDecimal absoluteDiscount = voucher.getTruTienSo();
-                finalPrice = originalPrice.subtract(absoluteDiscount);
-            } else {
-                return null;
+        if (voucher.getTruTienPhanTram() != null) {
+            BigDecimal discountPercentage = BigDecimal.valueOf(voucher.getTruTienPhanTram()).divide(BigDecimal.valueOf(100)); // Assuming it is a percentage
+            BigDecimal discountAmount = originalPrice.multiply(discountPercentage);
+            if (discountAmount.compareTo(maximum) > 0) {
+                discountAmount = maximum;
             }
+            finalPrice = originalPrice.subtract(discountAmount);
+        } else if (voucher.getTruTienSo() != null) {
+            BigDecimal absoluteDiscount = voucher.getTruTienSo();
+            finalPrice = originalPrice.subtract(absoluteDiscount);
+        } else {
+            return null;
+        }
         // Ensure the final price does not go below zero
         if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
             finalPrice = BigDecimal.ZERO;
@@ -208,25 +210,33 @@ public class VoucherController {
         return finalPrice; // Return the calculated final price
     }
 
-    public void decreaseVoucherCount(String maVoucher){
-       Voucher voucher= voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
-       if(voucher.getSoLuong()>0){
-           //Duplicate logic from sql and java, i know
-           //But what if SQL query fuck itself up, what then?
-           voucher.setSoLuong(voucher.getSoLuong()-1);
-           voucherRepository.save(voucher);
-       }
-    }
-    public void increaseVoucherCount(String maVoucher){
-        Voucher voucher= voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
-        if(voucher!=null){
+    public void decreaseVoucherCount(String maVoucher) {
+        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+        if (voucher.getSoLuong() > 0) {
             //Duplicate logic from sql and java, i know
             //But what if SQL query fuck itself up, what then?
-            voucher.setSoLuong(voucher.getSoLuong()+1);
+            voucher.setSoLuong(voucher.getSoLuong() - 1);
             voucherRepository.save(voucher);
         }
     }
 
+    public void increaseVoucherCount(String maVoucher) {
+        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+        if (voucher != null) {
+            //Duplicate logic from sql and java, i know
+            //But what if SQL query fuck itself up, what then?
+            voucher.setSoLuong(voucher.getSoLuong() + 1);
+            voucherRepository.save(voucher);
+        }
+    }
+
+
+    @Operation(summary = "Đổi voucher",
+            description = "Đổi voucher bằng điểm ngưởi dùng")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity"),
+            @ApiResponse(responseCode = "404", description = "Not found"),
+            @ApiResponse(responseCode = "500", description = "Internal error")})
     @PutMapping("/exchange/{khachHangId}")
     public ResponseEntity exchangePointsForVoucher(@PathVariable Long khachHangId, @RequestParam String maVoucher) {
         if (StringUtils.isEmpty(maVoucher)) {
@@ -236,6 +246,7 @@ public class VoucherController {
         if (voucher == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tồn tại voucher");
         }
+
         KhoQua khoQua = new KhoQua();
         khoQua.setVoucher(voucher);
         ResponseEntity response = RepoUtility.findById(khachHangId, khachHangRepository);
@@ -243,11 +254,32 @@ public class VoucherController {
             //Lưu vào kho quà
             KhachHang khachHang = (KhachHang) response.getBody();
             khoQua.setKhachHang(khachHang);
+            //Check điểm của người dùng đã
+            int originalPoint = khachHang.getDiem();
+            int decreaseAmount = voucher.getGiaTriDoi();
+            if (originalPoint >= decreaseAmount) {
+                khachHang.setDiem(khachHang.getDiem() - voucher.getGiaTriDoi());
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Không đủ điểm");
+            }
             khoQua = khoQuaReposiory.save(khoQua);
             decreaseVoucherCount(maVoucher);
             return ResponseEntity.status(HttpStatus.OK).body(khoQua);
         }
         return response;
 
+    }
+
+
+    @Operation(summary = "Tìm theo ID khách hàng",
+            description = "Tìm voucher theo ID khách hàng\n\n" +
+                    "Trả về array.size==0 nếu không có bản ghi")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity"),
+            @ApiResponse(responseCode = "404", description = "Not found"),
+            @ApiResponse(responseCode = "500", description = "Internal error")})
+    @GetMapping("/find/khachhang/{id_khachHang}")
+    public ResponseEntity findID_KhachHang(@PathVariable Long id_khachHang) {
+        return ResponseEntity.ok(voucherRepository.findByID_KhachHang(id_khachHang));
     }
 }

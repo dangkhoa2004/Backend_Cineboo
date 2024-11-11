@@ -11,7 +11,7 @@ import lombok.*;
  * @author 04dkh
  */
 @Entity
-@Table(name = "KhoQua")
+@Table(name = "KHOQUA")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,13 +19,13 @@ import lombok.*;
 public class KhoQua {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "ID_KhachHang")
+    @JoinColumn(name = "ID_KHACHHANG")
     private KhachHang khachHang;
 
     @ManyToOne
-    @JoinColumn(name = "ID_Voucher")
+    @JoinColumn(name = "ID_VOUCHER")
     private Voucher voucher;
 }
