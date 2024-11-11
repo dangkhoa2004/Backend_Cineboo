@@ -1,6 +1,7 @@
 package com.backend.cineboo.utility;
 
 import com.backend.cineboo.entity.KhachHang;
+import com.backend.cineboo.entity.TaiKhoan;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -43,9 +44,9 @@ public class JWTUtil {
         return expiration.before(new Date());
     }
 
-    public boolean validateToken(String token, KhachHang user) {
+    public boolean validateToken(String token, TaiKhoan taiKhoan) {
         final String username = extractUsername(token);
-        return (username.equals(user.getTaiKhoan()) && !isTokenExpired(token));
+        return (username.equals(taiKhoan.getTenDangNhap()) && !isTokenExpired(token));
     }
 
 }

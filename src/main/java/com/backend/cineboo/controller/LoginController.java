@@ -2,10 +2,16 @@ package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.LoginDTO;
 import com.backend.cineboo.entity.KhachHang;
+import com.backend.cineboo.entity.NhanVien;
+import com.backend.cineboo.entity.TaiKhoan;
 import com.backend.cineboo.repository.KhachHangRepository;
+import com.backend.cineboo.repository.NhanVienRepository;
+import com.backend.cineboo.repository.TaiKhoanRepository;
 import com.backend.cineboo.utility.JWTUtil;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
+import org.apache.commons.lang3.StringUtils;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +40,12 @@ public class LoginController {
     @Autowired
     KhachHangRepository khachHangRepository;
 
+    @Autowired
+    NhanVienRepository nhanVienRepository;
+
+    @Autowired
+    TaiKhoanRepository taiKhoanRepository;
+
     @Operation(summary = "Đăng nhập người dùng",
             description = "Gửi thông tin đăng nhập (username, password) và nhận token nếu thông tin hợp lệ.")
     @ApiResponses(value = {
@@ -41,28 +53,61 @@ public class LoginController {
             @ApiResponse(responseCode = "401", description = "Tài khoản không hợp lệ")
     })
     @PostMapping("/user/login")
-    //Gimme username
-    //Gimme password
-    //Gimme secret code
-    //I give you token if correct
+//    Gimme username
+//    Gimme password
+//    Gimme secret code
+//    I give you token if correct
     public ResponseEntity login(@RequestBody LoginDTO request) {
-        String username = request.getUsername();
-        KhachHang khachHang = khachHangRepository.findByTaiKhoan(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
+        String inputUsername = request.getUsername().trim();
+        String inputPassword = request.getPassword().trim();
 
-        if (khachHang.getMatKhau().equals(request.getPassword())) {
-            String token = JWTUtil.generateToken(khachHang.getTaiKhoan());
-            System.out.println("token is: " + token);
-            Map<String,String> success = new HashMap<>();
-            success.put("username",username);
+        if(StringUtils.isEmpty(inputPassword)|| StringUtils.isEmpty(inputUsername)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được thông tin đăng nhập");
+        }
+        TaiKhoan taiKhoan = taiKhoanRepository.findByTenDangNhap(request.getUsername()).orElse(null);
+        String dbHashedPassword = taiKhoan.getMatKhau().trim();
+        String dbUsername=taiKhoan.getTenDangNhap().trim();
+        Long dbIdTaiKhoan = taiKhoan.getId();
+
+        //1 là nhân viên
+        //2 là khách hàng
+        Long phanLoaiTaiKhoan =taiKhoan.getPhanLoaiTaiKhoan().getId();
+        Integer trangThaiTaiKHoan = taiKhoan.getTrangThaiTaiKhoan();
+        if(trangThaiTaiKHoan==0){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản đã bị vô hiệu hoá");
+        }
+        if(taiKhoan==null){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản hoặc mật khẩu không chính xác");
+        }
+        if (dbUsername.equals(inputUsername) && !StringUtils.isEmpty(dbHashedPassword) && BCrypt.checkpw(inputPassword,dbHashedPassword)) {
+            String token = JWTUtil.generateToken(inputUsername);
+            Map success = new HashMap<>();
+            success.put("TenTaiKhoan",dbUsername);
             success.put("token","Bearer "+token);
-            System.out.println("BTW: By extracting this ass token, i got username:");
-            System.out.println(JWTUtil.extractUsername(token));
+            if(phanLoaiTaiKhoan==1){
+                NhanVien nhanVien = nhanVienRepository.findByID_TaiKhoan(dbIdTaiKhoan).orElse(null);
+                if(nhanVien!=null){
+                    success.put("nhanVien",nhanVien);
+                }else{
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile không tồn tại");
+                }
+            }else if(phanLoaiTaiKhoan==2){
+                KhachHang khachHang = khachHangRepository.findByID_TaiKhoan(dbIdTaiKhoan).orElse(null);
+                if(khachHang!=null){
+                    success.put("khachHang",khachHang);
+                }
+                else{
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile không tồn tại");
+                }
+            }else{
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Không xác định được loại tài khoản");
+            }
             return ResponseEntity.ok(success);
         }
-        System.out.println("This is so ass. Function failed");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai tài khoản hoặc mật khẩu");
     }
+
+
 
     //Method to test token
     //Add "Bearer" prefix before your token

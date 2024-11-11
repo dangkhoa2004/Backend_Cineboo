@@ -92,7 +92,7 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        UTILITY-->
+        <!--        UTILITY-->
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
@@ -100,7 +100,7 @@
         </dependency>
         <!--        UTILITY-->
 
-<!--        Documentation-->
+        <!--        Documentation-->
 
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -110,7 +110,7 @@
         <!--        Documentation-->
 
 
-<!--        PAYOS related Dependencies-->
+        <!--        PAYOS related Dependencies-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -142,8 +142,8 @@
             <artifactId>payos-java</artifactId>
             <version>1.0.3</version>
         </dependency>
-<!--        PAYOS Dependencies-->
-<!--        NGROK for Publishing API Stuff-->
+        <!--        PAYOS Dependencies-->
+        <!--        NGROK for Publishing API Stuff-->
         <dependency>
             <groupId>com.ngrok</groupId>
             <artifactId>ngrok-java</artifactId>
@@ -151,7 +151,16 @@
         </dependency>
         <!--        NGROK for Publishing API Stuff-->
 
+        <!--SALTING AND HASHING PASSWORD-->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
+        <!--SALTING AND HASHING PASSWORD-->
     </dependencies>
+
 
     <build>
         <plugins>

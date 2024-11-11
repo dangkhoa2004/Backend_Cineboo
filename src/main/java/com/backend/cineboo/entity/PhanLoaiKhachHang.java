@@ -29,8 +29,8 @@ public class PhanLoaiKhachHang {
     @Column(nullable = false, length = 15, name = "MAKHACHHANG")
     private String maKhachHang;
 
-    @Column(nullable = false, length = 100, name = "LOAIKHACHHANG")
-    private String loaiKhachHang;
+    @Column(nullable = false, length = 100, name = "TENPHANLOAIKHACHHANG")
+    private String tenPhanLoaiKhachHang;
 
 
     //Sử dụng Transient để tạm thời bỏ qua thuộc tính này

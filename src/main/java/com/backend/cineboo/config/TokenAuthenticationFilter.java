@@ -1,11 +1,12 @@
 package com.backend.cineboo.config;
 
-import com.backend.cineboo.repository.KhachHangRepository;
+import com.backend.cineboo.repository.TaiKhoanRepository;
 import com.backend.cineboo.utility.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,13 +18,16 @@ import java.util.ArrayList;
 @Component
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
-    private final KhachHangRepository khachHangRepository;
-    private final JWTUtil jwtUtil;
+    @Autowired
+    private  TaiKhoanRepository taiKhoanRepository;
 
-    public TokenAuthenticationFilter(KhachHangRepository khachHangRepository, JWTUtil jwtUtil) {
-        this.khachHangRepository = khachHangRepository;
-        this.jwtUtil = jwtUtil;
-    }
+    @Autowired
+    private  JWTUtil jwtUtil;
+
+//    public TokenAuthenticationFilter(TaiKhoanRepository taiKhoanRepository, JWTUtil jwtUtil) {
+//        this.taiKhoanRepository = taiKhoanRepository;
+//        this.jwtUtil = jwtUtil;
+//    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -33,10 +37,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             String cutToken = token.substring(7);
             String username = jwtUtil.extractUsername(cutToken);
             if (username != null) {
-                khachHangRepository.findByTaiKhoan(username).ifPresent(khachHang -> {
-                    if (jwtUtil.validateToken(cutToken, khachHang)) {
+                taiKhoanRepository.findByTenDangNhap(username).ifPresent(taiKhoan -> {
+                    if (jwtUtil.validateToken(cutToken, taiKhoan)) {
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                                khachHang.getTaiKhoan(), null, new ArrayList<>()
+                                taiKhoan.getTenDangNhap(), null, new ArrayList<>()
                         );
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
