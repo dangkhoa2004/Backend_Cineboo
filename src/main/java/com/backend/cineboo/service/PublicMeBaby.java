@@ -15,8 +15,8 @@ import java.net.URL;
 @Configuration
 public class PublicMeBaby {
 
-    @Value(value = "${NGROK_TOKEN}")
-    private String ngrokToken="FILL NGROK TOKEN HERE";
+//    @Value(value = "${NGROK_TOKEN}")
+    private String ngrokToken="2ognSI3bpzsKouW2bejjuFGzcXj_2CNCVGYiiCFgfxUV9Vkf9";
 
     public String startNgrok() throws Exception {
         // Ensure the token is set
@@ -60,15 +60,15 @@ public class PublicMeBaby {
 
         return publicUrl;
     }
-    @EventListener(ContextRefreshedEvent.class)
-    public void contextRefreshedEvent() throws Exception {
-        PublicMeBaby ngrokService = new PublicMeBaby();
-        String ngrokUrl = ngrokService.startNgrok();
-        System.out.println("Tạo tài khoản PayOS");
-        System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");
-        System.out.println("Điển URL phía dưới vào mục Webhook");
-        System.out.println("URL public: " + ngrokUrl+"/payos/confirm-webhook");
-    }
+//    @EventListener(ContextRefreshedEvent.class)
+//    public void contextRefreshedEvent() throws Exception {
+//        PublicMeBaby ngrokService = new PublicMeBaby();
+//        String ngrokUrl = ngrokService.startNgrok();
+//        System.out.println("Tạo tài khoản PayOS");
+//        System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");
+//        System.out.println("Điển URL phía dưới vào mục Webhook");
+//        System.out.println("URL public: " + ngrokUrl+"/payos/confirm-webhook");
+//    }
 
 
 }

@@ -70,6 +70,9 @@ public class Voucher {
     @Column(name = "NGAYKETTHUC")
     private LocalDate ngayKetThuc;
 
+    @Column(name="SOLUONG")
+    private Integer soLuong;
+
     @Column(name = "TRANGTHAIVOUCHER")
     private Integer trangThaiVoucher;
 }

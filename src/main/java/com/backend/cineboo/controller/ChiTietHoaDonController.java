@@ -157,7 +157,7 @@ public class ChiTietHoaDonController {
 
         //After confirming that Invoice Detail is okay-ish
         //Create it anew and add it to db
-        ChiTietHoaDon blankChiTietHoaDon = createBlankInvoiceDetail(chiTietHoaDon);
+        ChiTietHoaDon blankChiTietHoaDon = createBlankInvoiceDetail(chiTietHoaDon,chiTietHoaDon.getHoaDon());
         return ResponseEntity.status(HttpStatus.OK).body(chiTietHoaDonRepository.save(blankChiTietHoaDon));
     }
 
@@ -168,9 +168,9 @@ public class ChiTietHoaDonController {
      * @param chiTietHoaDon
      * @return
      */
-    public ChiTietHoaDon createBlankInvoiceDetail(ChiTietHoaDon chiTietHoaDon){
+    public ChiTietHoaDon createBlankInvoiceDetail(ChiTietHoaDon chiTietHoaDon,HoaDon hoaDon){
         ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
-        blankChiTietHoaDon.setHoaDon(chiTietHoaDon.getHoaDon());
+        blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
         blankChiTietHoaDon.setGhe(chiTietHoaDon.getGhe());
         blankChiTietHoaDon.setTrangThaiChiTietHoaDon(chiTietHoaDon.getTrangThaiChiTietHoaDon());
         return chiTietHoaDonRepository.save(blankChiTietHoaDon);

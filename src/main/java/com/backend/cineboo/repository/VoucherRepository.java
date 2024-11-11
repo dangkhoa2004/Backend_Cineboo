@@ -16,7 +16,7 @@ public interface VoucherRepository extends JpaRepository<Voucher, Long> {
             + "  AND (NgayBatDau IS NULL OR NgayBatDau <= CURDATE())"
             + " AND (NgayKetThuc IS NULL OR NgayKetThuc >= CURDATE()) LIMIT 1"
             , nativeQuery = true)
-    Optional<Voucher> checkAvailabilityByMaVoucher(Long maVoucher);
+    Optional<Voucher> checkAvailabilityByMaVoucher(String maVoucher);
 
 
 }
