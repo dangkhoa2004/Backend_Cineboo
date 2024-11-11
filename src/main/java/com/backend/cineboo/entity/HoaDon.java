@@ -33,7 +33,7 @@ public class HoaDon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id ;
 
     @ManyToOne
     @JoinColumn(name = "ID_KHACHHANG")

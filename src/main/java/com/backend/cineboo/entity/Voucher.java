@@ -32,7 +32,7 @@ public class Voucher {
     @Size(min =1, max = 15)
     @Column(name = "MAVOUCHER")
     @NotBlank
-    private String maVoucher;
+    private String maVoucher ;
 
     @Range(min = 1)
     @Column(name = "GIATRIDOI")

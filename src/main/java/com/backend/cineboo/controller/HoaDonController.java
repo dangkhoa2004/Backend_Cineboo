@@ -196,7 +196,7 @@ public class HoaDonController {
                     "Lưu ý: Trạng thái mặc định là 0\n\n" +
                     "Không yêu cầu PTTT")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
+            @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao") ,
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PostMapping("/add")
