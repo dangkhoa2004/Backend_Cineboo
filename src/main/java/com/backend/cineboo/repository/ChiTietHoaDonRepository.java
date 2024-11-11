@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface ChiTietHoaDonRepository extends JpaRepository<ChiTietHoaDon,Long> {
     @Query(value=" SELECT DISTINCT SUM(g.GiaTien) " +
             " FROM chitiethoadon JOIN ghe g on g.ID = chitiethoadon.ID_Ghe " +
-            " WHERE chitiethoadon.ID= ? ",nativeQuery = true)
+            " WHERE chitiethoadon.ID_HoaDon = ? ",nativeQuery = true)
     Optional<BigDecimal> getFinalPrice(Long chiTietHoaDonId);
 }

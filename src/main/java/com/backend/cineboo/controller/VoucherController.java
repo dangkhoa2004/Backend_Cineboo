@@ -1,7 +1,11 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.entity.HoaDon;
+import com.backend.cineboo.entity.KhachHang;
+import com.backend.cineboo.entity.KhoQua;
 import com.backend.cineboo.entity.Voucher;
+import com.backend.cineboo.repository.KhachHangRepository;
+import com.backend.cineboo.repository.KhoQuaReposiory;
 import com.backend.cineboo.repository.VoucherRepository;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
@@ -13,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.apache.catalina.connector.Response;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +26,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +43,12 @@ public class VoucherController {
 
     @Autowired
     private VoucherRepository voucherRepository;
+
+    @Autowired
+    private KhoQuaReposiory khoQuaReposiory;
+
+    @Autowired
+    private KhachHangRepository khachHangRepository;
 
     @Operation(summary = "Get all vouchers",
             description = "Returns a list of all vouchers in the system.")
@@ -129,40 +141,113 @@ public class VoucherController {
         return RepoUtility.findByCustomColumn(voucherRepository, columnName, value);
     }
 
+
+    @Operation(summary = "Kiểm tra tính khả dụng của voucher",
+            description = "Kiểm tra tinh khả dụng dựa trên số lượng, thời hạn, Tính sẵn có.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity"),
+            @ApiResponse(responseCode = "404", description = "Not found"),
+            @ApiResponse(responseCode = "500", description = "Internal error")})
     @GetMapping("/availability/{id}")
-    public ResponseEntity isVoucherAvailable(@PathVariable Long voucherId) {
-        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(voucherId).orElse(null);
+    public ResponseEntity isVoucherAvailable(@PathVariable String maVoucher) {
+        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
         if (voucher != null) {
             return ResponseEntity.ok(voucher);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher không khả dụng");
     }
 
-    public BigDecimal applyVoucher(Long voucherId, HoaDon hoadon) {
-        ResponseEntity response = isVoucherAvailable(voucherId);
-        if (response.getStatusCode().is2xxSuccessful()) {
-            Voucher voucher = (Voucher) response.getBody();
-            BigDecimal originalPrice = hoadon.getTongSoTien();
-            BigDecimal finalPrice = BigDecimal.ZERO;
+    public BigDecimal getDiscountAmount(String maVoucher, HoaDon hoadon) {
 
+        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+        if (voucher == null) {
+            return null;
+        }
+        //Already checked by SQL Query
+        //But this is not a DB Management Program
+        //This is a Java application
+        //We don't trust those filthy DB queries here on important things like money
+        BigDecimal minimum = voucher.getSoTienToiThieu();
+        BigDecimal maximum = voucher.getGiamToiDa();
+        int soLuong = voucher.getSoLuong();
+        int trangThai = voucher.getTrangThaiVoucher();
+        LocalDate now = LocalDate.now();
+        LocalDate start = voucher.getNgayBatDau();
+        LocalDate end = voucher.getNgayKetThuc();
+
+
+        BigDecimal originalPrice = hoadon.getTongSoTien();
+        BigDecimal finalPrice = BigDecimal.ZERO;
+
+        if (originalPrice.compareTo(minimum) < 0
+                || soLuong <= 0
+                || now.isAfter(end)
+                || now.isBefore(start)
+                || trangThai == 0
+        ){
+            return null;
+        }
             if (voucher.getTruTienPhanTram() != null) {
                 BigDecimal discountPercentage = BigDecimal.valueOf(voucher.getTruTienPhanTram()).divide(BigDecimal.valueOf(100)); // Assuming it is a percentage
                 BigDecimal discountAmount = originalPrice.multiply(discountPercentage);
-                finalPrice = finalPrice.subtract(discountAmount);
+                if(discountAmount.compareTo(maximum)>0){
+                    discountAmount=maximum;
+                }
+                finalPrice = originalPrice.subtract(discountAmount);
             } else if (voucher.getTruTienSo() != null) {
                 BigDecimal absoluteDiscount = voucher.getTruTienSo();
-                finalPrice = finalPrice.subtract(absoluteDiscount);
+                finalPrice = originalPrice.subtract(absoluteDiscount);
             } else {
                 return null;
             }
-                // Ensure the final price does not go below zero
-                if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
-                    finalPrice = BigDecimal.ZERO;
-                }
+        // Ensure the final price does not go below zero
+        if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
+            finalPrice = BigDecimal.ZERO;
+        }
 
-                return finalPrice; // Return the calculated final price
-            }
-        return null;
+        return finalPrice; // Return the calculated final price
     }
 
+    public void decreaseVoucherCount(String maVoucher){
+       Voucher voucher= voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+       if(voucher.getSoLuong()>0){
+           //Duplicate logic from sql and java, i know
+           //But what if SQL query fuck itself up, what then?
+           voucher.setSoLuong(voucher.getSoLuong()-1);
+           voucherRepository.save(voucher);
+       }
+    }
+    public void increaseVoucherCount(String maVoucher){
+        Voucher voucher= voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+        if(voucher!=null){
+            //Duplicate logic from sql and java, i know
+            //But what if SQL query fuck itself up, what then?
+            voucher.setSoLuong(voucher.getSoLuong()+1);
+            voucherRepository.save(voucher);
+        }
+    }
+
+    @PutMapping("/exchange/{khachHangId}")
+    public ResponseEntity exchangePointsForVoucher(@PathVariable Long khachHangId, @RequestParam String maVoucher) {
+        if (StringUtils.isEmpty(maVoucher)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thiếu mã voucher");
+        }
+        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+        if (voucher == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tồn tại voucher");
+        }
+        KhoQua khoQua = new KhoQua();
+        khoQua.setVoucher(voucher);
+        ResponseEntity response = RepoUtility.findById(khachHangId, khachHangRepository);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            //Lưu vào kho quà
+            KhachHang khachHang = (KhachHang) response.getBody();
+            khoQua.setKhachHang(khachHang);
+            khoQua = khoQuaReposiory.save(khoQua);
+            decreaseVoucherCount(maVoucher);
+            return ResponseEntity.status(HttpStatus.OK).body(khoQua);
+        }
+        return response;
+
+    }
 }

@@ -33,7 +33,7 @@ public class HoaDon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id ;
 
     @ManyToOne
     @JoinColumn(name = "ID_KHACHHANG")
@@ -74,13 +74,13 @@ public class HoaDon {
     @Column(name = "THOIGIANTHANHTOAN")
     private LocalDateTime thoiGianThanhToan;
 
-    @Range(min=1)
+    @Range(min=0)
     @Column(name = "DIEM")
     private Integer diem;
 
     //If value is not null, it must adhere to these checks below
-    @DecimalMin(value = "1.0")
-    @Digits(integer=18, fraction=2)
+    @DecimalMin(value = "0.0")
+//    @Digits(integer=18, fraction=2)
 //    @NotNull/ DO NOT UNCOMMENT THIS IF YOU WANT TO BE ABLE TO MAKE A BLANK INVOICE
     @Column(name = "TONGSOTIEN")
     private BigDecimal tongSoTien;

@@ -32,7 +32,7 @@ public class Voucher {
     @Size(min =1, max = 15)
     @Column(name = "MAVOUCHER")
     @NotBlank
-    private String maVoucher;
+    private String maVoucher ;
 
     @Range(min = 1)
     @Column(name = "GIATRIDOI")
@@ -69,6 +69,9 @@ public class Voucher {
     @NotNull
     @Column(name = "NGAYKETTHUC")
     private LocalDate ngayKetThuc;
+
+    @Column(name="SOLUONG")
+    private Integer soLuong;
 
     @Column(name = "TRANGTHAIVOUCHER")
     private Integer trangThaiVoucher;

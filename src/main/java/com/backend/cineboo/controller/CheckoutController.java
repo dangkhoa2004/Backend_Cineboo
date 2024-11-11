@@ -26,6 +26,7 @@ import vn.payos.type.PaymentData;
 import vn.payos.type.PaymentLinkData;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -77,6 +78,23 @@ public class CheckoutController {
         }
     }
 
+
+    private Integer customRoundBigDecimal(BigDecimal amount) {
+        // Separate the integer and decimal parts of the BigDecimal
+        BigDecimal integerPart = amount.setScale(0, RoundingMode.FLOOR);
+        BigDecimal decimalPart = amount.subtract(integerPart);
+
+        // Check if the decimal part is 0.50 or higher
+        if (decimalPart.compareTo(BigDecimal.valueOf(0.50)) >= 0) {
+            // Round up by adding 1 to the integer part if decimal part is 0.50 or higher
+            integerPart = integerPart.add(BigDecimal.ONE);
+        }
+
+        // Return the integer value after rounding
+        return integerPart.intValue();
+    }
+
+
     @Operation(summary = "Trả về URLs liên quan tới thanh toán",
             description = "Trả về ResponseEntity cho Client(API Caller)\n\n" +
                     "Chỉ chứa thông tin cơ bản cần thiết\n\n" +
@@ -117,13 +135,12 @@ public class CheckoutController {
                 final String returnUrl = baseUrl + "/payos/success";
                 final String cancelUrl = baseUrl + "/payos/cancel";
                 final Integer quantity = hoaDon.getSoLuong();
-//                final int price = hoaDon.getTongSoTien().intValue();
-                final int price = 1000;
+
+                final int price =customRoundBigDecimal(hoaDon.getTongSoTien());
                 // Gen order code
                 String currentTimeString = String.valueOf(new Date().getTime());
                 String maHoaDon = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
-                long orderCode = Long.parseLong(currentTimeString.substring(currentTimeString.length() - 6));
-                orderCode = Long.valueOf(maHoaDon);
+                Long orderCode = Long.valueOf(maHoaDon);
                 ItemData item = ItemData.builder().name(productName).quantity(quantity).price(price).build();
 
 
@@ -273,9 +290,10 @@ public class CheckoutController {
                 hoaDon.getChiTietHoaDonList().stream().forEach(e -> e.setTrangThaiChiTietHoaDon(1));
                 //Thêm điểm vào ĐÂY
                 //Thay vào số 0
-                int point = hoaDon.getDiem() + (hoaDon.getTongSoTien().multiply(BigDecimal.ONE.divide(BigDecimal.TEN.multiply(BigDecimal.TEN)))).intValue();
-                hoaDon.setDiem(point);
-                hoaDon.getKhachHang().setDiem(point);
+                int originalPoint = hoaDon.getKhachHang().getDiem();
+                KhachHang khachHang = hoaDon.getKhachHang();
+                khachHang.setDiem(originalPoint+hoaDon.getDiem());
+                khachHangRepository.save(khachHang);
                 hoaDonRepository.save(hoaDon);
             }
             // Trả về phản hồi đã được đóng gói trong ResponseEntity\

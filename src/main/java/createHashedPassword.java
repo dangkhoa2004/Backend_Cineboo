@@ -1,6 +1,8 @@
 import org.mindrot.jbcrypt.BCrypt;
 
-public class updateHash {
+public class createHashedPassword {
+    //Tạo mật khẩu đã mã hoá thay vì sử dụng hàm add
+    //TenDangNhap và MatKhau(mã hoá) thêm thủ công vào cơ sở dữ liệu
     public static void main(String[] args) {
         String pw2 = "mk2";
         String pw3 = "mk3";
