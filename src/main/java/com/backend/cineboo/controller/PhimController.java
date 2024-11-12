@@ -153,8 +153,8 @@ public class PhimController {
             DanhSachTLPhim newPhimAndTheLoai = new DanhSachTLPhim();
 
             //Setup các property
-            newPhimAndTheLoai.setPhim(phimRepository.getReferenceById(phimId));
-            newPhimAndTheLoai.setTheLoaiPhim(theLoaiPhimRepository.getReferenceById(theLoaiPhimId));
+            newPhimAndTheLoai.setPhim(phimRepository.findById(phimId).get());
+            newPhimAndTheLoai.setTheLoaiPhim(theLoaiPhimRepository.findById(theLoaiPhimId).get());
             newPhimAndTheLoai.setTrangThai(1);
             //Thêm bản ghi mới vào DanhSachTLPhim
             danhSachTLPhimReposiory.save(newPhimAndTheLoai);
