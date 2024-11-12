@@ -1,9 +1,13 @@
 package com.backend.cineboo.controller;
 
+import com.backend.cineboo.dto.AddHoaDonDTO;
 import com.backend.cineboo.entity.ChiTietHoaDon;
 import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.entity.Voucher;
 import com.backend.cineboo.repository.HoaDonRepository;
+import com.backend.cineboo.repository.KhachHangRepository;
+import com.backend.cineboo.repository.PTTTRepository;
+import com.backend.cineboo.repository.PhimRepository;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -37,12 +42,21 @@ public class HoaDonController {
     @Autowired
     HoaDonRepository hoaDonRepository;
 
+    @Autowired
+    KhachHangRepository khachHangRepository;
+
 
     @Autowired
     ChiTietHoaDonController chiTietHoaDonController;
 
     @Autowired
+    PTTTRepository ptttRepository;
+
+    @Autowired
     VoucherController voucherController;
+
+    @Autowired
+    PhimRepository phimRepository;
 
     @GetMapping("/get")
     @Operation(summary = "Hiển thị tất cả hoaDon",
@@ -67,7 +81,7 @@ public class HoaDonController {
     //1:Enable
     //Yêu cầu cần có sự thống nhất rõ ràng
     //Vì không tách bảng trạng thai
-    @Operation(summary = "Huỷ hoá hoaDon",
+    @Operation(summary = "Thay đổi trạng thái hoá hoaDon",
             description = "setTrangThai HoaDon")
     @PutMapping("/status/{id}")
     @ApiResponses(value = {
@@ -176,13 +190,31 @@ public class HoaDonController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Giá tiền phải lớn hơn 0");
             }
             hoaDon.setTongSoTien(finalPrice);//Set giá gốc
-            String appliedVoucher = hoaDon.getVoucher().getMaVoucher();
-            hoaDon.setVoucher(null);//Xoá voucher đã áp dụng
+            Voucher voucher = hoaDon.getVoucher();
+            if(voucher!=null) {
+                String appliedVoucher = hoaDon.getVoucher().getMaVoucher();
+                hoaDon.setVoucher(null);//Xoá voucher đã áp dụng
+                voucherController.increaseVoucherCount(appliedVoucher);//Do hoá đơn không dùng nữa, tăng lên 1
+            }
             hoaDon = hoaDonRepository.save(hoaDon);//Lưu lại
-            voucherController.increaseVoucherCount(appliedVoucher);//Do hoá đơn không dùng nữa, tăng lên 1
             return ResponseEntity.ok(hoaDon);
         }
         return response;
+    }
+
+    @Operation(summary = "Đặt PTTT",
+            description = "Đặt Phương thức thanh toán cho hoá đơn, yêu cầu ID của HoaDon và PTTT")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity vừa thay đổi"),
+            @ApiResponse(responseCode = "404", description = "Not Found")})
+    @PutMapping("/hoaDon/{ID_HoaDon}/setPTTT/{ID_PTTT}")
+    public ResponseEntity setPTTT(@PathVariable Long ID_PTTT, @PathVariable Long ID_HoaDon) {
+        HoaDon hoaDon = hoaDonRepository.findById(ID_HoaDon).orElse(null);
+        if (hoaDon != null) {
+            hoaDon.setPttt(ptttRepository.findById(ID_PTTT).get());
+            return ResponseEntity.ok(hoaDonRepository.save(hoaDon));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được hoá đơn");
     }
 
     @Operation(summary = "Làm tròn số tiền trong hoá đơn",
@@ -222,7 +254,7 @@ public class HoaDonController {
      */
     @Operation(summary = "Thêm HoaDon rỗng mới",
             description = "Chỉ yêu cầu thông tin CƠ BẢN của HoaDon và ID của các nested objects(TRỪ CHITIETHOADON)\n\n" +
-             "LƯU Ý: YÊU CẦU CHITIETHOADON(GHE,TRANGTHAICHITIETHOADON) ĐỂ TẠO MỚI\n\n" +
+                    "LƯU Ý: YÊU CẦU CHITIETHOADON(GHE,TRANGTHAICHITIETHOADON) ĐỂ TẠO MỚI\n\n" +
                     "Lưu ý: Số lượng được tính theo số bản ghi chi tiết hoá đơn\n\n" +
                     "Lưu ý: Tổng số tền được tinh theo tổng giá tiền hiện tại của Ghế\n\n" +
                     "Lưu ý: Thời gian thanh toán lấy từ object HoaDop tu Parameter\n\n" +
@@ -235,69 +267,101 @@ public class HoaDonController {
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PostMapping("/add")
-    public ResponseEntity add(@Valid @RequestBody HoaDon hoaDon, BindingResult bindingResult) {
-        hoaDon.setId(null);//Just in case this somehow turns into an update operation
+    public ResponseEntity add(@Valid @RequestBody AddHoaDonDTO hoaDon, BindingResult bindingResult
+                              ) {
         Map errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-
-        //Uncomment đoạn này nếu muốn thêm ChiTietHoaDon một cách thủ công
-        //Tạo hoá đơn rỗng
-        HoaDon blankInvoice = createBlankInvoice(hoaDon);
-        //Lưu vào DB để tí còn có ID mà xử lý
-        //Trước khi lưu, tách List ra để tí xử lý
         List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
-        blankInvoice.setChiTietHoaDonList(null);
+        if(chiTietHoaDonList==null||chiTietHoaDonList.isEmpty()){
+            return ResponseEntity.badRequest().body("Thiếu List<ChiTietHoaDon>");
+        }
+        //Tạo hoá đơn rỗng
+        HoaDon blankInvoice = createBlankInvoice(hoaDon, chiTietHoaDonList);
+        //Lưu vào DB để tí còn có ID mà xử lý
         blankInvoice = hoaDonRepository.save(blankInvoice);
         //Thêm hoá đơn chi tiết
-        boolean addInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice,chiTietHoaDonList);
-        if (addInvoiceDetail) {
-            return ResponseEntity.status(HttpStatus.OK).body(blankInvoice);
+        createAndAddInvoiceDetailToInvoice(blankInvoice, chiTietHoaDonList);
+        HoaDon finalHoaDon = hoaDonRepository.findById(blankInvoice.getId()).orElse(null);
+        if(finalHoaDon!=null) {
+            return ResponseEntity.status(HttpStatus.OK).body(finalHoaDon);
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi xử lý hoá đơn chi tiết");
-//        Uncomment đoạn này nếu muốn thêm ChiTietHoaDon một cách thủ công
-
-        //Thêm kiểu cascade, thêm parent, nested child objects tự động thêm
-//        return ResponseEntity.ok(hoaDonRepository.save(hoaDon));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi xử lý hoá đơn");
     }
 
 
-    private HoaDon createBlankInvoice(HoaDon hoaDon) {
+    private BigDecimal resetToOriginalPrice(Long hoaDonId){
+        HoaDon hoaDon = hoaDonRepository.findById(hoaDonId).orElse(null);
+        if(hoaDon==null){
+            return BigDecimal.ZERO;
+        }
+
+
+        BigDecimal originalPrice = chiTietHoaDonController.getTotalPrice(hoaDonId);
+        hoaDon.setTongSoTien(originalPrice);
+        hoaDonRepository.save(hoaDon);
+        return originalPrice;
+    }
+    private HoaDon createBlankInvoice(AddHoaDonDTO hoaDon, List<ChiTietHoaDon> list) {
         String hoaDonPrefix = "HD00";
         //Tạo hoá đơn rỗng
         //Chứa các thông tin cơ bản
         HoaDon blankHoaDon = new HoaDon();
-        blankHoaDon.setKhachHang(hoaDon.getKhachHang());
-        blankHoaDon.setChiTietHoaDonList(hoaDon.getChiTietHoaDonList());
-        blankHoaDon.setPhim(hoaDon.getPhim());
-        blankHoaDon.setVoucher(hoaDon.getVoucher());
-        blankHoaDon.setSoLuong(hoaDon.getChiTietHoaDonList().size());
-        blankHoaDon.setThoiGianThanhToan(hoaDon.getThoiGianThanhToan());
+        blankHoaDon.setKhachHang(khachHangRepository.findById(hoaDon.getKhachHangId()).get());
+        blankHoaDon.setPhim(phimRepository.findById(hoaDon.getPhimId()).get());
+        blankHoaDon.setVoucher(null);
+        blankHoaDon.setChiTietHoaDonList(null);
+        blankHoaDon.setThoiGianThanhToan(LocalDateTime.now());
 
-        int point = hoaDon.getDiem()
-                + (hoaDon.getTongSoTien()
+
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        for (ChiTietHoaDon helpMeImTooTiredForThis : list) {
+            totalPrice.add(helpMeImTooTiredForThis.getGhe().getGiaTien());
+        }
+        blankHoaDon.setTongSoTien(totalPrice);
+        int point = (totalPrice
                 .multiply(BigDecimal.ONE
                         .divide(BigDecimal.TEN.multiply(BigDecimal.TEN)))).intValue();
         blankHoaDon.setDiem(point);
-        blankHoaDon.setTongSoTien(new BigDecimal(0));
-        blankHoaDon.setTrangThaiHoaDon(0);
+        blankHoaDon.setTrangThaiHoaDon(0);//Hoá đơn mới
         blankHoaDon.setMaHoaDon(hoaDonPrefix + hoaDonRepository.getMaxTableId());
+        blankHoaDon.setPttt(null);
+        blankHoaDon.setSoLuong(list.size());
         return hoaDonRepository.save(blankHoaDon);
     }
 
+
+    @Operation(summary = "Áp dụng Voucher"
+    ,description = "Cập nhật TongSoTien sau khi áp dụng Voucher")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PutMapping("/price/voucher/{hoaDonId}")
-    public ResponseEntity applyVoucher(@PathVariable Long hoaDonId, @RequestParam String maVoucher) {
+    public ResponseEntity setVoucher(@PathVariable Long hoaDonId, @RequestParam String maVoucher) {
         //Tìm hoá đơn
         ResponseEntity hoaDonResponse = RepoUtility.findById(hoaDonId, hoaDonRepository);
         if (hoaDonResponse.getStatusCode().is2xxSuccessful()) {
             HoaDon hoaDon = (HoaDon) hoaDonResponse.getBody();
 
+            Voucher oldVoucher = hoaDon.getVoucher();
+            if(oldVoucher!=null) {
+                String appliedVoucher = hoaDon.getVoucher().getMaVoucher();
+                hoaDon.setVoucher(null);//Xoá voucher đã áp dụng
+                BigDecimal originalPrice = resetToOriginalPrice(hoaDonId);//Tính toán lại giá cũ
+                if(originalPrice.compareTo(BigDecimal.ZERO)==0){
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Không thể lấy được giá gốc của HoaDon");
+                }
+                hoaDon.setTongSoTien(originalPrice);//Đặt về giá gốc, tí tính toán sau
+               voucherController.increaseVoucherCount(appliedVoucher);//Do hoá đơn không dùng nữa, tăng lên 1
+            }
+
             //Tìm voucher xem có tồn tại hay khả dụng không
             ResponseEntity voucherResponse = voucherController.isVoucherAvailable(maVoucher);
             if (voucherResponse.getStatusCode().is2xxSuccessful()) {
                 Voucher voucher = (Voucher) voucherResponse.getBody();
-
                 //Lấy số tiền giảm dựa trên voucher và số tiền tổng của hoá đơn
                 BigDecimal discountAmount = voucherController.getDiscountAmount(maVoucher, hoaDon);
                 //Kiểm lỗi
@@ -305,6 +369,8 @@ public class HoaDonController {
                     return ResponseEntity.internalServerError().body("Lỗi xử lý voucher");
                 } else if (discountAmount.compareTo(BigDecimal.ZERO) == 0) {
                     return ResponseEntity.badRequest().body("Giá tiền sau giảm phải lớn hơn 0");
+                }else if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
+                    return ResponseEntity.badRequest().body("Không đạt điều kiện áp dụng voucher");
                 }
                 //Nếu hợp lệ, set voucher
                 hoaDon.setVoucher(voucher);
@@ -321,22 +387,15 @@ public class HoaDonController {
         return hoaDonResponse;
     }
 
-    private boolean createAndAddInvoiceDetailToInvoice(HoaDon hoaDon,List<ChiTietHoaDon> chiTietHoaDonList) {
+    private void createAndAddInvoiceDetailToInvoice(HoaDon hoaDon, List<ChiTietHoaDon> chiTietHoaDonList) {
         //Coder is having a cold and therefore low motivation
         //No more validation or constraint check to verify if hoaDon exists
         //Just.....do it
         for (ChiTietHoaDon chiTietHoaDon : chiTietHoaDonList) {
             //Lượt qua danh sách Hoá đơn chi tiết
             //Tạo mới chi tiêt hoá đơn
-            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(chiTietHoaDon,hoaDon);
-            if (temp != null) {
-                //Thêm  vào Hoá Đơn
-                chiTietHoaDonController.setHoaDonId(temp.getId(), hoaDon);
-            } else {
-                return false;
-            }
+            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(chiTietHoaDon, hoaDon);
         }
-        return true;
     }
 
 

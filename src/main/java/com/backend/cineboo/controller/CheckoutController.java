@@ -1,9 +1,13 @@
 package com.backend.cineboo.controller;
 
+import com.backend.cineboo.entity.ChiTietHoaDon;
 import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.entity.KhachHang;
+import com.backend.cineboo.entity.Voucher;
+import com.backend.cineboo.repository.ChiTietHoaDonRepository;
 import com.backend.cineboo.repository.HoaDonRepository;
 import com.backend.cineboo.repository.KhachHangRepository;
+import com.backend.cineboo.repository.VoucherRepository;
 import com.backend.cineboo.utility.RepoUtility;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.collections.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +36,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -46,6 +52,12 @@ public class CheckoutController {
 
     @Autowired
     KhachHangRepository khachHangRepository;
+
+    @Autowired
+    VoucherRepository voucherRepository;
+
+    @Autowired
+    ChiTietHoaDonRepository chiTietHoaDonRepository;
 
     public CheckoutController(PayOS payOS) {
         super();
@@ -208,7 +220,22 @@ public class CheckoutController {
                 //Change status From Database too
                 if (hoaDon != null) {
                     hoaDon.setTrangThaiHoaDon(2);
+                    //Xoá voucher đi liền với hoaDon nếu tồn tại
+                    Voucher voucher = hoaDon.getVoucher();
+                    if(voucher!=null){
+                        voucher.setSoLuong(voucher.getSoLuong()+1);
+                    }
+                    hoaDon.setVoucher(null);
                     hoaDonRepository.save(hoaDon);
+
+                    //Chuyển trạng thái CTHD
+                    List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
+                    if(!chiTietHoaDonList.isEmpty()){
+                        for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
+                            chiTietHoaDon.setTrangThaiChiTietHoaDon(2);//Đã huỷ
+                            chiTietHoaDonRepository.save(chiTietHoaDon);
+                        }
+                    }
                 } else {
                     cancel.setCancellationReason(cancel.getCancellationReason() + ". Đã huỷ hoá Đơn Online, nhưng Hoá đơn không tồn tại trong Database");
                 }
@@ -287,7 +314,13 @@ public class CheckoutController {
                 //Set setable stuff
                 hoaDon.setThoiGianThanhToan(LocalDateTime.now());
                 hoaDon.setTrangThaiHoaDon(1);
-                hoaDon.getChiTietHoaDonList().stream().forEach(e -> e.setTrangThaiChiTietHoaDon(1));
+                List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
+                if(!chiTietHoaDonList.isEmpty()){
+                    for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
+                        chiTietHoaDon.setTrangThaiChiTietHoaDon(1);//Đã hoàn tất
+                        chiTietHoaDonRepository.save(chiTietHoaDon);
+                    }
+                }
                 //Thêm điểm vào ĐÂY
                 //Thay vào số 0
                 int originalPoint = hoaDon.getKhachHang().getDiem();
