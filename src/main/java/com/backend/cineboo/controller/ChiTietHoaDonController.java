@@ -158,6 +158,9 @@ public class ChiTietHoaDonController {
         //After confirming that Invoice Detail is okay-ish
         //Create it anew and add it to db
         ChiTietHoaDon blankChiTietHoaDon = createBlankInvoiceDetail(chiTietHoaDon,chiTietHoaDon.getHoaDon());
+        if(blankChiTietHoaDon==null){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Đã tồn tại ChiTietHoaDon");
+        }
         return ResponseEntity.status(HttpStatus.OK).body(chiTietHoaDonRepository.save(blankChiTietHoaDon));
     }
 
@@ -172,8 +175,14 @@ public class ChiTietHoaDonController {
         ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
         blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
         blankChiTietHoaDon.setGhe(chiTietHoaDon.getGhe());
-        blankChiTietHoaDon.setTrangThaiChiTietHoaDon(chiTietHoaDon.getTrangThaiChiTietHoaDon());
-        return chiTietHoaDonRepository.save(blankChiTietHoaDon);
+        blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
+        //Check dups first, if already there
+        //Just in case somehow the user can magically call this method again using the same ID_HoaDon
+        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(),chiTietHoaDon.getGhe().getId()).orElse(null);
+        if(checkDups==null) {
+            return chiTietHoaDonRepository.save(blankChiTietHoaDon);//If no dups, add anew
+        }
+        return null;// or else return null
     }
 
 
@@ -198,8 +207,8 @@ public class ChiTietHoaDonController {
         return chiTietHoaDonRepository.save(chiTietHoaDon);
     }
 
-    public BigDecimal getTotalPrice(Long chiTietHoaDonId) {
-        return chiTietHoaDonRepository.getFinalPrice(chiTietHoaDonId).orElse(new BigDecimal(0));
+    public BigDecimal getTotalPrice(Long id_HoaDon) {
+        return chiTietHoaDonRepository.getFinalPrice(id_HoaDon).orElse(new BigDecimal(0));
     }
 
     /**

@@ -187,7 +187,7 @@ public class VoucherController {
                 || now.isBefore(start)
                 || trangThai == 0
         ) {
-            return null;
+            return BigDecimal.valueOf(-1.0);
         }
         if (voucher.getTruTienPhanTram() != null) {
             BigDecimal discountPercentage = BigDecimal.valueOf(voucher.getTruTienPhanTram()).divide(BigDecimal.valueOf(100)); // Assuming it is a percentage

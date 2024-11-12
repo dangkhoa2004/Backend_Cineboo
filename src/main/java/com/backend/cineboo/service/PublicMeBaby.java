@@ -60,15 +60,15 @@ public class PublicMeBaby {
 
         return publicUrl;
     }
-//    @EventListener(ContextRefreshedEvent.class)
-//    public void contextRefreshedEvent() throws Exception {
-//        PublicMeBaby ngrokService = new PublicMeBaby();
-//        String ngrokUrl = ngrokService.startNgrok();
-//        System.out.println("Tạo tài khoản PayOS");
-//        System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");
-//        System.out.println("Điển URL phía dưới vào mục Webhook");
-//        System.out.println("URL public: " + ngrokUrl+"/payos/confirm-webhook");
-//    }
+    @EventListener(ContextRefreshedEvent.class)
+    public void contextRefreshedEvent() throws Exception {
+        PublicMeBaby ngrokService = new PublicMeBaby();
+        String ngrokUrl = ngrokService.startNgrok();
+        System.out.println("Tạo tài khoản PayOS");
+        System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");
+        System.out.println("Điển URL phía dưới vào mục Webhook");
+        System.out.println("URL public: " + ngrokUrl+"/payos/confirm-webhook");
+    }
 
 
 }

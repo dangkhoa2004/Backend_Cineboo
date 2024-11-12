@@ -13,5 +13,10 @@ public interface ChiTietHoaDonRepository extends JpaRepository<ChiTietHoaDon,Lon
     @Query(value=" SELECT DISTINCT SUM(g.GiaTien) " +
             " FROM chitiethoadon JOIN ghe g on g.ID = chitiethoadon.ID_Ghe " +
             " WHERE chitiethoadon.ID_HoaDon = ? ",nativeQuery = true)
-    Optional<BigDecimal> getFinalPrice(Long chiTietHoaDonId);
+    Optional<BigDecimal> getFinalPrice(Long id_HoaDon);
+
+    @Query(value = "SELECT * FROM ChiTietHoaDon " +
+            "WHERE ID_HoaDon = ?1 AND ID_Ghe = ?2 " +
+            "AND TrangThaiChiTietHoaDon = 0 ",nativeQuery = true)
+    Optional<ChiTietHoaDon> checkDuplicate(Long ID_HoaDon, Long ID_Ghe );
 }
