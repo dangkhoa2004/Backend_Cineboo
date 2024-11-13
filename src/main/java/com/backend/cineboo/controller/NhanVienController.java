@@ -72,11 +72,11 @@ public class NhanVienController {
             taiKhoan.setPhanLoaiTaiKhoan(new PhanLoaiTaiKhoan(Long.valueOf("1"), "NhanVien", 0));//Khách hàng = 2
             taiKhoan.setTrangThaiTaiKhoan(0);//Chưa kích hoạt
             taiKhoanRepository.save(taiKhoan);//Tạo mới tài khoản
-
+            String prefix = "NV00";
             //Create new NhanVien
             NhanVien newNhanVien = new NhanVien();
             String maNhanVien = String.valueOf(nhanVienRepository.getMaxTableId() + 1);
-            newNhanVien.setMaNhanVien(maNhanVien);
+            newNhanVien.setMaNhanVien(prefix+maNhanVien);
             newNhanVien.setTen(nhanVienRegister.getTen());
             newNhanVien.setTenDem(nhanVienRegister.getTenDem());
             newNhanVien.setHo(nhanVienRegister.getHo());
@@ -89,7 +89,7 @@ public class NhanVienController {
 
             Long idChucVu = nhanVienRegister.getIdChucVu();
             PhanLoaiChucVu chucVu = chucVuRepository.findById(idChucVu).get();
-            newNhanVien.setChucVu(chucVu);
+            newNhanVien.setChucVu(chucVu) ;
            
             NhanVien addedNhanVien = nhanVienRepository.save(newNhanVien);//Thêm profile khách hàng
             if (addedNhanVien != null) {

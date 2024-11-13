@@ -95,11 +95,11 @@ public class KhachHangController {
             taiKhoan.setPhanLoaiTaiKhoan(new PhanLoaiTaiKhoan(Long.valueOf("2"), "KhachHang", 0));//Khách hàng = 2
             taiKhoan.setTrangThaiTaiKhoan(0);//Chưa kích hoạt
             taiKhoanRepository.save(taiKhoan);//Tạo mới tài khoản
-
+            String prefix = "KH00";
             //Create new KhachHang
             KhachHang newKhachHang = new KhachHang();
             String maKhachHang = String.valueOf(khachHangRepository.getMaxTableId() + 1);
-            newKhachHang.setMaKhachHang(maKhachHang);
+            newKhachHang.setMaKhachHang(prefix+maKhachHang);
             newKhachHang.setTen(khachHangRegister.getTen());
             newKhachHang.setTenDem(khachHangRegister.getTenDem());
             newKhachHang.setHo(khachHangRegister.getHo());

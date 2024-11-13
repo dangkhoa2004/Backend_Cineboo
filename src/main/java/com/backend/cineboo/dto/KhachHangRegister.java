@@ -44,14 +44,11 @@ public class KhachHangRegister {
     private String email;
 
     @Size(max = 75)
-    private String danToc;
+    private String danToc ;
 
     @NotBlank
     @Size(max = 255)
     private String diaChi;
-
-
-    private Integer trangThaiKhachHang;
 
 
 }
