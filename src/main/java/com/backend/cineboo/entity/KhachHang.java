@@ -31,7 +31,7 @@ public class KhachHang {
     @JoinColumn(name = "ID_TAIKHOAN")
     private TaiKhoan taiKhoan;
 
-    @NotBlank
+
     @Size(max = 15)
     @Column(name = "MAKHACHHANG", nullable = false)
     private String maKhachHang;
