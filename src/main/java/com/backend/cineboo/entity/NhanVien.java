@@ -3,6 +3,11 @@ package com.backend.cineboo.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.*;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 /**
@@ -33,28 +38,40 @@ public class NhanVien {
     @Column(name = "MANHANVIEN", nullable = false, length = 15)
     private String maNhanVien;
 
-    @Column(name = "TEN")
+    @Column(name = "TEN",nullable = false)
+    @NotBlank
+    @Size(max = 100)
     private String ten;
 
+    @NotBlank
+    @Size(max = 100)
     @Column(name = "TENDEM")
     private String tenDem;
 
+    @NotBlank
+    @Size(max = 50)
     @Column(name = "HO")
     private String ho;
 
-    @Column(name = "NGAYSINH")
+    @NotNull
+    @Column(name = "NGAYSINH",nullable = false)
     private LocalDate ngaySinh;
 
-    @Column(name = "GIOITINH")
+    @NotNull
+    @Column(name = "GIOITINH",nullable = false)
     private Integer gioiTinh;
 
-    @Column(name = "EMAIL")
+    @Email
+    @Column(name = "EMAIL",nullable = false)
     private String email;
 
+    @Size(max = 50)
     @Column(name = "DANTOC")
     private String danToc;
 
-    @Column(name = "DIACHI")
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "DIACHI",nullable = false)
     private String diaChi;
 
     @Column(name = "TRANGTHAINHANVIEN")

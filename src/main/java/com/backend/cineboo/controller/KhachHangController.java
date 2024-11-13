@@ -49,16 +49,34 @@ public class KhachHangController {
         return ResponseEntity.ok(khachHangs);
     }
 
+    @Operation(summary = "Vô hiệu hóa khách hàng",
+            description = "Vô hiệu hóa khách hàng\n\n" +
+                    "Và tài khoản đi kèm(cái này chưa test).")
+    @PutMapping("/disable/{id_KhachHang}")
+    public ResponseEntity disable(@PathVariable Long id_KhachHang) {
+        ResponseEntity response = RepoUtility.findById(id_KhachHang, khachHangRepository);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            KhachHang khachHang = (KhachHang) response.getBody();
+            TaiKhoan taiKhoan = khachHang.getTaiKhoan();
+            taiKhoan.setTrangThaiTaiKhoan(0);
+            taiKhoanRepository.save(taiKhoan);
+            khachHang.setTrangThaiKhachHang(0);//Only need this
+            khachHangRepository.save(khachHang);
+            return ResponseEntity.ok("Disable thành công");
+        }
+        return response;
+    }
+
     @Operation(summary = "Thêm khách hàng mới",
             description = "Thêm một khách hàng mới vào hệ thống.")
     @PostMapping("/add")
     public ResponseEntity addKhachHang(@Valid @RequestBody KhachHangRegister khachHangRegister, BindingResult bindingResult,
-                                       @RequestParam("username")  String username,
+                                       @RequestParam("username") String username,
                                        @RequestParam("password") String password) {
         String inputUsername = username.trim();
         String inputPassword = password.trim();
 
-        if(StringUtils.isEmpty(inputPassword)|| StringUtils.isEmpty(inputUsername)){
+        if (StringUtils.isEmpty(inputPassword) || StringUtils.isEmpty(inputUsername)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không xác định được thông tin đăng nhập");
         }
         Map<String, String> errors = EntityValidator.validateFields(bindingResult);
@@ -69,7 +87,7 @@ public class KhachHangController {
         //Create new TaiKhoan
         TaiKhoan taiKhoan = new TaiKhoan();
         Integer row = taiKhoanRepository.checkAvailable(inputUsername).orElse(null);
-        if(row==null) {
+        if (row == null) {
             taiKhoan.setTenDangNhap(inputUsername);
             taiKhoan.setMatKhau(BCrypt.hashpw(inputPassword, BCrypt.gensalt()));
             taiKhoan.setGhiChu("");//None
@@ -102,6 +120,7 @@ public class KhachHangController {
                 taiKhoanRepository.save(taiKhoan);//Lưu lại cho chắc, không dựa vào JPA Cascade
                 //Liên kết profile tới tài khoản
                 newKhachHang.setTaiKhoan(taiKhoan);
+                newKhachHang.setTrangThaiKhachHang(1);
                 //Lưu lại sau khi liên kết
                 newKhachHang = khachHangRepository.save(newKhachHang);
                 if (newKhachHang != null) {
