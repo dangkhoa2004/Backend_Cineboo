@@ -127,6 +127,7 @@ public class SuatChieuController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
         suatChieu.setMaSuatChieu(idPrefix + (suatChieuRepository.getMaxTableId() + 1));
+        suatChieu.setId(null);//To make sure its an INSERT and Not Update since both use save()
         return ResponseEntity.status(HttpStatus.OK).body(suatChieuRepository.save(suatChieu));
     }
 

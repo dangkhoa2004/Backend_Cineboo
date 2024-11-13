@@ -66,6 +66,7 @@ public class GheController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        ghe.setId(null);//To make sure its an INSERT and Not Update since both use save()
         Ghe addedGhe = gheRepository.save(ghe);
         return ResponseEntity.ok(gheRepository.save(addedGhe));
     }
