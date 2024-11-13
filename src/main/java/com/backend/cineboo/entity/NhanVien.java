@@ -32,7 +32,7 @@ public class NhanVien {
 
     @JsonIgnoreProperties("matKhau")
     @OneToOne
-    @PrimaryKeyJoinColumn(name = "ID_TAIKHOAN")
+    @JoinColumn(name = "ID_TAIKHOAN")
     private TaiKhoan taiKhoan;
 
     @Column(name = "MANHANVIEN", nullable = false, length = 15)

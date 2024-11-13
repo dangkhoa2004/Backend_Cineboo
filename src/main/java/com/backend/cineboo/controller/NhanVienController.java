@@ -98,12 +98,12 @@ public class NhanVienController {
                 taiKhoan.setTrangThaiTaiKhoan(1); //1 là hoạt động
                 taiKhoanRepository.save(taiKhoan);//Lưu lại cho chắc, không dựa vào JPA Cascade
                 //Liên kết profile tới tài khoản
-                newNhanVien.setTaiKhoan(taiKhoan);
-                newNhanVien.setTrangThai(1);
+                addedNhanVien.setTaiKhoan(taiKhoan);
+                addedNhanVien.setTrangThai(1);
                 //Lưu lại sau khi liên kết
-                newNhanVien = nhanVienRepository.save(newNhanVien);
-                if (newNhanVien != null) {
-                    return ResponseEntity.ok(newNhanVien);
+                addedNhanVien = nhanVienRepository.save(addedNhanVien);
+                if (addedNhanVien != null) {
+                    return ResponseEntity.ok(addedNhanVien);
                 }
             }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi tạo profile tài khoản");
