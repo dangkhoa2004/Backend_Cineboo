@@ -62,6 +62,7 @@ public class DoTuoiController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        doTuoi.setId(null);//To make sure its an INSERT and Not Update since both use save()
         DoTuoi addedDoTuoi = doTuoiRepository.save(doTuoi);
         return ResponseEntity.ok(addedDoTuoi);
     }

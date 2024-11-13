@@ -18,7 +18,6 @@ import java.time.LocalDate;
 @Setter
 public class NhanVienRegister {
 
-    private Long id;
 
 
     private Long idChucVu;

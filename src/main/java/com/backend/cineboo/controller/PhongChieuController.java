@@ -57,6 +57,7 @@ public class PhongChieuController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        phongChieu.setId(null);//To make sure its an INSERT and Not Update since both use save()
         return ResponseEntity.ok(phongChieuRepository.save(phongChieu));
     }
 

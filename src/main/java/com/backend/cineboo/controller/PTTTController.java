@@ -66,6 +66,7 @@ public class PTTTController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        pttt.setId(null);//To make sure its an INSERT and Not Update since both use save()
         PTTT addedPTTT = ptttRepository.save(pttt);
         return ResponseEntity.ok(addedPTTT);
     }

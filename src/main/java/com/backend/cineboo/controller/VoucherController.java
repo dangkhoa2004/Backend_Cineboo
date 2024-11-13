@@ -85,6 +85,7 @@ public class VoucherController {
         }
         Voucher exist = voucherRepository.findByMaVoucher(voucher.getMaVoucher()).orElse(null);
         if (exist == null) {
+            voucher.setId(null);//To make sure its an INSERT and Not Update since both use save()
             return ResponseEntity.ok(voucherRepository.save(voucher));
         }
 

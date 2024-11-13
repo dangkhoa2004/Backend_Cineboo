@@ -189,9 +189,12 @@ public class PhimController {
             newPhimAndTheLoai.setPhim(phimRepository.findById(phimId).get());
             newPhimAndTheLoai.setTheLoaiPhim(theLoaiPhimRepository.findById(theLoaiPhimId).get());
             newPhimAndTheLoai.setTrangThai(1);
+
             //Thêm bản ghi mới vào DanhSachTLPhim
+
             danhSachTLPhimReposiory.save(newPhimAndTheLoai);
         }
+        phim.setId(null);//To make sure its an INSERT and Not Update since both use save()
         return ResponseEntity.status(HttpStatus.OK).body(phimRepository.save(phim));
     }
 

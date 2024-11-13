@@ -72,6 +72,7 @@ public class DanhSachTheLoaiController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        danhSachTLPhim.setId(null);//To make sure its an INSERT and Not Update since both use save()
         return ResponseEntity.ok(danhSachTLPhimReposiory.save(danhSachTLPhim));
     }
 
