@@ -5,7 +5,11 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 
 /**
  *
@@ -23,12 +27,19 @@ public class PTTT {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "MAPTTT")
+    @Column(name = "MAPTTT", length = 15)
+    @NotBlank
+    @Size(max = 15)
     private String maPTTT;
 
-    @Column(name = "TENPTTT")
+
+    @Column(name = "TENPTTT", length = 200)
+    @NotBlank
+    @Size(max = 200)
     private String tenPTTT;
 
     @Column(name = "TRANGTHAIPTTT")
+    @Range(min = 0)
+    @NotNull
     private Integer trangThaiPTTT;
 }

@@ -1,5 +1,6 @@
 package com.backend.cineboo.controller;
 
+import com.backend.cineboo.dto.AddPTTTDTO;
 import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.entity.PTTT;
 import com.backend.cineboo.repository.PTTTRepository;
@@ -39,7 +40,7 @@ public class PTTTController {
     @Operation(summary = "Get all PTTT records",
             description = "Returns a list of all PTTT records in the system.")
     @GetMapping("/get")
-    public ResponseEntity<List<PTTT>> get(){
+    public ResponseEntity<List<PTTT>> get() {
         List<PTTT> pttts = new ArrayList<>(ptttRepository.findAll());
         return ResponseEntity.ok(pttts);
     }
@@ -61,13 +62,21 @@ public class PTTTController {
     @Operation(summary = "Add a new PTTT record",
             description = "Adds a new PTTT record to the system.")
     @PostMapping("/add")
-    public ResponseEntity add(@Valid @RequestBody PTTT pttt, BindingResult bindingResult){
-        Map<String,String> errors = EntityValidator.validateFields(bindingResult);
+    public ResponseEntity add(@Valid @RequestBody AddPTTTDTO pttt, BindingResult bindingResult) {
+        Map<String, String> errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-        pttt.setId(null);//To make sure its an INSERT and Not Update since both use save()
-        PTTT addedPTTT = ptttRepository.save(pttt);
+        PTTT duplicate = ptttRepository.checkDuplicate(pttt.getTenPTTT()).orElse(null);
+        if (duplicate != null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Trùng tên Phương thức thanh toán");
+        }
+        PTTT addedPTTT = new PTTT();
+        String prefix = "PTTT00";
+        addedPTTT.setMaPTTT(prefix + ptttRepository.getMaxTableId());
+        addedPTTT.setTrangThaiPTTT(pttt.getTrangThaiPTTT());
+        addedPTTT.setTenPTTT(pttt.getTenPTTT());
+        addedPTTT= ptttRepository.save(addedPTTT);
         return ResponseEntity.ok(addedPTTT);
     }
 
