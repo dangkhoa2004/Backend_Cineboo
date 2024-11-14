@@ -55,16 +55,22 @@ public class DoTuoiController {
         return response;
     }
 
-    @Operation(summary = "Add a new DoTuoi", description = "Adds a new DoTuoi entity.")
+    @Operation(summary = "Add a new DoTuoi", description = "ID và MaDoTuoi tự tăng.")
     @PostMapping("/add")
     public ResponseEntity<?> add(@Valid @RequestBody DoTuoi doTuoi, BindingResult bindingResult) {
         Map<String, String> errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        DoTuoi duplicate = doTuoiRepository.checkDuplicate(doTuoi.getTenDoTuoi()).orElse(null);
+        if(duplicate!=null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Trùng tên độ tuổi");
+        }
+        String prefix = "DT00";
+        doTuoi.setMaDoTuoi(prefix+doTuoiRepository.getMaxTableId());
         doTuoi.setId(null);//To make sure its an INSERT and Not Update since both use save()
-        DoTuoi addedDoTuoi = doTuoiRepository.save(doTuoi);
-        return ResponseEntity.ok(addedDoTuoi);
+        doTuoi = doTuoiRepository.save(doTuoi);
+        return ResponseEntity.ok(doTuoi);
     }
 
     @Operation(summary = "Update DoTuoi information", description = "Updates an existing DoTuoi based on its ID.")
