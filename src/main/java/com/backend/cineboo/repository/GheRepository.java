@@ -40,4 +40,7 @@ public interface GheRepository extends JpaRepository<Ghe,Long> {
             "JOIN `suatchieu` ON `phongchieu`.`ID` = `suatchieu`.`ID_PhongChieu`" +
             "WHERE `suatchieu`.`ID` = ?;",nativeQuery = true)
     List<Ghe> findByID_SuatChieu(String id_suatChieu);
+
+    @Query(value = "SELECT MAX(ID) FROM Ghe",nativeQuery = true)
+    Long getMaxTableId();
 }
