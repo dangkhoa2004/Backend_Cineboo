@@ -1,8 +1,11 @@
 package com.backend.cineboo.controller;
 
+import com.backend.cineboo.dto.AddGheDTO;
 import com.backend.cineboo.dto.GheWithoutSuatChieuId;
 import com.backend.cineboo.entity.Ghe;
+import com.backend.cineboo.entity.PhongChieu;
 import com.backend.cineboo.repository.GheRepository;
+import com.backend.cineboo.repository.PhongChieuRepository;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -35,6 +38,8 @@ public class GheController {
     @Autowired
     GheRepository gheRepository;
 
+    @Autowired
+    PhongChieuRepository phongChieuRepository;
     @Operation(summary = "Lấy danh sách ghế",
             description = "Trả về danh sách tất cả ghế trong hệ thống.")
     @GetMapping("/get")
@@ -61,14 +66,24 @@ public class GheController {
     @Operation(summary = "Thêm ghế mới",
             description = "Thêm một ghế mới vào hệ thống.")
     @PostMapping("/add")
-    public ResponseEntity add(@Valid @RequestBody Ghe ghe, BindingResult bindingResult){
+    public ResponseEntity add(@Valid @RequestBody AddGheDTO ghe, BindingResult bindingResult){
         Map<String,String> errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-        ghe.setId(null);//To make sure its an INSERT and Not Update since both use save()
-        Ghe addedGhe = gheRepository.save(ghe);
-        return ResponseEntity.ok(gheRepository.save(addedGhe));
+        Ghe addedGhe = new Ghe();
+        String prefix = "GH00";
+        addedGhe.setMaGhe(prefix+gheRepository.getMaxTableId());
+        ResponseEntity response = RepoUtility.findById(ghe.getId_PhongChieu(),phongChieuRepository);
+        if(response.getStatusCode().is2xxSuccessful()) {
+            PhongChieu phongChieu = (PhongChieu) response.getBody();
+            addedGhe.setPhongChieu(phongChieu);
+            addedGhe.setGiaTien(ghe.getGiaTien());
+            addedGhe.setTrangThaiGhe(ghe.getTrangThaiGhe());
+            addedGhe = gheRepository.save(addedGhe);
+            return ResponseEntity.ok(addedGhe);
+        }
+        return response;
     }
 
     @Operation(summary = "Cập nhật thông tin ghế",
