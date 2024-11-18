@@ -1,9 +1,7 @@
 package com.backend.cineboo.controller;
 
-import com.backend.cineboo.entity.DoTuoi;
+import com.backend.cineboo.entity.*;
 import com.backend.cineboo.entity.ChiTietHoaDon;
-import com.backend.cineboo.entity.ChiTietHoaDon;
-import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.repository.ChiTietHoaDonRepository;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
@@ -171,7 +169,7 @@ public class ChiTietHoaDonController {
      * @param chiTietHoaDon
      * @return
      */
-    public ChiTietHoaDon createBlankInvoiceDetail(ChiTietHoaDon chiTietHoaDon,HoaDon hoaDon){
+    private ChiTietHoaDon createBlankInvoiceDetail(ChiTietHoaDon chiTietHoaDon,HoaDon hoaDon){
         ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
         blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
         blankChiTietHoaDon.setGhe(chiTietHoaDon.getGhe());
@@ -184,7 +182,19 @@ public class ChiTietHoaDonController {
         }
         return null;// or else return null
     }
-
+    public ChiTietHoaDon createBlankInvoiceDetail(Ghe ghe, HoaDon hoaDon){
+        ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
+        blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
+        blankChiTietHoaDon.setGhe(ghe);
+        blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
+        //Check dups first, if already there
+        //Just in case somehow the user can magically call this method again using the same ID_HoaDon
+        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(),ghe.getId()).orElse(null);
+        if(checkDups==null) {
+            return chiTietHoaDonRepository.save(blankChiTietHoaDon);//If no dups, add anew
+        }
+        return null;// or else return null
+    }
 
     /**
      * Thêm ID_HoaDon và ChiTietHoaDon
