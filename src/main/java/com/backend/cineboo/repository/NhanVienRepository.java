@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface NhanVienRepository extends JpaRepository<NhanVien,Long> {
 
     @Query(value="SELECT * FROM NhanVien WHERE ID_TaiKhoan = ? LIMIT 1",nativeQuery = true)
-    Optional<NhanVien> findByID_TaiKhoan(Long id_TaiKhoan);
+    Optional<NhanVien> findByID_TaiKhoan(String id_TaiKhoan);
 
     @Query(value = "SELECT MAX(ID) FROM NhanVien",nativeQuery = true)
     Long getMaxTableId();
