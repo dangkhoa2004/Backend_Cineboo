@@ -13,5 +13,5 @@ public interface HoaDonRepository extends JpaRepository<HoaDon,Long> {
     Long getMaxTableId();
 
     @Query(value="SELECT * FROM HoaDon  WHERE MaHoaDon = ? LIMIT 1 ",nativeQuery = true)
-    Optional<HoaDon> getByMaHoaDon(String maHoaDon);
+    Optional<HoaDon> findByMaHoaDon(String maHoaDon);
 }

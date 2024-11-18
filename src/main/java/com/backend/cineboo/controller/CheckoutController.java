@@ -11,13 +11,11 @@ import com.backend.cineboo.repository.VoucherRepository;
 import com.backend.cineboo.utility.RepoUtility;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.collections.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -214,7 +212,7 @@ public class CheckoutController {
             // Call the cancelPaymentLink method with the resolved reason
             PaymentLinkData cancel = payOS.cancelPaymentLink(orderId, reason);
             String maHoaDon = "HD00" + orderId;
-            HoaDon hoaDon = hoaDonRepository.getByMaHoaDon(maHoaDon).orElse(null);
+            HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon).orElse(null);
             if (cancel != null) {
                 //After a successful delete operation on Bank side
                 //Change status From Database too
@@ -309,7 +307,7 @@ public class CheckoutController {
             System.out.println(jsonNode);
             // Access the "id" field inside the "data" node
             String maHoaDon = "HD00" + dataNode.get("orderCode").asText();
-            HoaDon hoaDon = hoaDonRepository.getByMaHoaDon(maHoaDon).orElse(null);
+            HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon).orElse(null);
             if (hoaDon != null) {
                 //Set setable stuff
                 hoaDon.setThoiGianThanhToan(LocalDateTime.now());

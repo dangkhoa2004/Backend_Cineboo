@@ -222,10 +222,10 @@ public class VoucherController {
     }
 
     public void increaseVoucherCount(String maVoucher) {
-        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+//        Voucher voucher = voucherRepository.checkAvailabilityByMaVoucher(maVoucher).orElse(null);
+// Do not use this because available vouchers with amount of 0 wont be able to go to 1
+        Voucher voucher = voucherRepository.findByMaVoucher(maVoucher).orElse(null);
         if (voucher != null) {
-            //Duplicate logic from sql and java, i know
-            //But what if SQL query fuck itself up, what then?
             voucher.setSoLuong(voucher.getSoLuong() + 1);
             voucherRepository.save(voucher);
         }
