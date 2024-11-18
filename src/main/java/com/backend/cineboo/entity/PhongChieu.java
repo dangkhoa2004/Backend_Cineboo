@@ -5,7 +5,10 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 
 /**
  *
@@ -23,12 +26,15 @@ public class PhongChieu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="MAPHONG")
+    @Column(name="MAPHONG",length = 15)
+    @Size(max = 15)
     private String maPhong;
 
+    @Range(min = 0)
     @Column(name="TONGSOGHE")
     private Integer tongSoGhe;
 
+    @Range(min = 0)
     @Column(name="TRANGTHAIPHONGCHIEU")
     private Integer trangThaiPhongChieu;
 }

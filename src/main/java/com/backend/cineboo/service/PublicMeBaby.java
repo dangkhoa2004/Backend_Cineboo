@@ -60,7 +60,7 @@ public class PublicMeBaby {
 
         return publicUrl;
     }
-    @EventListener(ContextRefreshedEvent.class)
+//    @EventListener(ContextRefreshedEvent.class)
     public void contextRefreshedEvent() throws Exception {
         PublicMeBaby ngrokService = new PublicMeBaby();
         String ngrokUrl = ngrokService.startNgrok();

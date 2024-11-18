@@ -50,7 +50,10 @@ public class PhongChieuController {
     }
 
     @Operation(summary = "Thêm phòng chiếu mới",
-            description = "Thêm một phòng chiếu mới vào hệ thống.")
+            description = "Thêm một phòng chiếu mới vào hệ thống.\n\n" +
+                    "Mặc định ID null\n\n" +
+                    "Mặc định Mã phòng chiếu tự tăng" +
+                    "Mặc định trạng thái bằng 0")
     @PutMapping("/add")
     public ResponseEntity add(@Valid @RequestBody PhongChieu phongChieu, BindingResult bindingResult){
         Map<String,String> errors = EntityValidator.validateFields(bindingResult);
@@ -58,7 +61,11 @@ public class PhongChieuController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
         phongChieu.setId(null);//To make sure its an INSERT and Not Update since both use save()
-        return ResponseEntity.ok(phongChieuRepository.save(phongChieu));
+        phongChieu.setTrangThaiPhongChieu(0);
+        String prefix = "PC00";
+        phongChieu.setMaPhong(prefix+phongChieuRepository.getMaxTableId());
+        phongChieu = phongChieuRepository.save(phongChieu);
+        return ResponseEntity.ok(phongChieu);
     }
 
     @Operation(summary = "Cập nhật thông tin phòng chiếu",
@@ -76,7 +83,8 @@ public class PhongChieuController {
             toBeUpdated.setMaPhong(phongChieu.getMaPhong());
             toBeUpdated.setTrangThaiPhongChieu(phongChieu.getTrangThaiPhongChieu());
             //Lưu vào Database
-            return ResponseEntity.status(HttpStatus.OK).body(phongChieuRepository.save(toBeUpdated));
+            toBeUpdated = phongChieuRepository.save(toBeUpdated);
+            return ResponseEntity.status(HttpStatus.OK).body(toBeUpdated);
         }
         return response;
     }
