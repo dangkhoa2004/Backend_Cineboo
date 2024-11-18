@@ -85,7 +85,7 @@ public class LoginController {
             success.put("TenTaiKhoan",dbUsername);
             success.put("token","Bearer "+token);
             if(phanLoaiTaiKhoan==1){
-                NhanVien nhanVien = nhanVienRepository.findByID_TaiKhoan(dbIdTaiKhoan).orElse(null);
+                NhanVien nhanVien = nhanVienRepository.findByID_TaiKhoan(dbIdTaiKhoan.toString()).orElse(null);
                 if(nhanVien!=null){
                     success.put("nhanVien",nhanVien);
                 }else{
