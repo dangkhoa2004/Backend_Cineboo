@@ -59,32 +59,36 @@ public class ChiTietHoaDonController {
     //1:Enable
     //Yêu cầu cần có sự thống nhất rõ ràng
     //Vì không tách bảng trạng thai
-    @Operation(summary = "Vô hiệu hoá chiTietHoaDon",
-            description = "setTrangThai ChiTietHoaDon bằng 0")
+    @Operation(summary = "Cập nhật trạng thái ChiTietHoaDon",
+            description = "setTrangThai: 0 - Hoá đơn rỗng/mới/chờ thanh toán\n\n" +
+                    "setTrangThai: 1 - hoạt động\n\n" +
+                    "setTrangThai: 2 - huỷ\n\n" +
+                    "Các trạng thái khác sẽ trả về thông báo và không set")
     @PutMapping("/status/{id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity"),
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "400", description = "Lỗi ID")})
-    public ResponseEntity disable(@PathVariable Long id, @RequestParam Integer trangThai) {
+    public ResponseEntity setStatus(@PathVariable Long id, @RequestParam Integer trangThai) {
         ResponseEntity response = RepoUtility.findById(id, chiTietHoaDonRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             ChiTietHoaDon chiTietHoaDon = (ChiTietHoaDon) response.getBody();
             String newStatus;
-            chiTietHoaDon.setTrangThaiChiTietHoaDon(trangThai);
             switch (trangThai) {
                 case 0:
-                    newStatus = "Hoá đơn rỗng";
+                    newStatus = "Chi tiết hoá đơn rỗng/mới";
                     break;
                 case 1:
-                    newStatus = "Hoá đơn đã thanh toán";
+                    newStatus = "Chi tiết hoas đơn đã thanh toán";
                     break;
                 case 2:
-                    newStatus = "Hoá đơn huỷ do khách không thanh toán";
+                    newStatus = "Chi tiết hoá đơn đã huỷ";
                     break;
                 default:
                     newStatus = "Trạng thái không xác định";
+                    return ResponseEntity.status(HttpStatus.OK).body(newStatus + " Ngừng đặt trạng thái ChiTietHoaDon");
             }
+            chiTietHoaDon.setTrangThaiChiTietHoaDon(trangThai);
             chiTietHoaDon = chiTietHoaDonRepository.save(chiTietHoaDon);
             Map result = new HashMap();
             result.put("value", chiTietHoaDon);
@@ -155,8 +159,8 @@ public class ChiTietHoaDonController {
 
         //After confirming that Invoice Detail is okay-ish
         //Create it anew and add it to db
-        ChiTietHoaDon blankChiTietHoaDon = createBlankInvoiceDetail(chiTietHoaDon,chiTietHoaDon.getHoaDon());
-        if(blankChiTietHoaDon==null){
+        ChiTietHoaDon blankChiTietHoaDon = createBlankInvoiceDetail(chiTietHoaDon, chiTietHoaDon.getHoaDon());
+        if (blankChiTietHoaDon == null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Đã tồn tại ChiTietHoaDon");
         }
         return ResponseEntity.status(HttpStatus.OK).body(chiTietHoaDonRepository.save(blankChiTietHoaDon));
@@ -166,31 +170,33 @@ public class ChiTietHoaDonController {
      * Thêm Hoá đơn chi tiết
      * Phương thức nầy không kiểm tra ràng buộc
      * Nếu muốn Validation, sử dụng mapping /add
+     *
      * @param chiTietHoaDon
      * @return
      */
-    private ChiTietHoaDon createBlankInvoiceDetail(ChiTietHoaDon chiTietHoaDon,HoaDon hoaDon){
+    private ChiTietHoaDon createBlankInvoiceDetail(ChiTietHoaDon chiTietHoaDon, HoaDon hoaDon) {
         ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
         blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
         blankChiTietHoaDon.setGhe(chiTietHoaDon.getGhe());
         blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
         //Check dups first, if already there
         //Just in case somehow the user can magically call this method again using the same ID_HoaDon
-        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(),chiTietHoaDon.getGhe().getId()).orElse(null);
-        if(checkDups==null) {
+        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(), chiTietHoaDon.getGhe().getId()).orElse(null);
+        if (checkDups == null) {
             return chiTietHoaDonRepository.save(blankChiTietHoaDon);//If no dups, add anew
         }
         return null;// or else return null
     }
-    public ChiTietHoaDon createBlankInvoiceDetail(Ghe ghe, HoaDon hoaDon){
+
+    public ChiTietHoaDon createBlankInvoiceDetail(Ghe ghe, HoaDon hoaDon) {
         ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
         blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
         blankChiTietHoaDon.setGhe(ghe);
         blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
         //Check dups first, if already there
         //Just in case somehow the user can magically call this method again using the same ID_HoaDon
-        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(),ghe.getId()).orElse(null);
-        if(checkDups==null) {
+        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(), ghe.getId()).orElse(null);
+        if (checkDups == null) {
             return chiTietHoaDonRepository.save(blankChiTietHoaDon);//If no dups, add anew
         }
         return null;// or else return null
@@ -266,6 +272,24 @@ public class ChiTietHoaDonController {
     @GetMapping("/find/{columnName}/{value}")
     public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
         ResponseEntity response = RepoUtility.findByCustomColumn(chiTietHoaDonRepository, columnName, value);
+        return response;
+    }
+
+    @Operation(summary = "Huỷ chi tiết hoá đơn",
+            description = "Xoá mềm ChiTietHoaDon bằng cách đặt trangThai bằng 2")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
+    @PutMapping("/disable/{id}")
+    public ResponseEntity disable(@PathVariable Long id){
+        ResponseEntity response = RepoUtility.findById(id,chiTietHoaDonRepository);
+        if(response.getStatusCode().is2xxSuccessful()){
+            ChiTietHoaDon chiTietHoaDon = (ChiTietHoaDon) response.getBody();
+            chiTietHoaDon.setTrangThaiChiTietHoaDon(2);
+             chiTietHoaDonRepository.save(chiTietHoaDon);
+            return ResponseEntity.status(HttpStatus.OK).body("Disable thành công");
+        }
         return response;
     }
 
