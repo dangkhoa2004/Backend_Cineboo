@@ -84,7 +84,7 @@ public class GheController {
             String id_PhongChieu = phongChieu.getId().toString();
             String maGhe = ghe.getMaGhe();
             Ghe duplicate = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu,maGhe).orElse(null);
-            if(duplicate==null){
+            if(duplicate!=null){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Ghế "+maGhe+" của Phòng chiêu "+id_PhongChieu+" đã tồn tại");
             }
             addedGhe.setPhongChieu(phongChieu);
