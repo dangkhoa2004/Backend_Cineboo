@@ -95,19 +95,24 @@ public class HoaDonController {
         if (response.getStatusCode().is2xxSuccessful()) {
             HoaDon hoaDon = (HoaDon) response.getBody();
             String newStatus;
-            hoaDon.setTrangThaiHoaDon(trangThai);
             switch (trangThai) {
                 case 0:
                     newStatus = "Hoá đơn rỗng";
+                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 1:
                     newStatus = "Hoá đơn đã thanh toán";
+                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 2:
                     newStatus = "Hoá đơn huỷ do khách không thanh toán";
+                    hoaDon.setTrangThaiHoaDon(trangThai);//Yes I know, duplicate code,
+                    // but better than checking if value is smaller than whatever
+                    //Sanity-wise anyway
                     break;
                 default:
                     newStatus = "Trạng thái không xác định";
+                    //Không set Status
             }
             return ResponseEntity.status(HttpStatus.OK).body("Đặt trạng thái hoá đơn: " + newStatus);
         }
