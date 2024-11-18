@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PhongChieuRepository extends JpaRepository<PhongChieu,Long> {
     @Query(value = "SELECT MAX(ID) FROM PhongChieu",nativeQuery = true)
-    Long getMaxTableId();
+    Long getMaxTableId() ;
 }
