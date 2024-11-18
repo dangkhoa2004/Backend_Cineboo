@@ -31,7 +31,7 @@ public class AddGheDTO {
     @Range(min = 0)
     private Long id_PhongChieu;
 
-    @NotNull
-    @Range(min = 0)
-    private Integer trangThaiGhe;
+//    @NotNull
+//    @Range(min = 0)
+//    private Integer trangThaiGhe;
 }
