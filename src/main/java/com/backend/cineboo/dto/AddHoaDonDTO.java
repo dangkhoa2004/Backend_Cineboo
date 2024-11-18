@@ -1,6 +1,7 @@
 package com.backend.cineboo.dto;
 
 import com.backend.cineboo.entity.ChiTietHoaDon;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
@@ -19,7 +20,8 @@ public class AddHoaDonDTO {
     @NotNull
     private Long phimId;
 
+    @Valid
     @NotNull
-    List<ChiTietHoaDon> chiTietHoaDonList;
+    List<ChiTietHoaDonListDTO> chiTietHoaDonList;
 
 }

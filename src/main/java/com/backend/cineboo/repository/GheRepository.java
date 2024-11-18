@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GheRepository extends JpaRepository<Ghe,Long> {
@@ -43,4 +44,8 @@ public interface GheRepository extends JpaRepository<Ghe,Long> {
 
     @Query(value = "SELECT MAX(ID) FROM Ghe",nativeQuery = true)
     Long getMaxTableId();
+
+    @Query(value = "SELECT * FROM GHE WHERE ID_PhongChieu= ?1 AND MaGhe= ?2 "
+            ,nativeQuery = true)
+    Optional<Ghe> findByID_PhongChieuAndMaGhe(String id_PhongChieu, String maGhe);
 }

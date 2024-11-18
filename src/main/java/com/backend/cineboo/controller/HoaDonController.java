@@ -1,13 +1,12 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.AddHoaDonDTO;
+import com.backend.cineboo.dto.ChiTietHoaDonListDTO;
 import com.backend.cineboo.entity.ChiTietHoaDon;
+import com.backend.cineboo.entity.Ghe;
 import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.entity.Voucher;
-import com.backend.cineboo.repository.HoaDonRepository;
-import com.backend.cineboo.repository.KhachHangRepository;
-import com.backend.cineboo.repository.PTTTRepository;
-import com.backend.cineboo.repository.PhimRepository;
+import com.backend.cineboo.repository.*;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +55,8 @@ public class HoaDonController {
     @Autowired
     VoucherController voucherController;
 
+    @Autowired
+    GheRepository gheRepository;
     @Autowired
     PhimRepository phimRepository;
 
@@ -254,35 +256,49 @@ public class HoaDonController {
      */
     @Operation(summary = "Thêm HoaDon rỗng mới",
             description = "Chỉ yêu cầu thông tin CƠ BẢN của HoaDon và ID của các nested objects(TRỪ CHITIETHOADON)\n\n" +
-                    "LƯU Ý: YÊU CẦU CHITIETHOADON(GHE,TRANGTHAICHITIETHOADON) ĐỂ TẠO MỚI\n\n" +
-                    "Lưu ý: Số lượng được tính theo số bản ghi chi tiết hoá đơn\n\n" +
-                    "Lưu ý: Tổng số tền được tinh theo tổng giá tiền hiện tại của Ghế\n\n" +
-                    "Lưu ý: Thời gian thanh toán lấy từ object HoaDop tu Parameter\n\n" +
+                    "LƯU Ý: YÊU CẦU ChiTietHoaDonListDTO(MaGhe,ID_PhongChieu)\n\n" +
+                    "Lưu ý: Số lượng được tính theo số bản ghi ChiTietHoaDonListDTO\n\n" +
+                    "Lưu ý: Tổng số tền được tinh theo ChiTietHoaDonListDTO\n\n" +
+                    "Lưu ý: Thời gian thanh toán mặc định là thời gian tạo HoaDon\n\n" +
                     "Lưu ý: Thời gian thanh toán sẽ được cập nhật khi thanh toán thành công\n\n" +
-                    "Lưu ý: Số lượng được tính theo số bản ghi chi tiết hoá đơn\n\n" +
+                    "Lưu ý: Số lượng được tính theo ChiTietHoaDonListDTO\n\n" +
                     "Lưu ý: Trạng thái mặc định là 0\n\n" +
-                    "Không yêu cầu PTTT")
+                    "Lưu ý: PTTT mặc định là null\\" +
+                    "Lưu ý: Voucher mặc định là null")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PostMapping("/add")
     public ResponseEntity add(@Valid @RequestBody AddHoaDonDTO hoaDon, BindingResult bindingResult
-                              ) {
+    ) {
         Map errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-        List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
+        List<ChiTietHoaDonListDTO> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
         if(chiTietHoaDonList==null||chiTietHoaDonList.isEmpty()){
-            return ResponseEntity.badRequest().body("Thiếu List<ChiTietHoaDon>");
+            return ResponseEntity.badRequest().body("Thiếu List<ChiTietHoaDonListDTO>");
+        }
+        List<Ghe> gheList = new ArrayList<Ghe>();
+        for (ChiTietHoaDonListDTO helpMeImTooTiredForThis : chiTietHoaDonList) {
+            String id_PhongChieu = helpMeImTooTiredForThis.getId_PhongChieu().toString();
+            String maGhe = helpMeImTooTiredForThis.getMaGhe();
+            Ghe queriedGhe = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu,maGhe).orElse(null);
+            if(queriedGhe==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại, ngừng tạo hoá đơn");
+            }
+            gheList.add(queriedGhe);
         }
         //Tạo hoá đơn rỗng
-        HoaDon blankInvoice = createBlankInvoice(hoaDon, chiTietHoaDonList);
+        HoaDon blankInvoice = createBlankInvoice(hoaDon, gheList);
         //Lưu vào DB để tí còn có ID mà xử lý
         blankInvoice = hoaDonRepository.save(blankInvoice);
         //Thêm hoá đơn chi tiết
-        createAndAddInvoiceDetailToInvoice(blankInvoice, chiTietHoaDonList);
+        boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList);
+        if(!createdInvoiceDetail){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Lỗi khi tạo ChiTietHoaDon, ngừng tạo HoaDon");
+        }
         HoaDon finalHoaDon = hoaDonRepository.findById(blankInvoice.getId()).orElse(null);
         if(finalHoaDon!=null) {
             return ResponseEntity.status(HttpStatus.OK).body(finalHoaDon);
@@ -303,7 +319,7 @@ public class HoaDonController {
         hoaDonRepository.save(hoaDon);
         return originalPrice;
     }
-    private HoaDon createBlankInvoice(AddHoaDonDTO hoaDon, List<ChiTietHoaDon> list) {
+    private HoaDon createBlankInvoice(AddHoaDonDTO hoaDon, List<Ghe> gheList) {
         String hoaDonPrefix = "HD00";
         //Tạo hoá đơn rỗng
         //Chứa các thông tin cơ bản
@@ -316,8 +332,9 @@ public class HoaDonController {
 
 
         BigDecimal totalPrice = BigDecimal.ZERO;
-        for (ChiTietHoaDon helpMeImTooTiredForThis : list) {
-            totalPrice.add(helpMeImTooTiredForThis.getGhe().getGiaTien());
+        for (Ghe ghe : gheList) {
+            //Already checked whether the items exist
+            totalPrice.add(ghe.getGiaTien());
         }
         blankHoaDon.setTongSoTien(totalPrice);
         int point = (totalPrice
@@ -327,13 +344,13 @@ public class HoaDonController {
         blankHoaDon.setTrangThaiHoaDon(0);//Hoá đơn mới
         blankHoaDon.setMaHoaDon(hoaDonPrefix + hoaDonRepository.getMaxTableId());
         blankHoaDon.setPttt(null);
-        blankHoaDon.setSoLuong(list.size());
+        blankHoaDon.setSoLuong(gheList.size());
         return hoaDonRepository.save(blankHoaDon);
     }
 
 
     @Operation(summary = "Áp dụng Voucher"
-    ,description = "Cập nhật TongSoTien sau khi áp dụng Voucher")
+            ,description = "Cập nhật TongSoTien sau khi áp dụng Voucher")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
             @ApiResponse(responseCode = "404", description = "Not Found"),
@@ -355,7 +372,7 @@ public class HoaDonController {
                             .body("Không thể lấy được giá gốc của HoaDon");
                 }
                 hoaDon.setTongSoTien(originalPrice);//Đặt về giá gốc, tí tính toán sau
-               voucherController.increaseVoucherCount(appliedVoucher);//Do hoá đơn không dùng nữa, tăng lên 1
+                voucherController.increaseVoucherCount(appliedVoucher);//Do hoá đơn không dùng nữa, tăng lên 1
             }
 
             //Tìm voucher xem có tồn tại hay khả dụng không
@@ -387,15 +404,19 @@ public class HoaDonController {
         return hoaDonResponse;
     }
 
-    private void createAndAddInvoiceDetailToInvoice(HoaDon hoaDon, List<ChiTietHoaDon> chiTietHoaDonList) {
+    private boolean createAndAddInvoiceDetailToInvoice(HoaDon hoaDon, List<Ghe> gheList) {
         //Coder is having a cold and therefore low motivation
         //No more validation or constraint check to verify if hoaDon exists
         //Just.....do it
-        for (ChiTietHoaDon chiTietHoaDon : chiTietHoaDonList) {
+        for (Ghe ghe : gheList) {
             //Lượt qua danh sách Hoá đơn chi tiết
             //Tạo mới chi tiêt hoá đơn
-            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(chiTietHoaDon, hoaDon);
+            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(ghe, hoaDon);
+            if(temp==null){
+                return false;
+            }
         }
+        return true;
     }
 
 
