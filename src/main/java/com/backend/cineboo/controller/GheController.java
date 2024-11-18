@@ -64,7 +64,10 @@ public class GheController {
     }
 
     @Operation(summary = "Thêm ghế mới",
-            description = "Thêm một ghế mới vào hệ thống.")
+            description = "Thêm một ghế mới vào hệ thống\n\n" +
+                    "Mã Ghế đặt bởi giá trị nhận vào từ request" +
+                    "Sẽ check trùng lặp dưa trên MaGhe và ID_PhongChieu\n\n" +
+                    "Trạng thái mặc định là 0")
     @PostMapping("/add")
     public ResponseEntity add(@Valid @RequestBody AddGheDTO ghe, BindingResult bindingResult){
         Map<String,String> errors = EntityValidator.validateFields(bindingResult);
@@ -72,14 +75,26 @@ public class GheController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
         Ghe addedGhe = new Ghe();
-        String prefix = "GH00";
-        addedGhe.setMaGhe(prefix+gheRepository.getMaxTableId());
+//        String prefix = "GH00";
+//        addedGhe.setMaGhe(prefix+gheRepository.getMaxTableId());//Cuz Fe wants to make it manual
+        addedGhe.setMaGhe(ghe.getMaGhe());
         ResponseEntity response = RepoUtility.findById(ghe.getId_PhongChieu(),phongChieuRepository);
         if(response.getStatusCode().is2xxSuccessful()) {
             PhongChieu phongChieu = (PhongChieu) response.getBody();
+            String id_PhongChieu = phongChieu.getId().toString();
+            String maGhe = ghe.getMaGhe();
+            Ghe duplicate = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu,maGhe).orElse(null);
+            if(duplicate==null){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Ghế "+maGhe+" của Phòng chiêu "+id_PhongChieu+" đã tồn tại");
+            }
             addedGhe.setPhongChieu(phongChieu);
             addedGhe.setGiaTien(ghe.getGiaTien());
-            addedGhe.setTrangThaiGhe(ghe.getTrangThaiGhe());
+            addedGhe.setTrangThaiGhe(0);
+            //Here, will check if it's duplicated
+            //Based on MaGhe and PhongChieu
+            //MaGhe can be the same, but should appear in each PhongChieu only once
+
+
             addedGhe = gheRepository.save(addedGhe);
             return ResponseEntity.ok(addedGhe);
         }
