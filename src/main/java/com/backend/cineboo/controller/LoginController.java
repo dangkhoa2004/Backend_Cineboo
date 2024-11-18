@@ -92,7 +92,7 @@ public class LoginController {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile không tồn tại");
                 }
             }else if(phanLoaiTaiKhoan==2){
-                KhachHang khachHang = khachHangRepository.findByID_TaiKhoan(dbIdTaiKhoan).orElse(null);
+                KhachHang khachHang = khachHangRepository.findByID_TaiKhoan(dbIdTaiKhoan.toString()).orElse(null);
                 if(khachHang!=null){
                     success.put("khachHang",khachHang);
                 }
