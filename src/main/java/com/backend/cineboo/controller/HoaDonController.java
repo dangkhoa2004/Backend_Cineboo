@@ -2,10 +2,7 @@ package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.AddHoaDonDTO;
 import com.backend.cineboo.dto.ChiTietHoaDonListDTO;
-import com.backend.cineboo.entity.ChiTietHoaDon;
-import com.backend.cineboo.entity.Ghe;
-import com.backend.cineboo.entity.HoaDon;
-import com.backend.cineboo.entity.Voucher;
+import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
@@ -95,19 +92,24 @@ public class HoaDonController {
         if (response.getStatusCode().is2xxSuccessful()) {
             HoaDon hoaDon = (HoaDon) response.getBody();
             String newStatus;
-            hoaDon.setTrangThaiHoaDon(trangThai);
             switch (trangThai) {
                 case 0:
                     newStatus = "Hoá đơn rỗng";
+                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 1:
                     newStatus = "Hoá đơn đã thanh toán";
+                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 2:
                     newStatus = "Hoá đơn huỷ do khách không thanh toán";
+                    hoaDon.setTrangThaiHoaDon(trangThai);//Yes I know, duplicate code,
+                    // but better than checking if value is smaller than whatever
+                    //Sanity-wise anyway
                     break;
                 default:
                     newStatus = "Trạng thái không xác định";
+                    //Không set Status
             }
             return ResponseEntity.status(HttpStatus.OK).body("Đặt trạng thái hoá đơn: " + newStatus);
         }
@@ -212,8 +214,12 @@ public class HoaDonController {
     @PutMapping("/hoaDon/{ID_HoaDon}/setPTTT/{ID_PTTT}")
     public ResponseEntity setPTTT(@PathVariable Long ID_PTTT, @PathVariable Long ID_HoaDon) {
         HoaDon hoaDon = hoaDonRepository.findById(ID_HoaDon).orElse(null);
+        PTTT pttt = ptttRepository.findById(ID_PTTT).orElse(null);
+        if(pttt==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("PTTT không tồn tại");
+        }
         if (hoaDon != null) {
-            hoaDon.setPttt(ptttRepository.findById(ID_PTTT).get());
+            hoaDon.setPttt(pttt);
             return ResponseEntity.ok(hoaDonRepository.save(hoaDon));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được hoá đơn");
