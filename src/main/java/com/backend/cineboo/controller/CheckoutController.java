@@ -2,6 +2,7 @@ package com.backend.cineboo.controller;
 
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
+import com.backend.cineboo.utility.InvoiceGenerator;
 import com.backend.cineboo.utility.RepoUtility;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -335,8 +336,10 @@ public class CheckoutController {
                 khachHangRepository.save(khachHang);
                 hoaDonRepository.save(hoaDon);
             }
+            InvoiceGenerator.createInvoice(hoaDon);
             // Trả về phản hồi đã được đóng gói trong ResponseEntity\
             return ResponseEntity.status(HttpStatus.OK).body(jsonNode);
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
         }
