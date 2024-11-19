@@ -1,13 +1,7 @@
 package com.backend.cineboo.controller;
 
-import com.backend.cineboo.entity.ChiTietHoaDon;
-import com.backend.cineboo.entity.HoaDon;
-import com.backend.cineboo.entity.KhachHang;
-import com.backend.cineboo.entity.Voucher;
-import com.backend.cineboo.repository.ChiTietHoaDonRepository;
-import com.backend.cineboo.repository.HoaDonRepository;
-import com.backend.cineboo.repository.KhachHangRepository;
-import com.backend.cineboo.repository.VoucherRepository;
+import com.backend.cineboo.entity.*;
+import com.backend.cineboo.repository.*;
 import com.backend.cineboo.utility.RepoUtility;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +50,9 @@ public class CheckoutController {
 
     @Autowired
     ChiTietHoaDonRepository chiTietHoaDonRepository;
+
+    @Autowired
+    GheRepository gheRepository;
 
     public CheckoutController(PayOS payOS) {
         super();
@@ -232,6 +229,9 @@ public class CheckoutController {
                         for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
                             chiTietHoaDon.setTrangThaiChiTietHoaDon(2);//Đã huỷ
                             chiTietHoaDonRepository.save(chiTietHoaDon);
+                            Ghe gheReturn = chiTietHoaDon.getGhe();
+                            gheReturn.setTrangThaiGhe(0);
+                            gheRepository.save(gheReturn);
                         }
                     }
                 } else {
@@ -292,6 +292,7 @@ public class CheckoutController {
 
     @Operation(summary = "Hàm nhận dữ liệu trả về từ PayOS",
             description = "Nhận dữ liệu trả về từ PayOS khi thanh toán thành công\n\n" +
+                    "Hoặc thất bại?(Cái này chưa test)" +
                     "Và thực hiện ngắt Webhook\n\n" )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Đã thanh toán"),
@@ -303,6 +304,8 @@ public class CheckoutController {
         try {
             // Chuyển đổi requestBody thành JsonNode
             JsonNode jsonNode = objectMapper.readTree(requestBody);
+            JsonNode success = jsonNode.get("success");
+
             JsonNode dataNode = jsonNode.get("data");
             System.out.println(jsonNode);
             // Access the "id" field inside the "data" node
@@ -317,6 +320,10 @@ public class CheckoutController {
                     for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
                         chiTietHoaDon.setTrangThaiChiTietHoaDon(1);//Đã hoàn tất
                         chiTietHoaDonRepository.save(chiTietHoaDon);
+                        //Also disable Ghe
+                        Ghe boughtGhe = chiTietHoaDon.getGhe();
+                        boughtGhe.setTrangThaiGhe(1);
+                        gheRepository.save(boughtGhe);
                     }
                 }
                 //Thêm điểm vào ĐÂY
@@ -324,6 +331,7 @@ public class CheckoutController {
                 int originalPoint = hoaDon.getKhachHang().getDiem();
                 KhachHang khachHang = hoaDon.getKhachHang();
                 khachHang.setDiem(originalPoint+hoaDon.getDiem());
+                hoaDon.setTrangThaiHoaDon(1);
                 khachHangRepository.save(khachHang);
                 hoaDonRepository.save(hoaDon);
             }
