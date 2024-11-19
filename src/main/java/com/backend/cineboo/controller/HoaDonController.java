@@ -340,7 +340,7 @@ public class HoaDonController {
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (Ghe ghe : gheList) {
             //Already checked whether the items exist
-            totalPrice.add(ghe.getGiaTien());
+            totalPrice=totalPrice.add(ghe.getGiaTien());
         }
         blankHoaDon.setTongSoTien(totalPrice);
         int point = (totalPrice
