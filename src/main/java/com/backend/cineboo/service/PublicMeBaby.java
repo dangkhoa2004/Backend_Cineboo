@@ -16,7 +16,7 @@ import java.net.URL;
 public class PublicMeBaby {
 
 //    @Value(value = "${NGROK_TOKEN}")
-    private String ngrokToken="2ognSI3bpzsKouW2bejjuFGzcXj_2CNCVGYiiCFgfxUV9Vkf9";
+    private String ngrokToken="2p38nj1Nz2e1o0pnXm06BFBdhSI_5HkDB2tKs4dE6VknrvysJ";
 
     public String startNgrok() throws Exception {
         // Ensure the token is set
