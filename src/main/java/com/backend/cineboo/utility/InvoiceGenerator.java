@@ -75,9 +75,9 @@ public class InvoiceGenerator {
         }
     }
 
-    public static void createInvoice(HoaDon hoaDon) throws IOException {
+    public static String createInvoice(HoaDon hoaDon) throws IOException {
         if(hoaDon.getTrangThaiHoaDon()!=1){
-            return;
+            return null;
         }
         InputStream inputFont = InvoiceGenerator.class.getClassLoader().getResourceAsStream("fonts/VietFontsWeb1_ttf/vuArial.ttf");
         InputStream inputFontBold = InvoiceGenerator.class.getClassLoader().getResourceAsStream("fonts/VietFontsWeb1_ttf/vuArialBold.ttf");
@@ -111,14 +111,19 @@ public class InvoiceGenerator {
 
         StringBuilder nameBuilder = new StringBuilder();
         nameBuilder.append(invoiceFileName).append(".pdf");
-
+        String directoryPath = "invoices/"; // Replace with your directory path
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs(); // Create the directory if it doesn't exist
+        }
         // Creating a PdfDocument object
         PdfWriter writer;
+        String absolutePath = directoryPath+nameBuilder.toString();
         try {
 
 
             // Load the font using PdfFontFactory
-            writer = new PdfWriter(nameBuilder.toString());
+            writer = new PdfWriter(absolutePath);
             PdfDocument pdf = new PdfDocument(writer);
 
             // Set Page size to small (58cm width)
@@ -153,7 +158,7 @@ public class InvoiceGenerator {
             LineSeparator separator = new LineSeparator(line);
             separator.setMarginTop(5f);
             separator.setMarginBottom(5f);
-                doc.add(separator);
+            doc.add(separator);
 
             // Main Title: "Hoá đơn đặt vé phim"
             Paragraph title = new Paragraph("Hoá đơn đặt vé")
@@ -164,13 +169,7 @@ public class InvoiceGenerator {
             title.setRole(PdfName.H1);
             doc.add(title);
 
-            // Draw line separator
-//            SolidLine line = new SolidLine(1f);
-//            line.setColor(Color.BLUE);
-//            LineSeparator separator = new LineSeparator(line);
-//            separator.setMarginTop(10);
-//            separator.setMarginBottom(10);
-//                doc.add(separator); //No seperator for now
+
 
             // Invoice Details
             doc.add(new Paragraph("Mã thanh toán: " + maHoaDon).setFontSize(7f)).setFont(font);
@@ -254,7 +253,9 @@ public class InvoiceGenerator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return  absolutePath;
     }
+
 
 
     private static void addQR(String mQRCode, PdfDocument mPdfDocument, int mPage, float x, float y) {

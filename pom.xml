@@ -170,7 +170,8 @@
 
         <!--SALTING AND HASHING PASSWORD-->
 
-<!--        generating pdf-->
+
+<!--        ITEXTPDF-->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>kernel</artifactId>
@@ -206,25 +207,27 @@
             <artifactId>sign</artifactId>
             <version>7.0.2</version>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.17.0</version>
-        </dependency>
 
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>barcodes</artifactId>
             <version>7.0.2</version>
         </dependency>
-
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>hyph</artifactId>
             <version>7.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.17.0</version>
+        </dependency>
 
-        <!--        generating pdf-->
+        <!--        ITEXTPDF-->
+
+
+
     </dependencies>
 
 
