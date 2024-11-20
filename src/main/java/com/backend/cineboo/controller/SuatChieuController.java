@@ -20,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -126,9 +127,25 @@ public class SuatChieuController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        String id_PhongChieu = suatChieu.getPhongChieu().getId().toString();
+        String id_Phim = suatChieu.getPhim().getId().toString();
+        LocalDateTime thoiGianChieu = suatChieu.getThoiGianChieu();
+
+        SuatChieu duplicate = suatChieuRepository.checkDuplicate(id_Phim,id_PhongChieu,thoiGianChieu).orElse(null);
+        if(duplicate!=null){
+            String duplicateMsg= "Suất chiếu của phim "+id_Phim+" tại phòng "+id_PhongChieu+" vào lúc "+thoiGianChieu.toString()+" đã tồn tại";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(duplicateMsg);
+        }
         suatChieu.setMaSuatChieu(idPrefix + (suatChieuRepository.getMaxTableId() + 1));
         suatChieu.setId(null);//To make sure its an INSERT and Not Update since both use save()
-        return ResponseEntity.status(HttpStatus.OK).body(suatChieuRepository.save(suatChieu));
+        //SHOULD PROBABLY IMPLEMENT A CHECK HERE
+        //IF THOIGIANCHIEU<= (LocalDateTime.now() + phim.getThoiLuong())
+        //Then allow ADDING new SuatChieu
+        //Basically, only when Phim finished its airing
+        //Will we allow another airing of the same Phim, in the same PhongChieu
+        //For now, not implemented cuz FrontEnd will suffer when testing
+        suatChieu = suatChieuRepository.save(suatChieu);
+        return ResponseEntity.status(HttpStatus.OK).body(suatChieu);
     }
 
     /**

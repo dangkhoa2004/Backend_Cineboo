@@ -181,4 +181,6 @@ public class KhachHangController {
         ResponseEntity response = RepoUtility.findByCustomColumn(khachHangRepository, columnName, value);
         return response;
     }
+
+
 }
