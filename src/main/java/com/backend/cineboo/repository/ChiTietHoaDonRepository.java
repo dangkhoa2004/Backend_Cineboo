@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,4 +20,7 @@ public interface ChiTietHoaDonRepository extends JpaRepository<ChiTietHoaDon,Lon
             "WHERE ID_HoaDon = ?1 AND ID_Ghe = ?2 " +
             "AND TrangThaiChiTietHoaDon = 0 ",nativeQuery = true)
     Optional<ChiTietHoaDon> checkDuplicate(Long ID_HoaDon, Long ID_Ghe );
+
+    @Query(value = "SELECT * FROM ChiTietHoaDon  WHERE  ID_HoaDon = ? ",nativeQuery = true)
+    List<ChiTietHoaDon> getChiTietHoaDonsByID_HoaDon(String id_HoaDon);
 }

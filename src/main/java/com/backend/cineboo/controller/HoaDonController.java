@@ -5,6 +5,7 @@ import com.backend.cineboo.dto.ChiTietHoaDonListDTO;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
 import com.backend.cineboo.utility.EntityValidator;
+import com.backend.cineboo.utility.InvoiceGenerator;
 import com.backend.cineboo.utility.RepoUtility;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,20 +13,31 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("/hoadon")
@@ -57,6 +69,9 @@ public class HoaDonController {
     @Autowired
     PhimRepository phimRepository;
 
+    @Autowired
+    ChiTietHoaDonRepository chiTietHoaDonRepository;
+
     @GetMapping("/get")
     @Operation(summary = "Hiển thị tất cả hoaDon",
             description = "Trả về Array trống nếu không có hoaDon")
@@ -67,6 +82,22 @@ public class HoaDonController {
         return ResponseEntity.ok(hoaDons);
     }
 
+    private void revertSeatsAfter5Mins(Long hoaDonId){
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.schedule(() -> {
+            // Get hoaDon again, just to be sure
+          List<ChiTietHoaDon> revertList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
+                for(ChiTietHoaDon chiTietHoaDon: revertList){
+                    Ghe revertGhe = chiTietHoaDon.getGhe();
+                    if(revertGhe!=null){
+                        revertGhe.setTrangThaiGhe(0);
+                        gheRepository.save(revertGhe);
+                        System.out.println("Reverting Ghe"+revertGhe.getMaGhe());
+                    }
+                }
+
+        }, 5, TimeUnit.MINUTES);
+    }
     /**
      * Đặt trạng thái HoaDon bằng 0.
      *
@@ -293,20 +324,33 @@ public class HoaDonController {
             Ghe queriedGhe = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu,maGhe).orElse(null);
             if(queriedGhe==null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại, ngừng tạo hoá đơn");
-            }
+            };//Giữ ghế
             gheList.add(queriedGhe);
         }
         //Tạo hoá đơn rỗng
         HoaDon blankInvoice = createBlankInvoice(hoaDon, gheList);
         //Lưu vào DB để tí còn có ID mà xử lý
-        blankInvoice = hoaDonRepository.save(blankInvoice);
+
         //Thêm hoá đơn chi tiết
         boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList);
         if(!createdInvoiceDetail){
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Lỗi khi tạo ChiTietHoaDon, ngừng tạo HoaDon");
         }
+
         HoaDon finalHoaDon = hoaDonRepository.findById(blankInvoice.getId()).orElse(null);
         if(finalHoaDon!=null) {
+            //Reverse Seat here
+            List<ChiTietHoaDon> finalList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(finalHoaDon.getId().toString());
+            for(ChiTietHoaDon reverse: finalList){
+                Ghe reverseGhe = reverse.getGhe();
+                if(reverseGhe!=null){
+                    reverseGhe.setTrangThaiGhe(1);
+                    gheRepository.save(reverseGhe);
+                    System.out.println("Booking Ghe"+reverseGhe.getMaGhe());
+                }
+            }
+            revertSeatsAfter5Mins(finalHoaDon.getId());
+            //Schedule a revert if not booked
             return ResponseEntity.status(HttpStatus.OK).body(finalHoaDon);
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi xử lý hoá đơn");
@@ -340,7 +384,7 @@ public class HoaDonController {
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (Ghe ghe : gheList) {
             //Already checked whether the items exist
-            totalPrice.add(ghe.getGiaTien());
+            totalPrice=totalPrice.add(ghe.getGiaTien());
         }
         blankHoaDon.setTongSoTien(totalPrice);
         int point = (totalPrice
@@ -474,4 +518,34 @@ public class HoaDonController {
         return response;
     }
 
+    @Operation(summary = "Tải PDF hoá đơn", description = "Nhận vào ID Hoá đơn và trả về PDF hoá đơn nếu tồn tại")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "PDF successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Invoice has not been paid"),
+            @ApiResponse(responseCode = "404", description = "HoaDon not found or file not available"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/download/{idHoaDon}")
+    public ResponseEntity displayPDF(@PathVariable Long idHoaDon) throws IOException {
+        if (idHoaDon == null || StringUtils.isBlank(idHoaDon.toString())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("idHoaDon không hợp lệ");
+        }
+        HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).orElse(null);
+        if (hoaDon == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy HoaDon");
+        }
+        String path = InvoiceGenerator.createInvoice(hoaDon);
+        if (StringUtils.isBlank(path)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn chưa được thanh toán");
+        }
+        File pdfFile = new File(path);
+        if (pdfFile.exists()) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + pdfFile.getName() + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(new InputStreamResource(new FileInputStream(pdfFile)));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }
