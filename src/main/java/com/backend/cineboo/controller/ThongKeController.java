@@ -3,6 +3,7 @@ package com.backend.cineboo.controller;
 import com.backend.cineboo.entity.RevenuePerMonth;
 import com.backend.cineboo.entity.RevenuePerMovie;
 import com.backend.cineboo.entity.UserSpentAmount;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -24,6 +25,8 @@ public class ThongKeController {
     @Autowired
     private EntityManager entityManager;
 
+    @Operation(summary = "Thống kê doanh thu trên Phim",
+            description = "Dùng cho Pie Chart")
     @GetMapping("/pie")
     public ResponseEntity pie(){
         String sql = "SELECT\n" +
@@ -64,7 +67,8 @@ public class ThongKeController {
         return ResponseEntity.ok(result);
     }
 
-
+    @Operation(summary = "Thống kê doanh thu trên người dùng",
+            description = "Dùng cho Scatter Chart")
     @GetMapping("/scatter")
     public ResponseEntity scatter(){
         String sql = "SELECT kh.ID,\n" +
@@ -94,6 +98,9 @@ public class ThongKeController {
         return ResponseEntity.ok(result);
     }
 
+
+    @Operation(summary = "Thống kê doanh thu theo từng tháng theo năm tuỳ chọn",
+            description = "Dùng cho Bar Chart")
     @GetMapping("/bar/{year}")
     public ResponseEntity bar(@PathVariable String year){
         if(!year.matches("^[12][0-9]{3}$")){
