@@ -140,7 +140,7 @@ public class CheckoutController {
                 //So NO EXPIRATION!
 
                 final String description = details.toString();
-                final String returnUrl = baseUrl + "/payos/success";
+                final String returnUrl = baseUrl + "/hoadon/download/"+hoaDon.getId();
                 final String cancelUrl = baseUrl + "/payos/cancel";
                 final Integer quantity = hoaDon.getSoLuong();
 
@@ -230,9 +230,20 @@ public class CheckoutController {
                         for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
                             chiTietHoaDon.setTrangThaiChiTietHoaDon(2);//Đã huỷ
                             chiTietHoaDonRepository.save(chiTietHoaDon);
-                            Ghe gheReturn = chiTietHoaDon.getGhe();
-                            gheReturn.setTrangThaiGhe(0);
-                            gheRepository.save(gheReturn);
+                            //WARNING: trangThaiGhe MUST NOT be set here
+                            //Ghe will un-reserve itself after 5 minutes using Scheduler from HoaDonController
+                            //Ghe should keep being booked even after Customer decided to stop buying
+                            //JUST LIKE ZALO
+                            //Because if customer1 deletes their order before the 5 minute mark is passed
+                            //And customer2 book the chairs at the 4th minute and have the chairs setTrangThai(1)
+                            //When it hits 5 minutes, customer2 will get fucked
+                            //Because the scheduler that belongs to customer1 will run at that exact 5th minute
+                            //And it will update the chairs that customer2 booked
+                            //It will do setTrangThai(1)->(0). And customer2 is now fucked
+
+//                            Ghe gheReturn = chiTietHoaDon.getGhe();//DO NOT EVER UNCOMMENT THIS!!!!
+//                            gheReturn.setTrangThaiGhe(0);
+//                            gheRepository.save(gheReturn);
                         }
                     }
                 } else {
@@ -298,7 +309,7 @@ public class CheckoutController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Đã thanh toán"),
     })
-            @PostMapping(path = "/confirm-webhook")
+    @PostMapping(path = "/confirm-webhook")
     public ResponseEntity confirmWebhook(@RequestBody String requestBody) {
         ObjectMapper objectMapper = new ObjectMapper();
 
