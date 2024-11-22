@@ -36,6 +36,9 @@ import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.VerticalAlignment;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
+import vn.payos.PayOS;
+import vn.payos.type.PaymentLinkData;
 
 import javax.swing.text.StyleConstants;
 import java.io.File;
@@ -62,6 +65,10 @@ import java.util.logging.Logger;
  * @author Administrator
  */
 public class InvoiceGenerator {
+
+
+    private static final RestTemplate restTemplate = new RestTemplate();
+
     private static BigDecimal getDecimal18Point2(BigDecimal value) {
         BigDecimal fractionalPart = value.remainder(BigDecimal.ONE);
 
@@ -76,9 +83,18 @@ public class InvoiceGenerator {
     }
 
     public static String createInvoice(HoaDon hoaDon) throws IOException {
-        if(hoaDon.getTrangThaiHoaDon()!=1){
+
+        String maHoaDonToOrderCode = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
+        Long orderCode = Long.valueOf(maHoaDonToOrderCode);
+        String url = "http://localhost:8080/payos/get/" + orderCode; // Replace with your actual URL
+        PaymentLinkData paymentLinkData= restTemplate.getForEntity(url, PaymentLinkData.class).getBody();
+        System.out.println(paymentLinkData);
+        System.out.println(paymentLinkData.getStatus());
+        if(!paymentLinkData.getStatus().equals("PAID")){
+            //Meaning its Expired or Cancelled and shits
             return null;
         }
+
         InputStream inputFont = InvoiceGenerator.class.getClassLoader().getResourceAsStream("fonts/VietFontsWeb1_ttf/vuArial.ttf");
         InputStream inputFontBold = InvoiceGenerator.class.getClassLoader().getResourceAsStream("fonts/VietFontsWeb1_ttf/vuArialBold.ttf");
 

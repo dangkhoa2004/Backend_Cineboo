@@ -83,20 +83,29 @@ public class HoaDonController {
     }
 
     private void revertSeatsAfter5Mins(Long hoaDonId){
+        //Goddamn it check if the damn thing is paid first
+        HoaDon hoaDon = hoaDonRepository.findById(hoaDonId).orElse(null);
+        if(hoaDon!=null && hoaDon.getTrangThaiHoaDon()==1){
+            //If the bloody thing does exist
+            //AND is already PAID
+            //Then don't fuck with it
+            return;
+        }
+        //Otherwise nuke it to oblivion
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.schedule(() -> {
             // Get hoaDon again, just to be sure
-          List<ChiTietHoaDon> revertList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
-                for(ChiTietHoaDon chiTietHoaDon: revertList){
-                    Ghe revertGhe = chiTietHoaDon.getGhe();
-                    if(revertGhe!=null){
-                        revertGhe.setTrangThaiGhe(0);
-                        gheRepository.save(revertGhe);
-                        System.out.println("Reverting Ghe"+revertGhe.getMaGhe());
-                    }
+            List<ChiTietHoaDon> revertList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
+            for(ChiTietHoaDon chiTietHoaDon: revertList){
+                Ghe revertGhe = chiTietHoaDon.getGhe();
+                if(revertGhe!=null){
+                    revertGhe.setTrangThaiGhe(0);
+                    gheRepository.save(revertGhe);
+                    System.out.println("Reverting Ghe"+revertGhe.getMaGhe());
                 }
+            }
 
-        }, 5, TimeUnit.MINUTES);
+        }, 2, TimeUnit.MINUTES);
     }
     /**
      * Đặt trạng thái HoaDon bằng 0.
@@ -536,7 +545,7 @@ public class HoaDonController {
         }
         String path = InvoiceGenerator.createInvoice(hoaDon);
         if (StringUtils.isBlank(path)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn chưa được thanh toán");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn đã huỷ hoặc hết hạn");
         }
         File pdfFile = new File(path);
         if (pdfFile.exists()) {
