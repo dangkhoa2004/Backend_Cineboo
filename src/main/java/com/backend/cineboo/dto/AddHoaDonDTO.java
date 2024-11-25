@@ -1,6 +1,5 @@
 package com.backend.cineboo.dto;
 
-import com.backend.cineboo.entity.ChiTietHoaDon;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -18,7 +17,7 @@ public class AddHoaDonDTO {
     private Long khachHangId;
 
     @NotNull
-    private Long phimId;
+    private Long suatChieuId;
 
     @Valid
     @NotNull

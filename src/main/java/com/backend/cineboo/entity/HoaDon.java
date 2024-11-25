@@ -5,20 +5,19 @@
 package com.backend.cineboo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-
-import java.math.*;
-import java.time.*;
-import java.util.List;
-
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
-import org.springframework.format.annotation.DateTimeFormat;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author 04dkh
@@ -41,9 +40,9 @@ public class HoaDon {
     private KhachHang khachHang;
 
     @ManyToOne
-    @JoinColumn(name = "ID_PHIM")
+    @JoinColumn(name = "ID_SUATCHIEU")
     @NotNull
-    private Phim phim;
+    private SuatChieu suatChieu;
 
     @ManyToOne
     @JoinColumn(name = "ID_VOUCHER")

@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +71,9 @@ public class HoaDonController {
     @Autowired
     ChiTietHoaDonRepository chiTietHoaDonRepository;
 
+    @Autowired
+    SuatChieuRepository suatChieuRepository;
+
     @GetMapping("/get")
     @Operation(summary = "Hiển thị tất cả hoaDon",
             description = "Trả về Array trống nếu không có hoaDon")
@@ -105,7 +107,7 @@ public class HoaDonController {
                 }
             }
 
-        }, 2, TimeUnit.MINUTES);
+        }, 5, TimeUnit.MINUTES);
     }
     /**
      * Đặt trạng thái HoaDon bằng 0.
@@ -185,7 +187,7 @@ public class HoaDonController {
         if (response.getStatusCode().is2xxSuccessful()) {
             HoaDon hoaDonToBeUpdated = (HoaDon) response.getBody();
             hoaDonToBeUpdated.setKhachHang(hoaDon.getKhachHang());
-            hoaDonToBeUpdated.setPhim(hoaDon.getPhim());
+            hoaDonToBeUpdated.setSuatChieu(hoaDon.getSuatChieu());
             hoaDonToBeUpdated.setVoucher(hoaDon.getVoucher());
             hoaDonToBeUpdated.setSoLuong(hoaDon.getSoLuong());
             hoaDonToBeUpdated.setThoiGianThanhToan(hoaDon.getThoiGianThanhToan());
@@ -338,6 +340,9 @@ public class HoaDonController {
         }
         //Tạo hoá đơn rỗng
         HoaDon blankInvoice = createBlankInvoice(hoaDon, gheList);
+        if(blankInvoice==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khách hàng hoặc suất chiếu không tồn tại");
+        }
         //Lưu vào DB để tí còn có ID mà xử lý
 
         //Thêm hoá đơn chi tiết
@@ -355,7 +360,6 @@ public class HoaDonController {
                 if(reverseGhe!=null){
                     reverseGhe.setTrangThaiGhe(1);
                     gheRepository.save(reverseGhe);
-                    System.out.println("Booking Ghe"+reverseGhe.getMaGhe());
                 }
             }
             revertSeatsAfter5Mins(finalHoaDon.getId());
@@ -383,8 +387,17 @@ public class HoaDonController {
         //Tạo hoá đơn rỗng
         //Chứa các thông tin cơ bản
         HoaDon blankHoaDon = new HoaDon();
-        blankHoaDon.setKhachHang(khachHangRepository.findById(hoaDon.getKhachHangId()).get());
-        blankHoaDon.setPhim(phimRepository.findById(hoaDon.getPhimId()).get());
+        KhachHang khachHang = khachHangRepository.findById(hoaDon.getKhachHangId()).orElse(null);
+        if(khachHang==null){
+            return null;
+        }
+        SuatChieu suatChieu = suatChieuRepository.findById(hoaDon.getSuatChieuId()).orElse(null);
+        if(suatChieu==null){
+            return null;
+        }
+        blankHoaDon.setKhachHang(khachHang);
+
+        blankHoaDon.setSuatChieu(suatChieu);
         blankHoaDon.setVoucher(null);
         blankHoaDon.setChiTietHoaDonList(null);
         blankHoaDon.setThoiGianThanhToan(LocalDateTime.now());
