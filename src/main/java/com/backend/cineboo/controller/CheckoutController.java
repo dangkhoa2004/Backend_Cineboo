@@ -104,12 +104,20 @@ public class CheckoutController {
 
 
     @Operation(summary = "Trả về URLs liên quan tới thanh toán",
-            description = "Trả về ResponseEntity cho Client(API Caller)\n\n" +
-                    "Chỉ chứa thông tin cơ bản cần thiết\n\n" +
-                    "Liên hệ lập trình viên để đưa thêm thông tin vào\n\n"+
-                    "LƯU Ý: Mỗi MÃ HOÁ ĐƠN CHỈ ĐƯỢC TẠO 1 LINK THANH TOÁN\n\n"+
-                    "LƯU Ý: CÓ THỂ FAKE HOÁ ĐƠN MỚI ĐỂ THANH TOÁN\n\n"+
-                    "LƯU Ý: HOẶC ĐỢI HOÁ ĐƠN CŨ HẾT HẠN(XEM TRÊN PAYOS)\n\n"
+            description = """
+                    Trả về ResponseEntity cho Client(API Caller)
+
+                    Chỉ chứa thông tin cơ bản cần thiết
+
+                    Liên hệ lập trình viên để đưa thêm thông tin vào
+
+                    LƯU Ý: Mỗi MÃ HOÁ ĐƠN CHỈ ĐƯỢC TẠO 1 LINK THANH TOÁN
+
+                    LƯU Ý: CÓ THỂ FAKE HOÁ ĐƠN MỚI ĐỂ THANH TOÁN
+
+                    LƯU Ý: HOẶC ĐỢI HOÁ ĐƠN CŨ HẾT HẠN(XEM TRÊN PAYOS)
+
+                    """
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Tạo URL thanh toán thành công"),
@@ -123,7 +131,7 @@ public class CheckoutController {
             try {
                 HoaDon hoaDon = (HoaDon) response.getBody();
                 final String baseUrl = getBaseUrl(request);
-                final String productName = hoaDon.getPhim().getTenPhim() + hoaDon.getPhim().getGioiHanDoTuoi().getTenDoTuoi();
+                final String productName = hoaDon.getSuatChieu().getPhim().getTenPhim() + hoaDon.getSuatChieu().getPhim().getGioiHanDoTuoi().getTenDoTuoi();
 
                 StringBuilder details = new StringBuilder();
                 details.append(hoaDon.getId());
@@ -327,6 +335,7 @@ public class CheckoutController {
                 //Set setable stuff
                 hoaDon.setThoiGianThanhToan(LocalDateTime.now());
                 hoaDon.setTrangThaiHoaDon(1);
+                hoaDonRepository.save(hoaDon);
                 List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
                 if(!chiTietHoaDonList.isEmpty()){
                     for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
@@ -343,9 +352,7 @@ public class CheckoutController {
                 int originalPoint = hoaDon.getKhachHang().getDiem();
                 KhachHang khachHang = hoaDon.getKhachHang();
                 khachHang.setDiem(originalPoint+hoaDon.getDiem());
-                hoaDon.setTrangThaiHoaDon(1);
                 khachHangRepository.save(khachHang);
-                hoaDonRepository.save(hoaDon);
             }
             InvoiceGenerator.createInvoice(hoaDon);
             // Trả về phản hồi đã được đóng gói trong ResponseEntity\

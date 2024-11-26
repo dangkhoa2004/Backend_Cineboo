@@ -7,14 +7,12 @@ package com.backend.cineboo.utility;
  */
 
 import com.backend.cineboo.entity.*;
-import com.backend.cineboo.repository.HoaDonRepository;
 import com.itextpdf.barcodes.BarcodeQRCode;
 import com.itextpdf.barcodes.qrcode.EncodeHintType;
 import com.itextpdf.barcodes.qrcode.ErrorCorrectionLevel;
 import com.itextpdf.io.font.FontProgram;
 import com.itextpdf.io.font.FontProgramFactory;
 import com.itextpdf.io.font.PdfEncodings;
-import com.itextpdf.kernel.color.Color;
 import com.itextpdf.kernel.color.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -35,29 +33,20 @@ import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.VerticalAlignment;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
-import vn.payos.PayOS;
 import vn.payos.type.PaymentLinkData;
 
-import javax.swing.text.StyleConstants;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,10 +76,10 @@ public class InvoiceGenerator {
         String maHoaDonToOrderCode = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
         Long orderCode = Long.valueOf(maHoaDonToOrderCode);
         String url = "http://localhost:8080/payos/get/" + orderCode; // Replace with your actual URL
-        PaymentLinkData paymentLinkData= restTemplate.getForEntity(url, PaymentLinkData.class).getBody();
+        PaymentLinkData paymentLinkData = restTemplate.getForEntity(url, PaymentLinkData.class).getBody();
         System.out.println(paymentLinkData);
         System.out.println(paymentLinkData.getStatus());
-        if(!paymentLinkData.getStatus().equals("PAID")){
+        if (!paymentLinkData.getStatus().equals("PAID")) {
             //Meaning its Expired or Cancelled and shits
             return null;
         }
@@ -110,7 +99,8 @@ public class InvoiceGenerator {
         PTTT phuongThucThanhToan = hoaDon.getPttt();
         KhachHang khachHang = hoaDon.getKhachHang();
         BigDecimal tongSoTien = hoaDon.getTongSoTien();
-        Phim phim = hoaDon.getPhim();
+        Phim phim = hoaDon.getSuatChieu().getPhim();
+        SuatChieu suatChieu = hoaDon.getSuatChieu();
         List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
 
 
@@ -118,15 +108,14 @@ public class InvoiceGenerator {
 
         //Get Original Price to display later
         BigDecimal originalPrice = BigDecimal.ZERO;
-        for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
+        for (ChiTietHoaDon chiTietHoaDon : chiTietHoaDonList) {
             //Damnit cant use lambda
-            originalPrice=originalPrice.add(chiTietHoaDon.getGhe().getGiaTien());
+            originalPrice = originalPrice.add(chiTietHoaDon.getGhe().getGiaTien());
         }
         originalPrice = InvoiceGenerator.getDecimal18Point2(originalPrice);
 
 
-        StringBuilder nameBuilder = new StringBuilder();
-        nameBuilder.append(invoiceFileName).append(".pdf");
+        String nameBuilder = invoiceFileName + ".pdf";
         String directoryPath = "invoices/"; // Replace with your directory path
         File directory = new File(directoryPath);
         if (!directory.exists()) {
@@ -134,7 +123,7 @@ public class InvoiceGenerator {
         }
         // Creating a PdfDocument object
         PdfWriter writer;
-        String absolutePath = directoryPath+nameBuilder.toString();
+        String absolutePath = directoryPath + nameBuilder;
         try {
 
 
@@ -185,20 +174,27 @@ public class InvoiceGenerator {
             title.setRole(PdfName.H1);
             doc.add(title);
 
-
+            //Changing LocalDateTime to readable format
+            LocalDateTime paymentTime = hoaDon.getThoiGianThanhToan();
+            LocalDateTime airingTime = suatChieu.getThoiGianChieu();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String thoiGianThanhToan = paymentTime.format(formatter);
+            String thoiGianChieu = airingTime.format(formatter);
 
             // Invoice Details
             doc.add(new Paragraph("Mã thanh toán: " + maHoaDon).setFontSize(7f)).setFont(font);
             doc.add(new Paragraph("Khách hàng: " + khachHang.getMaKhachHang()).setFontSize(7f)).setFont(font);
             doc.add(new Paragraph("Tên phim: " + phim.getTenPhim()).setFontSize(7f)).setFont(font);
-            LocalDateTime paymentTime  = hoaDon.getThoiGianThanhToan();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formatDateTime = paymentTime.format(formatter);
-            doc.add(new Paragraph("Thời gian thanh toán: " + formatDateTime).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Thời lượng: " + phim.getThoiLuong()).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Lịch chiếu: " + thoiGianChieu).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Địa điểm: " + suatChieu.getPhongChieu().getMaPhong()).setFontSize(7f)).setFont(font);
+
+
+            doc.add(new Paragraph("Thời gian thanh toán: " + thoiGianThanhToan).setFontSize(7f)).setFont(font);
             doc.add(new Paragraph("Vé đã mua:").setFontSize(7f));
 
             // Creating a table
-            float[] pointColumnWidths = {50F, 50F, 50F};
+            float[] pointColumnWidths = {50F, 50F};
             Table table = new Table(pointColumnWidths);
             table.setVerticalAlignment(VerticalAlignment.MIDDLE);
             table.setTextAlignment(TextAlignment.CENTER);
@@ -207,15 +203,38 @@ public class InvoiceGenerator {
             table.setAutoLayout();
             // Adding column names to the table
 
-            table.addCell(new Cell().add("Số ghế").setFontSize(6f).setFont(fontBold)) ;
-            table.addCell(new Cell().add("Phòng chiếu").setFontSize(6f).setFont(fontBold));
-            table.addCell(new Cell().add("Đơn giá (VNĐ)").setFontSize(6f).setFont(fontBold));
+            table.addCell(new Cell().add("Số ghế")
+                            .setFontSize(6f)
+                            .setFont(fontBold)
+                            .setBorderTop(Border.NO_BORDER)
+                            .setBorderBottom(Border.NO_BORDER)
+                            .setBorderLeft(Border.NO_BORDER));
+                    table.addCell(new Cell().add("Đơn giá (VNĐ)")
+                            .setFontSize(6f)
+                            .setFont(fontBold)
+                            .setBorderTop(Border.NO_BORDER)
+                            .setBorderBottom(Border.NO_BORDER)
+                            .setBorderRight(Border.NO_BORDER));
 
             // Adding rows to the table
             for (int i = 0; i < chiTietHoaDonList.size(); i++) {
-                table.addCell(new Cell().add(chiTietHoaDonList.get(i).getGhe().getMaGhe()).setFontSize(5f).setFont(font));
-                table.addCell(new Cell().add(chiTietHoaDonList.get(i).getGhe().getPhongChieu().getMaPhong()).setFontSize(5f).setFont(font));
-                table.addCell(new Cell().add(chiTietHoaDonList.get(i).getGhe().getGiaTien().toString()).setFontSize(5f).setFont(font));
+                table.addCell(new Cell().add(chiTietHoaDonList
+                        .get(i)
+                        .getGhe()
+                        .getMaGhe())
+                        .setFontSize(5f)
+                        .setFont(font)
+                        .setBorderTop(Border.NO_BORDER)
+                        .setBorderBottom(Border.NO_BORDER)
+                        .setBorderLeft(Border.NO_BORDER));
+
+                table.addCell(new Cell().add(chiTietHoaDonList.get(i)
+                        .getGhe().getGiaTien()
+                        .toString()).setFontSize(5f)
+                        .setFont(font)
+                        .setBorderTop(Border.NO_BORDER)
+                        .setBorderBottom(Border.NO_BORDER)
+                        .setBorderRight(Border.NO_BORDER));
             }
             doc.add(table);
 
@@ -236,9 +255,9 @@ public class InvoiceGenerator {
                     BigDecimal maxAmount = voucher.getGiamToiDa();
                     BigDecimal discountPercentage = BigDecimal.valueOf(voucher.getTruTienPhanTram()).divide(BigDecimal.valueOf(100)); // Assuming it is a percentage
                     BigDecimal discountAmount = originalPrice.multiply(discountPercentage);
-                    if(discountAmount.compareTo(maxAmount)>0){
+                    if (discountAmount.compareTo(maxAmount) > 0) {
                         doc.add(new Paragraph("Giảm: " + maxAmount + " VNĐ").setFontSize(7f)).setFont(font);
-                    }else{
+                    } else {
                         doc.add(new Paragraph("Giảm: " + discountAmount + " VNĐ").setFontSize(7f)).setFont(font);
                     }
                 }
@@ -261,7 +280,7 @@ public class InvoiceGenerator {
             doc.add(endTitle);
             // Closing the document
             //Or not, place barcode too
-            InvoiceGenerator.addQR(maHoaDon,pdf,1,95f,240f);
+            InvoiceGenerator.addQR(maHoaDon, pdf, 1, 95f, 240f);
             doc.close();
 
         } catch (FileNotFoundException exception) {
@@ -269,9 +288,8 @@ public class InvoiceGenerator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return  absolutePath;
+        return absolutePath;
     }
-
 
 
     private static void addQR(String mQRCode, PdfDocument mPdfDocument, int mPage, float x, float y) {

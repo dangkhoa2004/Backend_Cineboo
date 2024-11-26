@@ -4,6 +4,8 @@ import com.backend.cineboo.dto.AddHoaDonDTO;
 import com.backend.cineboo.dto.ChiTietHoaDonListDTO;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
+import com.backend.cineboo.scheduledJobs.EndSuatChieuJob;
+import com.backend.cineboo.scheduledJobs.UnreserveGheJobs;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.InvoiceGenerator;
 import com.backend.cineboo.utility.RepoUtility;
@@ -13,9 +15,9 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -32,12 +34,18 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static org.quartz.DateBuilder.futureDate;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 @Controller
 @RequestMapping("/hoadon")
@@ -50,6 +58,9 @@ import java.util.concurrent.TimeUnit;
 public class HoaDonController {
     @Autowired
     HoaDonRepository hoaDonRepository;
+
+    @Autowired
+    Scheduler scheduler;
 
     @Autowired
     KhachHangRepository khachHangRepository;
@@ -72,6 +83,9 @@ public class HoaDonController {
     @Autowired
     ChiTietHoaDonRepository chiTietHoaDonRepository;
 
+    @Autowired
+    SuatChieuRepository suatChieuRepository;
+
     @GetMapping("/get")
     @Operation(summary = "Hiển thị tất cả hoaDon",
             description = "Trả về Array trống nếu không có hoaDon")
@@ -82,31 +96,35 @@ public class HoaDonController {
         return ResponseEntity.ok(hoaDons);
     }
 
-    private void revertSeatsAfter5Mins(Long hoaDonId){
-        //Goddamn it check if the damn thing is paid first
+    private void revertSeatsAfter5Mins(Long hoaDonId) {
+        //Check if HoaDon is paid
         HoaDon hoaDon = hoaDonRepository.findById(hoaDonId).orElse(null);
-        if(hoaDon!=null && hoaDon.getTrangThaiHoaDon()==1){
-            //If the bloody thing does exist
-            //AND is already PAID
-            //Then don't fuck with it
+        if (hoaDon != null) {
+            //If HoaDon exists and is already paid
+            //Then do nothing
             return;
         }
         //Otherwise nuke it to oblivion
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.schedule(() -> {
-            // Get hoaDon again, just to be sure
-            List<ChiTietHoaDon> revertList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
-            for(ChiTietHoaDon chiTietHoaDon: revertList){
-                Ghe revertGhe = chiTietHoaDon.getGhe();
-                if(revertGhe!=null){
-                    revertGhe.setTrangThaiGhe(0);
-                    gheRepository.save(revertGhe);
-                    System.out.println("Reverting Ghe"+revertGhe.getMaGhe());
-                }
-            }
+        try {
+            JobDetail unbookGheJob = JobBuilder.newJob(UnreserveGheJobs.class)
+                    .withIdentity("unreserveGheJob" + hoaDonId, "hoaDonGroup")
+                    .build();
 
-        }, 2, TimeUnit.MINUTES);
+            SimpleTrigger trigger = newTrigger()
+                    .withIdentity("unreserveGheTrigger" + hoaDonId, "hoaDonGroup")
+                    .forJob(unbookGheJob)
+                    .usingJobData("id", hoaDonId)
+                    .startAt(futureDate(5, DateBuilder.IntervalUnit.MINUTE))
+                    .withSchedule(simpleSchedule().withMisfireHandlingInstructionFireNow())
+                    .build();
+            scheduler.start();
+            scheduler.scheduleJob(unbookGheJob, trigger);
+            // Keep the app running to observe the scheduler
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
     }
+
     /**
      * Đặt trạng thái HoaDon bằng 0.
      *
@@ -143,9 +161,7 @@ public class HoaDonController {
                     break;
                 case 2:
                     newStatus = "Hoá đơn huỷ do khách không thanh toán";
-                    hoaDon.setTrangThaiHoaDon(trangThai);//Yes I know, duplicate code,
-                    // but better than checking if value is smaller than whatever
-                    //Sanity-wise anyway
+                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 default:
                     newStatus = "Trạng thái không xác định";
@@ -185,7 +201,7 @@ public class HoaDonController {
         if (response.getStatusCode().is2xxSuccessful()) {
             HoaDon hoaDonToBeUpdated = (HoaDon) response.getBody();
             hoaDonToBeUpdated.setKhachHang(hoaDon.getKhachHang());
-            hoaDonToBeUpdated.setPhim(hoaDon.getPhim());
+            hoaDonToBeUpdated.setSuatChieu(hoaDon.getSuatChieu());
             hoaDonToBeUpdated.setVoucher(hoaDon.getVoucher());
             hoaDonToBeUpdated.setSoLuong(hoaDon.getSoLuong());
             hoaDonToBeUpdated.setThoiGianThanhToan(hoaDon.getThoiGianThanhToan());
@@ -235,7 +251,7 @@ public class HoaDonController {
             }
             hoaDon.setTongSoTien(finalPrice);//Set giá gốc
             Voucher voucher = hoaDon.getVoucher();
-            if(voucher!=null) {
+            if (voucher != null) {
                 String appliedVoucher = hoaDon.getVoucher().getMaVoucher();
                 hoaDon.setVoucher(null);//Xoá voucher đã áp dụng
                 voucherController.increaseVoucherCount(appliedVoucher);//Do hoá đơn không dùng nữa, tăng lên 1
@@ -255,7 +271,7 @@ public class HoaDonController {
     public ResponseEntity setPTTT(@PathVariable Long ID_PTTT, @PathVariable Long ID_HoaDon) {
         HoaDon hoaDon = hoaDonRepository.findById(ID_HoaDon).orElse(null);
         PTTT pttt = ptttRepository.findById(ID_PTTT).orElse(null);
-        if(pttt==null){
+        if (pttt == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("PTTT không tồn tại");
         }
         if (hoaDon != null) {
@@ -310,10 +326,13 @@ public class HoaDonController {
                     "Lưu ý: Số lượng được tính theo ChiTietHoaDonListDTO\n\n" +
                     "Lưu ý: Trạng thái mặc định là 0\n\n" +
                     "Lưu ý: PTTT mặc định là null\\" +
-                    "Lưu ý: Voucher mặc định là null")
+                    "Lưu ý: Voucher mặc định là null\n\n" +
+                    "Ghế chưa book sẽ chuyển lên trangThai(2) giữ ghế\n\n" +
+                    "Sau khi tạo hoá đơn thành oông, cho lên trangThai(1) đã book")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
+            @ApiResponse(responseCode = "200", description = "Hoá đơn vừa khởi tao"),
             @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "403", description = "Ghế đã được chọn"),
             @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PostMapping("/add")
     public ResponseEntity add(@Valid @RequestBody AddHoaDonDTO hoaDon, BindingResult bindingResult
@@ -323,52 +342,71 @@ public class HoaDonController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
         List<ChiTietHoaDonListDTO> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
-        if(chiTietHoaDonList==null||chiTietHoaDonList.isEmpty()){
+        if (chiTietHoaDonList == null || chiTietHoaDonList.isEmpty()) {
             return ResponseEntity.badRequest().body("Thiếu List<ChiTietHoaDonListDTO>");
         }
-        List<Ghe> gheList = new ArrayList<Ghe>();
-        for (ChiTietHoaDonListDTO helpMeImTooTiredForThis : chiTietHoaDonList) {
-            String id_PhongChieu = helpMeImTooTiredForThis.getId_PhongChieu().toString();
-            String maGhe = helpMeImTooTiredForThis.getMaGhe();
-            Ghe queriedGhe = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu,maGhe).orElse(null);
-            if(queriedGhe==null){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại, ngừng tạo hoá đơn");
-            };//Giữ ghế
-            gheList.add(queriedGhe);
-        }
-        //Tạo hoá đơn rỗng
-        HoaDon blankInvoice = createBlankInvoice(hoaDon, gheList);
-        //Lưu vào DB để tí còn có ID mà xử lý
-
-        //Thêm hoá đơn chi tiết
-        boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList);
-        if(!createdInvoiceDetail){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Lỗi khi tạo ChiTietHoaDon, ngừng tạo HoaDon");
-        }
-
-        HoaDon finalHoaDon = hoaDonRepository.findById(blankInvoice.getId()).orElse(null);
-        if(finalHoaDon!=null) {
-            //Reverse Seat here
-            List<ChiTietHoaDon> finalList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(finalHoaDon.getId().toString());
-            for(ChiTietHoaDon reverse: finalList){
-                Ghe reverseGhe = reverse.getGhe();
-                if(reverseGhe!=null){
-                    reverseGhe.setTrangThaiGhe(1);
-                    gheRepository.save(reverseGhe);
-                    System.out.println("Booking Ghe"+reverseGhe.getMaGhe());
+        ResponseEntity suatchieuResponse = RepoUtility.findById(hoaDon.getSuatChieuId(), suatChieuRepository);
+        if (suatchieuResponse.getStatusCode().is2xxSuccessful()) {
+            SuatChieu suatChieu = (SuatChieu) suatchieuResponse.getBody();
+            String id_PhongChieu = suatChieu.getPhongChieu().getId().toString();
+            List<Ghe> gheList = new ArrayList<Ghe>();
+            for (ChiTietHoaDonListDTO helpMeImTooTiredForThis : chiTietHoaDonList) {
+                String maGhe = helpMeImTooTiredForThis.getMaGhe();
+                Ghe queriedGhe = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu, maGhe).orElse(null);
+                if (queriedGhe == null) {
+                    //Kiểm tra ghế lần cuối.
+                    // Nếu ghế đã được chọn thì ngừng tạo hoá đơn
+                    // Chưa được chọn thì lập tức cho giữ ghế
+                    if (queriedGhe.getTrangThaiGhe() != 0) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ghế " + queriedGhe.getMaGhe() + " đã được chọn");
+                    }
+                    queriedGhe.setTrangThaiGhe(2);//2 Tạm thời giữ ghế
+                    gheRepository.save(queriedGhe);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại, ngừng tạo hoá đơn");
                 }
+                ;//Giữ ghế
+                gheList.add(queriedGhe);
             }
-            revertSeatsAfter5Mins(finalHoaDon.getId());
-            //Schedule a revert if not booked
-            return ResponseEntity.status(HttpStatus.OK).body(finalHoaDon);
+            //Tạo hoá đơn rỗng
+            HoaDon blankInvoice = createBlankInvoice(hoaDon, gheList);
+            if (blankInvoice == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khách hàng hoặc suất chiếu không tồn tại");
+            }
+            //Lưu vào DB để tí còn có ID mà xử lý
+
+            //Thêm hoá đơn chi tiết
+            boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList);
+            if (!createdInvoiceDetail) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Lỗi khi tạo ChiTietHoaDon, ngừng tạo HoaDon");
+            }
+
+
+            HoaDon finalHoaDon = hoaDonRepository.findById(blankInvoice.getId()).orElse(null);
+            if (finalHoaDon != null) {
+                //Reverse Seat here, more checks
+                //This step is extra, kinda not needed, but i'm doing it anyway
+                //Just to be sure
+                List<ChiTietHoaDon> finalList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(finalHoaDon.getId().toString());
+                for (ChiTietHoaDon reverse : finalList) {
+                    Ghe reverseGhe = reverse.getGhe();
+                    if (reverseGhe != null) {
+                        reverseGhe.setTrangThaiGhe(1);
+                        gheRepository.save(reverseGhe);
+                    }
+                }
+                revertSeatsAfter5Mins(finalHoaDon.getId());
+                //Schedule a revert if not booked
+                return ResponseEntity.status(HttpStatus.OK).body(finalHoaDon);
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi xử lý hoá đơn");
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi xử lý hoá đơn");
+        return suatchieuResponse;
     }
 
 
-    private BigDecimal resetToOriginalPrice(Long hoaDonId){
+    private BigDecimal resetToOriginalPrice(Long hoaDonId) {
         HoaDon hoaDon = hoaDonRepository.findById(hoaDonId).orElse(null);
-        if(hoaDon==null){
+        if (hoaDon == null) {
             return BigDecimal.ZERO;
         }
 
@@ -378,13 +416,23 @@ public class HoaDonController {
         hoaDonRepository.save(hoaDon);
         return originalPrice;
     }
+
     private HoaDon createBlankInvoice(AddHoaDonDTO hoaDon, List<Ghe> gheList) {
         String hoaDonPrefix = "HD00";
         //Tạo hoá đơn rỗng
         //Chứa các thông tin cơ bản
         HoaDon blankHoaDon = new HoaDon();
-        blankHoaDon.setKhachHang(khachHangRepository.findById(hoaDon.getKhachHangId()).get());
-        blankHoaDon.setPhim(phimRepository.findById(hoaDon.getPhimId()).get());
+        KhachHang khachHang = khachHangRepository.findById(hoaDon.getKhachHangId()).orElse(null);
+        if (khachHang == null) {
+            return null;
+        }
+        SuatChieu suatChieu = suatChieuRepository.findById(hoaDon.getSuatChieuId()).orElse(null);
+        if (suatChieu == null) {
+            return null;
+        }
+        blankHoaDon.setKhachHang(khachHang);
+
+        blankHoaDon.setSuatChieu(suatChieu);
         blankHoaDon.setVoucher(null);
         blankHoaDon.setChiTietHoaDonList(null);
         blankHoaDon.setThoiGianThanhToan(LocalDateTime.now());
@@ -393,7 +441,7 @@ public class HoaDonController {
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (Ghe ghe : gheList) {
             //Already checked whether the items exist
-            totalPrice=totalPrice.add(ghe.getGiaTien());
+            totalPrice = totalPrice.add(ghe.getGiaTien());
         }
         blankHoaDon.setTongSoTien(totalPrice);
         int point = (totalPrice
@@ -409,7 +457,7 @@ public class HoaDonController {
 
 
     @Operation(summary = "Áp dụng Voucher"
-            ,description = "Cập nhật TongSoTien sau khi áp dụng Voucher")
+            , description = "Cập nhật TongSoTien sau khi áp dụng Voucher")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity vừa khởi tao"),
             @ApiResponse(responseCode = "404", description = "Not Found"),
@@ -422,11 +470,11 @@ public class HoaDonController {
             HoaDon hoaDon = (HoaDon) hoaDonResponse.getBody();
 
             Voucher oldVoucher = hoaDon.getVoucher();
-            if(oldVoucher!=null) {
+            if (oldVoucher != null) {
                 String appliedVoucher = hoaDon.getVoucher().getMaVoucher();
                 hoaDon.setVoucher(null);//Xoá voucher đã áp dụng
                 BigDecimal originalPrice = resetToOriginalPrice(hoaDonId);//Tính toán lại giá cũ
-                if(originalPrice.compareTo(BigDecimal.ZERO)==0){
+                if (originalPrice.compareTo(BigDecimal.ZERO) == 0) {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body("Không thể lấy được giá gốc của HoaDon");
                 }
@@ -445,7 +493,7 @@ public class HoaDonController {
                     return ResponseEntity.internalServerError().body("Lỗi xử lý voucher");
                 } else if (discountAmount.compareTo(BigDecimal.ZERO) == 0) {
                     return ResponseEntity.badRequest().body("Giá tiền sau giảm phải lớn hơn 0");
-                }else if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
+                } else if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
                     return ResponseEntity.badRequest().body("Không đạt điều kiện áp dụng voucher");
                 }
                 //Nếu hợp lệ, set voucher
@@ -471,7 +519,7 @@ public class HoaDonController {
             //Lượt qua danh sách Hoá đơn chi tiết
             //Tạo mới chi tiêt hoá đơn
             ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(ghe, hoaDon);
-            if(temp==null){
+            if (temp == null) {
                 return false;
             }
         }
