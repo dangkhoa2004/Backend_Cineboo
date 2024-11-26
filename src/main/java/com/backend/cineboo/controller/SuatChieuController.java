@@ -188,5 +188,4 @@ public class SuatChieuController {
         ResponseEntity response = RepoUtility.findByCustomColumn(suatChieuRepository, columnName, value);
         return response;
     }
-
 }
