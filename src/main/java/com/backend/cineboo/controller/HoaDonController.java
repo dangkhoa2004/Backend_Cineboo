@@ -99,7 +99,7 @@ public class HoaDonController {
     private void revertSeatsAfter5Mins(Long hoaDonId) {
         //Check if HoaDon is paid
         HoaDon hoaDon = hoaDonRepository.findById(hoaDonId).orElse(null);
-        if (hoaDon != null && hoaDon.getTrangThaiHoaDon() == 1) {
+        if (hoaDon != null) {
             //If HoaDon exists and is already paid
             //Then do nothing
             return;

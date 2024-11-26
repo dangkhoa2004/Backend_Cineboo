@@ -33,6 +33,14 @@ public class UnreserveGheJobs implements Job {
         //nvm custom parameter is a pain
         //Passing id only
         Long hoaDonId = jobExecutionContext.getMergedJobDataMap().getLong("id");
+        //Check if HoaDon is paid
+        HoaDon hoaDon = hoaDonRepository.findById(hoaDonId).orElse(null);
+        if (hoaDon != null && hoaDon.getTrangThaiHoaDon() == 1) {
+            //Only check against database since we are still working with db layer(or something?)
+            //If HoaDon exists and is already paid
+            //Then do nothing
+            return;
+        }
         // Get hoaDon again, just to be sure
         List<ChiTietHoaDon> revertList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
         for (ChiTietHoaDon chiTietHoaDon : revertList) {

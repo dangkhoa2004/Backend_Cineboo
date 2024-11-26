@@ -335,6 +335,7 @@ public class CheckoutController {
                 //Set setable stuff
                 hoaDon.setThoiGianThanhToan(LocalDateTime.now());
                 hoaDon.setTrangThaiHoaDon(1);
+                hoaDonRepository.save(hoaDon);
                 List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
                 if(!chiTietHoaDonList.isEmpty()){
                     for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
@@ -351,9 +352,7 @@ public class CheckoutController {
                 int originalPoint = hoaDon.getKhachHang().getDiem();
                 KhachHang khachHang = hoaDon.getKhachHang();
                 khachHang.setDiem(originalPoint+hoaDon.getDiem());
-                hoaDon.setTrangThaiHoaDon(1);
                 khachHangRepository.save(khachHang);
-                hoaDonRepository.save(hoaDon);
             }
             InvoiceGenerator.createInvoice(hoaDon);
             // Trả về phản hồi đã được đóng gói trong ResponseEntity\
