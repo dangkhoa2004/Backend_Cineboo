@@ -15,9 +15,4 @@ public class ChiTietHoaDonListDTO {
     @NotBlank
     @Size(max = 15)
     private String maGhe;
-
-    @NotNull
-    @Range(min = 1)
-    private Integer id_PhongChieu;
-
 }
