@@ -361,6 +361,9 @@ public class CheckoutController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Invalid JSON format: " + e.getMessage());
         }
+        finally {
+            return ResponseEntity.status(HttpStatus.OK).body("Webhook connected");
+        }
 
     }
 }
