@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 25, 2024 at 03:09 AM
+-- Generation Time: Nov 27, 2024 at 08:29 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -41,8 +41,8 @@ CREATE TABLE `chitiethoadon` (
 INSERT INTO `chitiethoadon` (`ID`, `ID_HoaDon`, `ID_Ghe`, `TrangThaiChiTietHoaDon`) VALUES
                                                                                         (1, 1, 8, 2),
                                                                                         (2, 1, 2, 1),
-                                                                                        (3, 2, 3, 1),
-                                                                                        (4, 2, 4, 1),
+                                                                                        (3, 2, 3, 2),
+                                                                                        (4, 2, 4, 2),
                                                                                         (19, 1, 7, 0),
                                                                                         (38, 33, 13, 0),
                                                                                         (39, 33, 14, 0),
@@ -69,7 +69,38 @@ INSERT INTO `chitiethoadon` (`ID`, `ID_HoaDon`, `ID_Ghe`, `TrangThaiChiTietHoaDo
                                                                                         (60, 52, 14, 0),
                                                                                         (61, 53, 14, 0),
                                                                                         (62, 54, 14, 0),
-                                                                                        (63, 55, 14, 0);
+                                                                                        (63, 55, 14, 0),
+                                                                                        (64, 56, 13, 0),
+                                                                                        (65, 57, 13, 0),
+                                                                                        (66, 58, 13, 0),
+                                                                                        (67, 59, 1, 0),
+                                                                                        (68, 59, 13, 0),
+                                                                                        (69, 60, 1, 1),
+                                                                                        (70, 60, 13, 1),
+                                                                                        (71, 61, 12, 0),
+                                                                                        (72, 62, 14, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `danhsachhoanve`
+--
+
+CREATE TABLE `danhsachhoanve` (
+                                  `ID` int(11) NOT NULL,
+                                  `MaHoanVe` varchar(50) GENERATED ALWAYS AS (concat('HV',`ID`)) VIRTUAL,
+                                  `ID_HoaDon` int(11) NOT NULL,
+                                  `ThoiGianHoanVe` datetime NOT NULL,
+                                  `LyDoHoanVe` varchar(50) DEFAULT NULL,
+                                  `TrangthaiHoanVe` tinyint(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `danhsachhoanve`
+--
+
+INSERT INTO `danhsachhoanve` (`ID`, `ID_HoaDon`, `ThoiGianHoanVe`, `LyDoHoanVe`, `TrangthaiHoanVe`) VALUES
+    (4, 2, '2024-11-27 11:27:51', 'Lý do cá nhân', 0);
 
 -- --------------------------------------------------------
 
@@ -139,16 +170,16 @@ CREATE TABLE `ghe` (
 --
 
 INSERT INTO `ghe` (`ID`, `MaGhe`, `GiaTien`, `ID_PhongChieu`, `TrangThaiGhe`) VALUES
-                                                                                  (1, 'GheTestApi', 1000.00, 1, 0),
+                                                                                  (1, 'GheTestApi', 1000.00, 1, 1),
                                                                                   (2, 'GHE002', 520000.00, 1, 1),
-                                                                                  (3, 'GHE003', 6890.00, 1, 1),
-                                                                                  (4, 'GHE004', 9000.00, 1, 1),
+                                                                                  (3, 'GHE003', 6890.00, 1, 0),
+                                                                                  (4, 'GHE004', 9000.00, 1, 0),
                                                                                   (5, 'GHE005', 1000.00, 1, 1),
                                                                                   (6, 'GHE006', 50000.00, 1, 1),
                                                                                   (7, 'GHE007', 50000.00, 2, 1),
                                                                                   (8, 'GHE008', 50000.00, 2, 1),
-                                                                                  (12, 'GheTestAPEEPEE', 1000.00, 1, 0),
-                                                                                  (13, 'GH0012', 1000.00, 1, 0),
+                                                                                  (12, 'GheTestAPEEPEE', 1000.00, 1, 1),
+                                                                                  (13, 'GH0012', 1000.00, 1, 1),
                                                                                   (14, 'Star', 1000.00, 1, 1);
 
 -- --------------------------------------------------------
@@ -177,13 +208,13 @@ CREATE TABLE `hoadon` (
 
 INSERT INTO `hoadon` (`ID`, `ID_KhachHang`, `ID_SuatChieu`, `ID_Voucher`, `ID_PTTT`, `MaHoaDon`, `SoLuong`, `ThoiGianThanhToan`, `Diem`, `TongSoTien`, `TrangThaiHoaDon`) VALUES
                                                                                                                                                                               (1, 1, 1, NULL, 5, 'HD001', 2, '2024-01-01 19:00:00', 10, 1000.00, 2),
-                                                                                                                                                                              (2, 2, 2, NULL, 2, 'HD002', 1, '2024-01-02 21:00:00', 20, 15890.00, 1),
+                                                                                                                                                                              (2, 2, 2, NULL, 2, 'HD002', 1, '2024-01-02 21:00:00', 20, 15890.00, 4),
                                                                                                                                                                               (3, 1, 2, 1, 2, 'HD001', 2, '2024-01-01 19:00:00', 10, 1220000.00, 0),
                                                                                                                                                                               (4, 1, 2, 1, 2, 'HD001', 2, '2024-01-01 19:00:00', 10, 1170000.00, 0),
                                                                                                                                                                               (5, 1, 2, NULL, NULL, 'HD004', 2, '2024-01-01 19:00:00', 12210, 0.00, 0),
                                                                                                                                                                               (6, 1, 2, 1, NULL, 'HD005', 2, '2024-01-01 19:00:00', 12210, 0.00, 0),
                                                                                                                                                                               (7, 1, 2, 1, NULL, 'HD006', 2, '2024-01-01 19:00:00', 12210, 0.00, 0),
-                                                                                                                                                                              (8, 1, 2, 1, NULL, 'HD007', 2, '2024-01-01 19:00:00', 12210, 0.00, 0),
+                                                                                                                                                                              (8, 1, 2, 1, NULL, 'HD007', 2, '2024-01-01 19:00:00', 12210, 0.00, 1),
                                                                                                                                                                               (9, 1, 2, 1, NULL, 'HD008', 2, '2024-11-14 15:27:03', 12210, 1000.00, 1),
                                                                                                                                                                               (30, 1, 1, NULL, NULL, 'HD030', 2, '2024-11-19 09:17:07', 0, 1000.00, 0),
                                                                                                                                                                               (31, 1, 1, NULL, NULL, 'HD031', 2, '2024-11-19 09:17:07', 0, 2000.00, 0),
@@ -210,7 +241,14 @@ INSERT INTO `hoadon` (`ID`, `ID_KhachHang`, `ID_SuatChieu`, `ID_Voucher`, `ID_PT
                                                                                                                                                                               (52, 1, 3, NULL, 1, 'HD0051', 1, '2024-11-22 10:26:53', 10, 1000.00, 0),
                                                                                                                                                                               (53, 1, 3, NULL, 1, 'HD0052', 1, '2024-11-22 10:52:45', 10, 1000.00, 0),
                                                                                                                                                                               (54, 1, 3, NULL, 1, 'HD0053', 1, '2024-11-22 11:03:50', 10, 1000.00, 0),
-                                                                                                                                                                              (55, 2, 3, NULL, 1, 'HD0054', 1, '2024-11-22 11:06:43', 10, 1000.00, 0);
+                                                                                                                                                                              (55, 2, 3, NULL, 1, 'HD0054', 1, '2024-11-22 11:06:43', 10, 1000.00, 0),
+                                                                                                                                                                              (56, 4, 2, NULL, 1, 'HD0055', 1, '2024-11-26 13:43:37', 10, 1000.00, 0),
+                                                                                                                                                                              (57, 5, 2, NULL, NULL, 'HD0056', 1, '2024-11-26 14:31:16', 10, 1000.00, 0),
+                                                                                                                                                                              (58, 5, 2, NULL, NULL, 'HD0057', 1, '2024-11-26 15:39:45', 10, 1000.00, 0),
+                                                                                                                                                                              (59, 4, 1, NULL, 1, 'HD0058', 2, '2024-11-26 16:24:41', 20, 2000.00, 1),
+                                                                                                                                                                              (60, 4, 1, 1, 1, 'HD0059', 2, '2024-11-26 16:57:03', 20, 1800.00, 1),
+                                                                                                                                                                              (61, 4, 1, NULL, 1, 'HD0060', 1, '2024-11-26 17:02:05', 10, 1000.00, 0),
+                                                                                                                                                                              (62, 4, 1, NULL, 1, 'HD0061', 1, '2024-11-26 17:06:48', 10, 1000.00, 1);
 
 -- --------------------------------------------------------
 
@@ -244,7 +282,7 @@ INSERT INTO `khachhang` (`ID`, `ID_PhanLoai`, `ID_TaiKhoan`, `MaKhachHang`, `Ten
                                                                                                                                                                                                          (1, 1, 3, 'KH001', 'East', 'D', 'Look', '1995-05-05', '0900000001', 1, 'kh1@example.com', 'Kinh', 'Dia chi khach 1', 1011509, 1),
                                                                                                                                                                                                          (2, 2, 4, 'KH002', 'Le', 'Thi', 'E', '1996-06-06', '0900000002', 0, 'kh2@example.com', 'Kinh', 'Dia chi khach 2', 50, 1),
                                                                                                                                                                                                          (3, 1, 5, 'KH003', 'Rat', 'D', 'Shanks', '2024-11-08', '0192856725', 0, 'shanks@ratmail.com', 'Kinh', '5 Bailey Str.', 50, 0),
-                                                                                                                                                                                                         (4, 1, 6, 'KH004', 'Stairs', 'D', 'Down', '2024-11-13', '0127682456', 0, 'DownDStairs@email.com', 'Kinh', 'East Blue', 0, 0),
+                                                                                                                                                                                                         (4, 1, 6, 'KH004', 'Stairs', 'D', 'Down', '2024-11-13', '0127682456', 0, 'DownDStairs@email.com', 'Kinh', 'East Blue', 30, 0),
                                                                                                                                                                                                          (5, 1, 11, 'KH005', 'string', 'string', 'string', '2024-11-13', '0908997890', 0, 'string@gmail.com', 'string', 'string', 0, 1);
 
 -- --------------------------------------------------------
@@ -476,6 +514,227 @@ INSERT INTO `pttt` (`ID`, `MaPTTT`, `TenPTTT`, `TrangThaiPTTT`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `qrtz_blob_triggers`
+--
+
+CREATE TABLE `qrtz_blob_triggers` (
+                                      `SCHED_NAME` varchar(120) NOT NULL,
+                                      `TRIGGER_NAME` varchar(200) NOT NULL,
+                                      `TRIGGER_GROUP` varchar(200) NOT NULL,
+                                      `BLOB_DATA` blob DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_calendars`
+--
+
+CREATE TABLE `qrtz_calendars` (
+                                  `SCHED_NAME` varchar(120) NOT NULL,
+                                  `CALENDAR_NAME` varchar(200) NOT NULL,
+                                  `CALENDAR` blob NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_cron_triggers`
+--
+
+CREATE TABLE `qrtz_cron_triggers` (
+                                      `SCHED_NAME` varchar(120) NOT NULL,
+                                      `TRIGGER_NAME` varchar(200) NOT NULL,
+                                      `TRIGGER_GROUP` varchar(200) NOT NULL,
+                                      `CRON_EXPRESSION` varchar(120) NOT NULL,
+                                      `TIME_ZONE_ID` varchar(80) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_fired_triggers`
+--
+
+CREATE TABLE `qrtz_fired_triggers` (
+                                       `SCHED_NAME` varchar(120) NOT NULL,
+                                       `ENTRY_ID` varchar(140) NOT NULL,
+                                       `TRIGGER_NAME` varchar(200) NOT NULL,
+                                       `TRIGGER_GROUP` varchar(200) NOT NULL,
+                                       `INSTANCE_NAME` varchar(200) NOT NULL,
+                                       `FIRED_TIME` bigint(19) NOT NULL,
+                                       `SCHED_TIME` bigint(19) NOT NULL,
+                                       `PRIORITY` int(11) NOT NULL,
+                                       `STATE` varchar(16) NOT NULL,
+                                       `JOB_NAME` varchar(200) DEFAULT NULL,
+                                       `JOB_GROUP` varchar(200) DEFAULT NULL,
+                                       `IS_NONCONCURRENT` tinyint(1) DEFAULT NULL,
+                                       `REQUESTS_RECOVERY` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_job_details`
+--
+
+CREATE TABLE `qrtz_job_details` (
+                                    `SCHED_NAME` varchar(120) NOT NULL,
+                                    `JOB_NAME` varchar(200) NOT NULL,
+                                    `JOB_GROUP` varchar(200) NOT NULL,
+                                    `DESCRIPTION` varchar(250) DEFAULT NULL,
+                                    `JOB_CLASS_NAME` varchar(250) NOT NULL,
+                                    `IS_DURABLE` tinyint(1) NOT NULL,
+                                    `IS_NONCONCURRENT` tinyint(1) NOT NULL,
+                                    `IS_UPDATE_DATA` tinyint(1) NOT NULL,
+                                    `REQUESTS_RECOVERY` tinyint(1) NOT NULL,
+                                    `JOB_DATA` blob DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `qrtz_job_details`
+--
+
+INSERT INTO `qrtz_job_details` (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`, `DESCRIPTION`, `JOB_CLASS_NAME`, `IS_DURABLE`, `IS_NONCONCURRENT`, `IS_UPDATE_DATA`, `REQUESTS_RECOVERY`, `JOB_DATA`) VALUES
+                                                                                                                                                                                                 ('MyScheduler', 'EndSuatChieuJob1', 'suatchieuGroup', NULL, 'com.backend.cineboo.scheduledJobs.EndSuatChieuJob', 0, 0, 0, 0, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787000737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f40000000000010770800000010000000007800),
+                                                                                                                                                                                                 ('MyScheduler', 'FreeAllGheFromSuatChieuJob1', 'suatchieuGroup', NULL, 'com.backend.cineboo.scheduledJobs.FreeAllGheFromSuatChieuJob', 0, 0, 0, 0, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787000737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f40000000000010770800000010000000007800),
+                                                                                                                                                                                                 ('MyScheduler', 'StartSuatChieuJob1', 'suatchieuGroup', NULL, 'com.backend.cineboo.scheduledJobs.StartSuatChieuJob', 0, 0, 0, 0, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787000737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f40000000000010770800000010000000007800);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_locks`
+--
+
+CREATE TABLE `qrtz_locks` (
+                              `SCHED_NAME` varchar(120) NOT NULL,
+                              `LOCK_NAME` varchar(40) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `qrtz_locks`
+--
+
+INSERT INTO `qrtz_locks` (`SCHED_NAME`, `LOCK_NAME`) VALUES
+                                                         ('MyScheduler', 'STATE_ACCESS'),
+                                                         ('MyScheduler', 'TRIGGER_ACCESS');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_paused_trigger_grps`
+--
+
+CREATE TABLE `qrtz_paused_trigger_grps` (
+                                            `SCHED_NAME` varchar(120) NOT NULL,
+                                            `TRIGGER_GROUP` varchar(200) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_scheduler_state`
+--
+
+CREATE TABLE `qrtz_scheduler_state` (
+                                        `SCHED_NAME` varchar(120) NOT NULL,
+                                        `INSTANCE_NAME` varchar(200) NOT NULL,
+                                        `LAST_CHECKIN_TIME` bigint(19) NOT NULL,
+                                        `CHECKIN_INTERVAL` bigint(19) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `qrtz_scheduler_state`
+--
+
+INSERT INTO `qrtz_scheduler_state` (`SCHED_NAME`, `INSTANCE_NAME`, `LAST_CHECKIN_TIME`, `CHECKIN_INTERVAL`) VALUES
+    ('MyScheduler', 'Acer47521732691058385', 1732692576401, 7500);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_simple_triggers`
+--
+
+CREATE TABLE `qrtz_simple_triggers` (
+                                        `SCHED_NAME` varchar(120) NOT NULL,
+                                        `TRIGGER_NAME` varchar(200) NOT NULL,
+                                        `TRIGGER_GROUP` varchar(200) NOT NULL,
+                                        `REPEAT_COUNT` bigint(7) NOT NULL,
+                                        `REPEAT_INTERVAL` bigint(12) NOT NULL,
+                                        `TIMES_TRIGGERED` bigint(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `qrtz_simple_triggers`
+--
+
+INSERT INTO `qrtz_simple_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`, `REPEAT_COUNT`, `REPEAT_INTERVAL`, `TIMES_TRIGGERED`) VALUES
+                                                                                                                                             ('MyScheduler', 'EndSuatChieuTrigger1', 'suatchieuGroup', 0, 0, 0),
+                                                                                                                                             ('MyScheduler', 'FreeAllGheFromSuatChieuTrigger1', 'suatchieuGroup', 0, 0, 0),
+                                                                                                                                             ('MyScheduler', 'StartSuatChieuTrigger1', 'suatchieuGroup', 0, 0, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_simprop_triggers`
+--
+
+CREATE TABLE `qrtz_simprop_triggers` (
+                                         `SCHED_NAME` varchar(120) NOT NULL,
+                                         `TRIGGER_NAME` varchar(200) NOT NULL,
+                                         `TRIGGER_GROUP` varchar(200) NOT NULL,
+                                         `STR_PROP_1` varchar(512) DEFAULT NULL,
+                                         `STR_PROP_2` varchar(512) DEFAULT NULL,
+                                         `STR_PROP_3` varchar(512) DEFAULT NULL,
+                                         `INT_PROP_1` int(11) DEFAULT NULL,
+                                         `INT_PROP_2` int(11) DEFAULT NULL,
+                                         `LONG_PROP_1` bigint(20) DEFAULT NULL,
+                                         `LONG_PROP_2` bigint(20) DEFAULT NULL,
+                                         `DEC_PROP_1` decimal(13,4) DEFAULT NULL,
+                                         `DEC_PROP_2` decimal(13,4) DEFAULT NULL,
+                                         `BOOL_PROP_1` tinyint(1) DEFAULT NULL,
+                                         `BOOL_PROP_2` tinyint(1) DEFAULT NULL,
+                                         `TIME_ZONE_ID` varchar(80) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `qrtz_triggers`
+--
+
+CREATE TABLE `qrtz_triggers` (
+                                 `SCHED_NAME` varchar(120) NOT NULL,
+                                 `TRIGGER_NAME` varchar(200) NOT NULL,
+                                 `TRIGGER_GROUP` varchar(200) NOT NULL,
+                                 `JOB_NAME` varchar(200) NOT NULL,
+                                 `JOB_GROUP` varchar(200) NOT NULL,
+                                 `DESCRIPTION` varchar(250) DEFAULT NULL,
+                                 `NEXT_FIRE_TIME` bigint(19) DEFAULT NULL,
+                                 `PREV_FIRE_TIME` bigint(19) DEFAULT NULL,
+                                 `PRIORITY` int(11) DEFAULT NULL,
+                                 `TRIGGER_STATE` varchar(16) NOT NULL,
+                                 `TRIGGER_TYPE` varchar(8) NOT NULL,
+                                 `START_TIME` bigint(19) NOT NULL,
+                                 `END_TIME` bigint(19) DEFAULT NULL,
+                                 `CALENDAR_NAME` varchar(200) DEFAULT NULL,
+                                 `MISFIRE_INSTR` smallint(2) DEFAULT NULL,
+                                 `JOB_DATA` blob DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `qrtz_triggers`
+--
+
+INSERT INTO `qrtz_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`, `JOB_NAME`, `JOB_GROUP`, `DESCRIPTION`, `NEXT_FIRE_TIME`, `PREV_FIRE_TIME`, `PRIORITY`, `TRIGGER_STATE`, `TRIGGER_TYPE`, `START_TIME`, `END_TIME`, `CALENDAR_NAME`, `MISFIRE_INSTR`, `JOB_DATA`) VALUES
+                                                                                                                                                                                                                                                                                 ('MyScheduler', 'EndSuatChieuTrigger1', 'suatchieuGroup', 'EndSuatChieuJob1', 'suatchieuGroup', NULL, 1735736400000, -1, 5, 'WAITING', 'SIMPLE', 1735736400000, 0, NULL, 1, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000269647372000e6a6176612e6c616e672e4c6f6e673b8be490cc8f23df0200014a000576616c7565787200106a6176612e6c616e672e4e756d62657286ac951d0b94e08b020000787000000000000000017800),
+                                                                                                                                                                                                                                                                                 ('MyScheduler', 'FreeAllGheFromSuatChieuTrigger1', 'suatchieuGroup', 'FreeAllGheFromSuatChieuJob1', 'suatchieuGroup', NULL, 1735736700000, -1, 5, 'WAITING', 'SIMPLE', 1735736700000, 0, NULL, 1, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000269647372000e6a6176612e6c616e672e4c6f6e673b8be490cc8f23df0200014a000576616c7565787200106a6176612e6c616e672e4e756d62657286ac951d0b94e08b020000787000000000000000017800),
+                                                                                                                                                                                                                                                                                 ('MyScheduler', 'StartSuatChieuTrigger1', 'suatchieuGroup', 'StartSuatChieuJob1', 'suatchieuGroup', NULL, 1735729200000, -1, 5, 'WAITING', 'SIMPLE', 1735729200000, 0, NULL, 1, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000269647372000e6a6176612e6c616e672e4c6f6e673b8be490cc8f23df0200014a000576616c7565787200106a6176612e6c616e672e4e756d62657286ac951d0b94e08b020000787000000000000000017800);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `suatchieu`
 --
 
@@ -493,12 +752,12 @@ CREATE TABLE `suatchieu` (
 --
 
 INSERT INTO `suatchieu` (`ID`, `MaSuatChieu`, `ThoiGianChieu`, `ID_Phim`, `ID_PhongChieu`, `TrangThaiSuatChieu`) VALUES
-                                                                                                                     (1, 'MSC005', '2025-01-01 18:00:00', 1, 1, 1),
-                                                                                                                     (2, 'SC002', '2024-01-02 20:00:00', 2, 1, 1),
-                                                                                                                     (3, 'SC003', '2024-01-03 21:00:00', 3, 2, 1),
+                                                                                                                     (1, 'MSC005', '2025-01-01 18:00:00', 1, 1, 0),
+                                                                                                                     (2, 'SC002', '2024-12-02 20:00:00', 2, 1, 2),
+                                                                                                                     (3, 'SC003', '2024-01-03 21:00:00', 3, 2, 2),
                                                                                                                      (4, 'MSC004', '2024-01-01 18:00:00', 1, 1, 1),
                                                                                                                      (5, 'MSC005', '2024-01-01 18:00:00', 1, 1, 1),
-                                                                                                                     (6, 'MSC006', '2025-01-01 18:00:01', 1, 1, 1);
+                                                                                                                     (6, 'MSC006', '2025-01-01 18:00:01', 1, 1, 2);
 
 -- --------------------------------------------------------
 
@@ -587,7 +846,7 @@ CREATE TABLE `voucher` (
 --
 
 INSERT INTO `voucher` (`ID`, `MaVoucher`, `GiaTriDoi`, `TruTienPhanTram`, `TruTienSo`, `SoTienToiThieu`, `GiamToiDa`, `NgayBatDau`, `NgayKetThuc`, `SoLuong`, `TrangThaiVoucher`) VALUES
-                                                                                                                                                                                      (1, 'VC001', 500, 10, NULL, 100000.00, 50000.00, '2024-01-01', '2024-12-31', 0, 1),
+                                                                                                                                                                                      (1, 'VC001', 500, 10, NULL, 1.00, 50000.00, '2024-01-01', '2024-12-31', 9, 1),
                                                                                                                                                                                       (2, 'VC002', 1000, NULL, 12520.00, 50000.00, 20000.00, '2024-01-01', '2025-06-30', 1, 1),
                                                                                                                                                                                       (3, 'VC003', 700, 5, NULL, 200000.00, 100000.00, '2024-02-01', '2024-12-22', 6, 1),
                                                                                                                                                                                       (4, 'TestVoucher15', 1, 1, NULL, 0.00, 1.00, '2024-11-12', '2024-11-12', 10, 1),
@@ -613,6 +872,14 @@ ALTER TABLE `chitiethoadon`
     ADD PRIMARY KEY (`ID`),
     ADD KEY `ID_HoaDon` (`ID_HoaDon`),
     ADD KEY `ID_Ghe` (`ID_Ghe`);
+
+--
+-- Indexes for table `danhsachhoanve`
+--
+ALTER TABLE `danhsachhoanve`
+    ADD PRIMARY KEY (`ID`),
+    ADD UNIQUE KEY `ID_HoaDon` (`ID_HoaDon`),
+    ADD UNIQUE KEY `ID_HoaDon_2` (`ID_HoaDon`);
 
 --
 -- Indexes for table `danhsachtlphim`
@@ -708,6 +975,93 @@ ALTER TABLE `pttt`
     ADD PRIMARY KEY (`ID`);
 
 --
+-- Indexes for table `qrtz_blob_triggers`
+--
+ALTER TABLE `qrtz_blob_triggers`
+    ADD PRIMARY KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`),
+    ADD KEY `SCHED_NAME` (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`);
+
+--
+-- Indexes for table `qrtz_calendars`
+--
+ALTER TABLE `qrtz_calendars`
+    ADD PRIMARY KEY (`SCHED_NAME`,`CALENDAR_NAME`);
+
+--
+-- Indexes for table `qrtz_cron_triggers`
+--
+ALTER TABLE `qrtz_cron_triggers`
+    ADD PRIMARY KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`);
+
+--
+-- Indexes for table `qrtz_fired_triggers`
+--
+ALTER TABLE `qrtz_fired_triggers`
+    ADD PRIMARY KEY (`SCHED_NAME`,`ENTRY_ID`),
+    ADD KEY `IDX_QRTZ_FT_TRIG_INST_NAME` (`SCHED_NAME`,`INSTANCE_NAME`),
+    ADD KEY `IDX_QRTZ_FT_INST_JOB_REQ_RCVRY` (`SCHED_NAME`,`INSTANCE_NAME`,`REQUESTS_RECOVERY`),
+    ADD KEY `IDX_QRTZ_FT_J_G` (`SCHED_NAME`,`JOB_NAME`,`JOB_GROUP`),
+    ADD KEY `IDX_QRTZ_FT_JG` (`SCHED_NAME`,`JOB_GROUP`),
+    ADD KEY `IDX_QRTZ_FT_T_G` (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`),
+    ADD KEY `IDX_QRTZ_FT_TG` (`SCHED_NAME`,`TRIGGER_GROUP`);
+
+--
+-- Indexes for table `qrtz_job_details`
+--
+ALTER TABLE `qrtz_job_details`
+    ADD PRIMARY KEY (`SCHED_NAME`,`JOB_NAME`,`JOB_GROUP`),
+    ADD KEY `IDX_QRTZ_J_REQ_RECOVERY` (`SCHED_NAME`,`REQUESTS_RECOVERY`),
+    ADD KEY `IDX_QRTZ_J_GRP` (`SCHED_NAME`,`JOB_GROUP`);
+
+--
+-- Indexes for table `qrtz_locks`
+--
+ALTER TABLE `qrtz_locks`
+    ADD PRIMARY KEY (`SCHED_NAME`,`LOCK_NAME`);
+
+--
+-- Indexes for table `qrtz_paused_trigger_grps`
+--
+ALTER TABLE `qrtz_paused_trigger_grps`
+    ADD PRIMARY KEY (`SCHED_NAME`,`TRIGGER_GROUP`);
+
+--
+-- Indexes for table `qrtz_scheduler_state`
+--
+ALTER TABLE `qrtz_scheduler_state`
+    ADD PRIMARY KEY (`SCHED_NAME`,`INSTANCE_NAME`);
+
+--
+-- Indexes for table `qrtz_simple_triggers`
+--
+ALTER TABLE `qrtz_simple_triggers`
+    ADD PRIMARY KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`);
+
+--
+-- Indexes for table `qrtz_simprop_triggers`
+--
+ALTER TABLE `qrtz_simprop_triggers`
+    ADD PRIMARY KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`);
+
+--
+-- Indexes for table `qrtz_triggers`
+--
+ALTER TABLE `qrtz_triggers`
+    ADD PRIMARY KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`),
+    ADD KEY `IDX_QRTZ_T_J` (`SCHED_NAME`,`JOB_NAME`,`JOB_GROUP`),
+    ADD KEY `IDX_QRTZ_T_JG` (`SCHED_NAME`,`JOB_GROUP`),
+    ADD KEY `IDX_QRTZ_T_C` (`SCHED_NAME`,`CALENDAR_NAME`),
+    ADD KEY `IDX_QRTZ_T_G` (`SCHED_NAME`,`TRIGGER_GROUP`),
+    ADD KEY `IDX_QRTZ_T_STATE` (`SCHED_NAME`,`TRIGGER_STATE`),
+    ADD KEY `IDX_QRTZ_T_N_STATE` (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`,`TRIGGER_STATE`),
+    ADD KEY `IDX_QRTZ_T_N_G_STATE` (`SCHED_NAME`,`TRIGGER_GROUP`,`TRIGGER_STATE`),
+    ADD KEY `IDX_QRTZ_T_NEXT_FIRE_TIME` (`SCHED_NAME`,`NEXT_FIRE_TIME`),
+    ADD KEY `IDX_QRTZ_T_NFT_ST` (`SCHED_NAME`,`TRIGGER_STATE`,`NEXT_FIRE_TIME`),
+    ADD KEY `IDX_QRTZ_T_NFT_MISFIRE` (`SCHED_NAME`,`MISFIRE_INSTR`,`NEXT_FIRE_TIME`),
+    ADD KEY `IDX_QRTZ_T_NFT_ST_MISFIRE` (`SCHED_NAME`,`MISFIRE_INSTR`,`NEXT_FIRE_TIME`,`TRIGGER_STATE`),
+    ADD KEY `IDX_QRTZ_T_NFT_ST_MISFIRE_GRP` (`SCHED_NAME`,`MISFIRE_INSTR`,`NEXT_FIRE_TIME`,`TRIGGER_GROUP`,`TRIGGER_STATE`);
+
+--
 -- Indexes for table `suatchieu`
 --
 ALTER TABLE `suatchieu`
@@ -743,7 +1097,13 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT for table `chitiethoadon`
 --
 ALTER TABLE `chitiethoadon`
-    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+
+--
+-- AUTO_INCREMENT for table `danhsachhoanve`
+--
+ALTER TABLE `danhsachhoanve`
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `danhsachtlphim`
@@ -767,7 +1127,7 @@ ALTER TABLE `ghe`
 -- AUTO_INCREMENT for table `hoadon`
 --
 ALTER TABLE `hoadon`
-    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `khachhang`
@@ -855,8 +1215,14 @@ ALTER TABLE `voucher`
 -- Constraints for table `chitiethoadon`
 --
 ALTER TABLE `chitiethoadon`
-    ADD CONSTRAINT `chitiethoadon_ibfk_1` FOREIGN KEY (`ID_HoaDon`) REFERENCES `hoadon` (`ID`) ,
-    ADD CONSTRAINT `chitiethoadon_ibfk_2` FOREIGN KEY (`ID_Ghe`) REFERENCES `ghe` (`ID`) ;
+    ADD CONSTRAINT `chitiethoadon_ibfk_1` FOREIGN KEY (`ID_HoaDon`) REFERENCES `hoadon` (`ID`),
+    ADD CONSTRAINT `chitiethoadon_ibfk_2` FOREIGN KEY (`ID_Ghe`) REFERENCES `ghe` (`ID`);
+
+--
+-- Constraints for table `danhsachhoanve`
+--
+ALTER TABLE `danhsachhoanve`
+    ADD CONSTRAINT `fk_danhsachhoanve_hoadon` FOREIGN KEY (`ID_HoaDon`) REFERENCES `hoadon` (`ID`);
 
 --
 -- Constraints for table `danhsachtlphim`
@@ -908,6 +1274,36 @@ ALTER TABLE `phim`
     ADD CONSTRAINT `FK_PHIM_DOTUOI` FOREIGN KEY (`GioiHanDoTuoi`) REFERENCES `dotuoi` (`ID`);
 
 --
+-- Constraints for table `qrtz_blob_triggers`
+--
+ALTER TABLE `qrtz_blob_triggers`
+    ADD CONSTRAINT `qrtz_blob_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`) REFERENCES `qrtz_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`);
+
+--
+-- Constraints for table `qrtz_cron_triggers`
+--
+ALTER TABLE `qrtz_cron_triggers`
+    ADD CONSTRAINT `qrtz_cron_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`) REFERENCES `qrtz_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`);
+
+--
+-- Constraints for table `qrtz_simple_triggers`
+--
+ALTER TABLE `qrtz_simple_triggers`
+    ADD CONSTRAINT `qrtz_simple_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`) REFERENCES `qrtz_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`);
+
+--
+-- Constraints for table `qrtz_simprop_triggers`
+--
+ALTER TABLE `qrtz_simprop_triggers`
+    ADD CONSTRAINT `qrtz_simprop_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`,`TRIGGER_NAME`,`TRIGGER_GROUP`) REFERENCES `qrtz_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`);
+
+--
+-- Constraints for table `qrtz_triggers`
+--
+ALTER TABLE `qrtz_triggers`
+    ADD CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`,`JOB_NAME`,`JOB_GROUP`) REFERENCES `qrtz_job_details` (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`);
+
+--
 -- Constraints for table `suatchieu`
 --
 ALTER TABLE `suatchieu`
@@ -924,183 +1320,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-# By: Ron Cordell - roncordell
-#  I didn't see this anywhere, so I thought I'd post it here. This is the script from Quartz to create the tables in a MySQL database, modified to use INNODB instead of MYISAM.
-
-
-# make sure you have UTF-8 collaction for best .NET interoperability
-# CREATE DATABASE quartznet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;
-DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;
-DROP TABLE IF EXISTS QRTZ_SCHEDULER_STATE;
-DROP TABLE IF EXISTS QRTZ_LOCKS;
-DROP TABLE IF EXISTS QRTZ_SIMPLE_TRIGGERS;
-DROP TABLE IF EXISTS QRTZ_SIMPROP_TRIGGERS;
-DROP TABLE IF EXISTS QRTZ_CRON_TRIGGERS;
-DROP TABLE IF EXISTS QRTZ_BLOB_TRIGGERS;
-DROP TABLE IF EXISTS QRTZ_TRIGGERS;
-DROP TABLE IF EXISTS QRTZ_JOB_DETAILS;
-DROP TABLE IF EXISTS QRTZ_CALENDARS;
-
-CREATE TABLE QRTZ_JOB_DETAILS(
-                                 SCHED_NAME VARCHAR(120) NOT NULL,
-                                 JOB_NAME VARCHAR(200) NOT NULL,
-                                 JOB_GROUP VARCHAR(200) NOT NULL,
-                                 DESCRIPTION VARCHAR(250) NULL,
-                                 JOB_CLASS_NAME VARCHAR(250) NOT NULL,
-                                 IS_DURABLE BOOLEAN NOT NULL,
-                                 IS_NONCONCURRENT BOOLEAN NOT NULL,
-                                 IS_UPDATE_DATA BOOLEAN NOT NULL,
-                                 REQUESTS_RECOVERY BOOLEAN NOT NULL,
-                                 JOB_DATA BLOB NULL,
-                                 PRIMARY KEY (SCHED_NAME,JOB_NAME,JOB_GROUP))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_TRIGGERS (
-                               SCHED_NAME VARCHAR(120) NOT NULL,
-                               TRIGGER_NAME VARCHAR(200) NOT NULL,
-                               TRIGGER_GROUP VARCHAR(200) NOT NULL,
-                               JOB_NAME VARCHAR(200) NOT NULL,
-                               JOB_GROUP VARCHAR(200) NOT NULL,
-                               DESCRIPTION VARCHAR(250) NULL,
-                               NEXT_FIRE_TIME BIGINT(19) NULL,
-                               PREV_FIRE_TIME BIGINT(19) NULL,
-                               PRIORITY INTEGER NULL,
-                               TRIGGER_STATE VARCHAR(16) NOT NULL,
-                               TRIGGER_TYPE VARCHAR(8) NOT NULL,
-                               START_TIME BIGINT(19) NOT NULL,
-                               END_TIME BIGINT(19) NULL,
-                               CALENDAR_NAME VARCHAR(200) NULL,
-                               MISFIRE_INSTR SMALLINT(2) NULL,
-                               JOB_DATA BLOB NULL,
-                               PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
-                               FOREIGN KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)
-                                   REFERENCES QRTZ_JOB_DETAILS(SCHED_NAME,JOB_NAME,JOB_GROUP))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_SIMPLE_TRIGGERS (
-                                      SCHED_NAME VARCHAR(120) NOT NULL,
-                                      TRIGGER_NAME VARCHAR(200) NOT NULL,
-                                      TRIGGER_GROUP VARCHAR(200) NOT NULL,
-                                      REPEAT_COUNT BIGINT(7) NOT NULL,
-                                      REPEAT_INTERVAL BIGINT(12) NOT NULL,
-                                      TIMES_TRIGGERED BIGINT(10) NOT NULL,
-                                      PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
-                                      FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
-                                          REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_CRON_TRIGGERS (
-                                    SCHED_NAME VARCHAR(120) NOT NULL,
-                                    TRIGGER_NAME VARCHAR(200) NOT NULL,
-                                    TRIGGER_GROUP VARCHAR(200) NOT NULL,
-                                    CRON_EXPRESSION VARCHAR(120) NOT NULL,
-                                    TIME_ZONE_ID VARCHAR(80),
-                                    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
-                                    FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
-                                        REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_SIMPROP_TRIGGERS
-(
-    SCHED_NAME VARCHAR(120) NOT NULL,
-    TRIGGER_NAME VARCHAR(200) NOT NULL,
-    TRIGGER_GROUP VARCHAR(200) NOT NULL,
-    STR_PROP_1 VARCHAR(512) NULL,
-    STR_PROP_2 VARCHAR(512) NULL,
-    STR_PROP_3 VARCHAR(512) NULL,
-    INT_PROP_1 INT NULL,
-    INT_PROP_2 INT NULL,
-    LONG_PROP_1 BIGINT NULL,
-    LONG_PROP_2 BIGINT NULL,
-    DEC_PROP_1 NUMERIC(13,4) NULL,
-    DEC_PROP_2 NUMERIC(13,4) NULL,
-    BOOL_PROP_1 BOOLEAN NULL,
-    BOOL_PROP_2 BOOLEAN NULL,
-    TIME_ZONE_ID VARCHAR(80) NULL,
-    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
-    FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
-        REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_BLOB_TRIGGERS (
-                                    SCHED_NAME VARCHAR(120) NOT NULL,
-                                    TRIGGER_NAME VARCHAR(200) NOT NULL,
-                                    TRIGGER_GROUP VARCHAR(200) NOT NULL,
-                                    BLOB_DATA BLOB NULL,
-                                    PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
-                                    INDEX (SCHED_NAME,TRIGGER_NAME, TRIGGER_GROUP),
-                                    FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
-                                        REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_CALENDARS (
-                                SCHED_NAME VARCHAR(120) NOT NULL,
-                                CALENDAR_NAME VARCHAR(200) NOT NULL,
-                                CALENDAR BLOB NOT NULL,
-                                PRIMARY KEY (SCHED_NAME,CALENDAR_NAME))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_PAUSED_TRIGGER_GRPS (
-                                          SCHED_NAME VARCHAR(120) NOT NULL,
-                                          TRIGGER_GROUP VARCHAR(200) NOT NULL,
-                                          PRIMARY KEY (SCHED_NAME,TRIGGER_GROUP))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_FIRED_TRIGGERS (
-                                     SCHED_NAME VARCHAR(120) NOT NULL,
-                                     ENTRY_ID VARCHAR(140) NOT NULL,
-                                     TRIGGER_NAME VARCHAR(200) NOT NULL,
-                                     TRIGGER_GROUP VARCHAR(200) NOT NULL,
-                                     INSTANCE_NAME VARCHAR(200) NOT NULL,
-                                     FIRED_TIME BIGINT(19) NOT NULL,
-                                     SCHED_TIME BIGINT(19) NOT NULL,
-                                     PRIORITY INTEGER NOT NULL,
-                                     STATE VARCHAR(16) NOT NULL,
-                                     JOB_NAME VARCHAR(200) NULL,
-                                     JOB_GROUP VARCHAR(200) NULL,
-                                     IS_NONCONCURRENT BOOLEAN NULL,
-                                     REQUESTS_RECOVERY BOOLEAN NULL,
-                                     PRIMARY KEY (SCHED_NAME,ENTRY_ID))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_SCHEDULER_STATE (
-                                      SCHED_NAME VARCHAR(120) NOT NULL,
-                                      INSTANCE_NAME VARCHAR(200) NOT NULL,
-                                      LAST_CHECKIN_TIME BIGINT(19) NOT NULL,
-                                      CHECKIN_INTERVAL BIGINT(19) NOT NULL,
-                                      PRIMARY KEY (SCHED_NAME,INSTANCE_NAME))
-    ENGINE=InnoDB;
-
-CREATE TABLE QRTZ_LOCKS (
-                            SCHED_NAME VARCHAR(120) NOT NULL,
-                            LOCK_NAME VARCHAR(40) NOT NULL,
-                            PRIMARY KEY (SCHED_NAME,LOCK_NAME))
-    ENGINE=InnoDB;
-
-CREATE INDEX IDX_QRTZ_J_REQ_RECOVERY ON QRTZ_JOB_DETAILS(SCHED_NAME,REQUESTS_RECOVERY);
-CREATE INDEX IDX_QRTZ_J_GRP ON QRTZ_JOB_DETAILS(SCHED_NAME,JOB_GROUP);
-
-CREATE INDEX IDX_QRTZ_T_J ON QRTZ_TRIGGERS(SCHED_NAME,JOB_NAME,JOB_GROUP);
-CREATE INDEX IDX_QRTZ_T_JG ON QRTZ_TRIGGERS(SCHED_NAME,JOB_GROUP);
-CREATE INDEX IDX_QRTZ_T_C ON QRTZ_TRIGGERS(SCHED_NAME,CALENDAR_NAME);
-CREATE INDEX IDX_QRTZ_T_G ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
-CREATE INDEX IDX_QRTZ_T_STATE ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_STATE);
-CREATE INDEX IDX_QRTZ_T_N_STATE ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP,TRIGGER_STATE);
-CREATE INDEX IDX_QRTZ_T_N_G_STATE ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_GROUP,TRIGGER_STATE);
-CREATE INDEX IDX_QRTZ_T_NEXT_FIRE_TIME ON QRTZ_TRIGGERS(SCHED_NAME,NEXT_FIRE_TIME);
-CREATE INDEX IDX_QRTZ_T_NFT_ST ON QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_STATE,NEXT_FIRE_TIME);
-CREATE INDEX IDX_QRTZ_T_NFT_MISFIRE ON QRTZ_TRIGGERS(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME);
-CREATE INDEX IDX_QRTZ_T_NFT_ST_MISFIRE ON QRTZ_TRIGGERS(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_STATE);
-CREATE INDEX IDX_QRTZ_T_NFT_ST_MISFIRE_GRP ON QRTZ_TRIGGERS(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_GROUP,TRIGGER_STATE);
-
-CREATE INDEX IDX_QRTZ_FT_TRIG_INST_NAME ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,INSTANCE_NAME);
-CREATE INDEX IDX_QRTZ_FT_INST_JOB_REQ_RCVRY ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,INSTANCE_NAME,REQUESTS_RECOVERY);
-CREATE INDEX IDX_QRTZ_FT_J_G ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,JOB_NAME,JOB_GROUP);
-CREATE INDEX IDX_QRTZ_FT_JG ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,JOB_GROUP);
-CREATE INDEX IDX_QRTZ_FT_T_G ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP);
-CREATE INDEX IDX_QRTZ_FT_TG ON QRTZ_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
-
-commit;
