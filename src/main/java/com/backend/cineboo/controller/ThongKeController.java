@@ -30,21 +30,23 @@ public class ThongKeController {
     @GetMapping("/pie")
     public ResponseEntity pie(){
         String sql = "SELECT\n" +
-                "    p.TenPhim,                      -- Movie name\n" +
-                "    COUNT(hd.ID_Phim) AS 'Lượt mua', -- Purchase count\n" +
-                "    SUM(hd.TongSoTien) AS 'Doanh thu', -- Total revenue\n" +
-                "    GROUP_CONCAT(t.TenTheLoai) AS 'TheLoai',\n" +
-                "    p.Nam as 'Nam'-- Concatenate all genres into a single string\n" +
+                "    p.TenPhim AS 'Tên Phim',\n" +
+                "    COUNT(hd.ID_SuatChieu) AS 'Lượt mua',\n" +
+                "    SUM(hd.TongSoTien) AS 'Doanh thu',    \n" +
+                "    GROUP_CONCAT(DISTINCT t.TenTheLoai) AS 'Thể Loại',\n" +
+                "    p.Nam AS 'Năm'\n" +
                 "FROM hoadon hd\n" +
-                "         JOIN phim p ON p.ID = hd.ID_Phim\n" +
+                "         JOIN suatchieu sc ON hd.ID_SuatChieu = sc.ID\n" +
+                "         JOIN phim p ON sc.ID_Phim = p.ID\n" +
                 "         JOIN danhsachtlphim dstl ON p.ID = dstl.ID_Phim\n" +
                 "         JOIN theloaiphim t ON dstl.ID_TLPhim = t.ID\n" +
-                "WHERE hd.TrangThaiHoaDon = :paid\n" +
-                "GROUP BY (hd.ID_Phim)\n" +
-                "ORDER BY COUNT(hd.ID_Phim) DESC;\n";
+                "WHERE hd.TrangThaiHoaDon = :paid OR hd.TrangThaiHoaDon= :printed \n" +
+                "GROUP BY sc.ID_Phim\n" +
+                "ORDER BY COUNT(hd.ID_SuatChieu) DESC;\n";
 
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("paid",1);
+        query.setParameter("printed",3);
         List<Object[]> rows = query.getResultList();
         List<RevenuePerMovie> result = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
@@ -71,18 +73,21 @@ public class ThongKeController {
             description = "Dùng cho Scatter Chart")
     @GetMapping("/scatter")
     public ResponseEntity scatter(){
-        String sql = "SELECT kh.ID,\n" +
-                "    CONCAT(kh.ho,' ',kh.TenDem,' ',kh.Ten) as Ten,\n" +
-                "       tk.MaTaiKhoan,\n" +
-                "       kh.gioiTinh,\n" +
-                "       kh.Diem,\n" +
-                "       SUM(h.TongSoTien) AS TongSoTien\n" +
-                "FROM khachhang kh\n" +
-                "         JOIN taikhoan tk ON tk.ID = kh.ID_TaiKhoan\n" +
-                "         JOIN hoadon h ON kh.ID = h.ID_KhachHang\n" +
-                "GROUP BY kh.ID, tk.MaTaiKhoan\n" +
-                "ORDER BY TongSoTien DESC;";
+        String sql = "SELECT kh.ID, \n" +
+                "                    CONCAT(kh.ho,' ',kh.TenDem,' ',kh.Ten) as Ten, \n" +
+                "                       tk.MaTaiKhoan, \n" +
+                "                       kh.gioiTinh, \n" +
+                "                       kh.Diem, \n" +
+                "                       SUM(h.TongSoTien) AS TongSoTien \n" +
+                "                FROM khachhang kh \n" +
+                "                         JOIN taikhoan tk ON tk.ID = kh.ID_TaiKhoan \n" +
+                "                         JOIN hoadon h ON kh.ID = h.ID_KhachHang\n" +
+                "                WHERE h.TrangThaiHoaDon = :paid OR h.TrangThaiHoaDon= :printed \n" +
+                "                GROUP BY kh.ID, tk.MaTaiKhoan \n" +
+                "                ORDER BY TongSoTien DESC;";
         Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("paid",1);
+        query.setParameter("printed",3);
         List<Object[]> rows = query.getResultList();
         List<UserSpentAmount> result = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
@@ -133,14 +138,16 @@ public class ThongKeController {
                 "),\n" +
                 "     SeasonCategories AS (\n" +
                 "         SELECT\n" +
-                "             hd.ID_PHIM,\n" +
+                "             sc.ID_Phim,\n" +
                 "             hd.ID_KhachHang,\n" +
                 "             hd.TongSoTien,\n" +
                 "             MONTH(hd.thoiGianThanhToan) AS Thang\n" +
                 "         FROM hoadon hd\n" +
-                "         WHERE hd.ID_PHIM IS NOT NULL\n" +
+                "                  JOIN suatchieu sc ON hd.ID_SuatChieu = sc.ID  -- Link HoaDon with SuatChieu\n" +
+                "         WHERE sc.ID_Phim IS NOT NULL\n" +
                 "           AND hd.ID_KhachHang IS NOT NULL\n" +
-                "           AND YEAR(hd.thoiGianThanhToan) = :year \n" +
+                "           AND (hd.TrangThaiHoaDon= :paid OR hd.TrangThaiHoaDon= :printed )\n" +
+                "           AND YEAR(hd.thoiGianThanhToan) = :year\n" +
                 "     )\n" +
                 "SELECT\n" +
                 "    m.Month,\n" +
@@ -155,9 +162,11 @@ public class ThongKeController {
                 "    FROM SeasonCategories\n" +
                 "    GROUP BY Thang\n" +
                 ") t ON m.MonthOrder = t.Thang\n" +
-                "ORDER BY m.MonthOrder;\n;";
+                "ORDER BY m.MonthOrder;\n";
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("year",year);
+        query.setParameter("paid",1);
+        query.setParameter("printed",3);
         List<Object[]> rows = query.getResultList();
         List<RevenuePerMonth> result = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
