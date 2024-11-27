@@ -2,9 +2,9 @@ package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.AddHoaDonDTO;
 import com.backend.cineboo.dto.ChiTietHoaDonListDTO;
+import com.backend.cineboo.dto.HoanVeDTO;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
-import com.backend.cineboo.scheduledJobs.EndSuatChieuJob;
 import com.backend.cineboo.scheduledJobs.UnreserveGheJobs;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.InvoiceGenerator;
@@ -27,21 +27,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import vn.payos.PayOS;
+import vn.payos.exception.PayOSException;
+import vn.payos.type.PaymentLinkData;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static org.quartz.DateBuilder.futureDate;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
@@ -65,6 +64,9 @@ public class HoaDonController {
     @Autowired
     KhachHangRepository khachHangRepository;
 
+    @Autowired
+    PayOS payOS;
+
 
     @Autowired
     ChiTietHoaDonController chiTietHoaDonController;
@@ -77,6 +79,10 @@ public class HoaDonController {
 
     @Autowired
     GheRepository gheRepository;
+
+    @Autowired
+    DanhSachHoanVeRepository danhSachHoanVeRepository;
+
     @Autowired
     PhimRepository phimRepository;
 
@@ -134,7 +140,13 @@ public class HoaDonController {
     //Yêu cầu cần có sự thống nhất rõ ràng
     //Vì không tách bảng trạng thai
     @Operation(summary = "Thay đổi trạng thái hoá hoaDon",
-            description = "setTrangThai HoaDon")
+            description = "setTrangThai HoaDon\n\n" +
+                    "0: Chưa thanh toán\n\n" +
+                    "1: Đã thanh toán\n\n" +
+                    "2: Đã huỷ\n\n" +
+                    "3: Đã thanh toán và in vé\n\n" +
+                    "4: Đang chờ hoàn tiền\n\n" +
+                    "Các trạng thái khác sẽ báo lỗi và không update")
     @PutMapping("/status/{id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity"),
@@ -156,6 +168,14 @@ public class HoaDonController {
                     break;
                 case 2:
                     newStatus = "Hoá đơn huỷ do khách không thanh toán";
+                    hoaDon.setTrangThaiHoaDon(trangThai);
+                    break;
+                case 3:
+                    newStatus = "Đã thanh toán và in vé";
+                    hoaDon.setTrangThaiHoaDon(trangThai);
+                    break;
+                case 4:
+                    newStatus = "Đang chờ hoàn tiền";
                     hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 default:
@@ -600,4 +620,122 @@ public class HoaDonController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+    @Operation(summary = "Hoàn vé",
+            description = "Cộng điểm vào tài khoản người dùng theo điều kiện:\n" +
+                    "+) HoaDon/DonHang đã thanh toán.\n" +
+                    "+) HoaDon/DonHang chưa được in lần nào\n" +
+                    "+) Thời gian hoàn vé/HoaDon trước ít nhất 120h so với thời gian chiếu phim của SuatChieu gắn liền với HoaDon\n" +
+                    "Ví dụ: SuatChieu ngày 25. Có thể hoàn trong ngày 19 hoặc 20. Không thể hoàn trong ngày 21\n\n" +
+                    "Không quan tâm tới ngày mua. Chỉ quan tâm tới ThoiGianChieu và thời gian hiện tại")
+    @PutMapping("/cancel/{hoaDonId}")
+    public ResponseEntity cancel(@Valid @RequestBody HoanVeDTO hoanVeDTO, BindingResult bindingResult) {
+        Map errors = EntityValidator.validateFields(bindingResult);
+        if (MapUtils.isNotEmpty(errors)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        }
+        Long hoaDonId = hoanVeDTO.getHoaDonId();
+        ResponseEntity hoaDonResponse = RepoUtility.findById(hoaDonId, hoaDonRepository);
+        if (hoaDonResponse.getStatusCode().is2xxSuccessful()) {
+            HoaDon hoaDon = (HoaDon) hoaDonResponse.getBody();
+            LocalDateTime thoiGianChieu = hoaDon.getSuatChieu().getThoiGianChieu();
+            LocalDateTime now = LocalDateTime.now();
+            Duration duration = Duration.between(now,thoiGianChieu);
+            if(now.isAfter(thoiGianChieu)){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Suất chiếu đã kết thúc, không thể hoàn vé");
+            }
+            long hours = duration.toHours();
+            if(hours>0 && hours<120){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Quá thời hạn hoàn vé");
+            }
+            int trangThaiHoaDon = hoaDon.getTrangThaiHoaDon();
+            if( trangThaiHoaDon==0){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn chưa thanh toán, không thể hoàn trả");
+            }else if(trangThaiHoaDon==2){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn đã huỷ, không thể hoàn vé");
+            }else if(trangThaiHoaDon==3){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Vé đã in, không thể hoàn lại");
+            }
+            else if(trangThaiHoaDon==4){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Yêu cầu hoàn vé đã tồn tại");
+            }
+            //Kiểm tra hoá đơn đã thanh toán chưa
+            String maHoaDonToOrderCode = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
+            Long orderCode = Long.valueOf(maHoaDonToOrderCode);
+            try {
+                PaymentLinkData paymentLinkData = payOS.getPaymentLinkInformation(orderCode);
+                //Checking both on PayOS and backend server
+                //Should i do this? Dunno
+                if(paymentLinkData.getStatus().equals("PAID") && trangThaiHoaDon==1){
+                    //Check duplicate first, just to be sure
+                    int duplicate = danhSachHoanVeRepository.checkDuplicate(hoaDonId.toString());
+                    if(duplicate==0){
+                        DanhSachHoanVe danhSachHoanVe = new DanhSachHoanVe();
+                        danhSachHoanVe.setLyDoHoanVe(hoanVeDTO.getLyDoHoanVe());
+                        danhSachHoanVe.setThoiGianHoanVe(LocalDateTime.now());
+                        danhSachHoanVe.setHoaDon(hoaDon);
+                        danhSachHoanVe.setTrangThaiHoanVe(0);//Chưa xử lý
+                        danhSachHoanVeRepository.save(danhSachHoanVe);//Lưu vào database, đợi nv xử lý
+
+                        //Chuyển hoá đơn về trạng thái đang chờ hoàn tiền
+                        //Sẽ huỷ ghế, tuy nhiên tiền về tk hay không thì chưa biết
+                        hoaDon.setTrangThaiHoaDon(4);
+                        hoaDonRepository.save(hoaDon);
+                        //Giờ đi huỷ ghế và ChiTietHoaDon
+                        List<ChiTietHoaDon> chiTietHoaDonList= chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
+                        for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
+                            chiTietHoaDon.setTrangThaiChiTietHoaDon(2);//Đã huỷ
+                            chiTietHoaDonRepository.save(chiTietHoaDon);
+                            Ghe ghe = chiTietHoaDon.getGhe();
+                            ghe.setTrangThaiGhe(0);// huỷ book ghế
+                            gheRepository.save(ghe);
+                        }
+                        return ResponseEntity.status(HttpStatus.OK).body("Đã tạo yêu cầu hoàn vé");
+                    }
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Yêu cầu hoàn vé đã tồn tại");
+                }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn chưa thanh toán");
+            } catch (PayOSException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lỗi PayOS: Không tìm được orderId");
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Lôĩ khi kiểm tra HoaDon");
+            }
+        }
+        return hoaDonResponse;
+    }
+
+
+
+
+
+    @Operation(summary = "Hoàn vé",
+            description = "Cộng điểm vào tài khoản người dùng theo điều kiện:\n" +
+                    "+) HoaDon/DonHang đã thanh toán.\n" +
+                    "+) HoaDon/DonHang chưa được in lần nào\n" +
+                    "+) Thời gian hoàn vé/HoaDon trước ít nhất 120h so với thời gian chiếu phim của SuatChieu gắn liền với HoaDon\n" +
+                    "Ví dụ: SuatChieu ngày 25. Có thể hoàn trong ngày 19 hoặc 20. Không thể hoàn trong ngày 21\n\n" +
+                    "Không quan tâm tới ngày mua. Chỉ quan tâm tới ThoiGianChieu và thời gian hiện tại")
+    @PutMapping("/cancel/confirm/{hoanVeId}")
+    public ResponseEntity confirmCancel(@PathVariable Long hoanVeId) {
+        ResponseEntity hoaDonResponse = RepoUtility.findById(hoanVeId, danhSachHoanVeRepository);
+        if (hoaDonResponse.getStatusCode().is2xxSuccessful()) {
+            DanhSachHoanVe danhSachHoanVe = (DanhSachHoanVe) hoaDonResponse.getBody();
+            HoaDon hoaDon = danhSachHoanVe.getHoaDon();
+            KhachHang khachHang = hoaDon.getKhachHang();
+            int cancelAmount = hoaDon.getTongSoTien().intValue();
+            //Cộng điểm cho khách hàng bằng với số tiền đã trả
+            khachHang.setDiem(khachHang.getDiem()+cancelAmount);
+            khachHangRepository.save(khachHang);
+            //Xác nhận hoàn thành yêu cầu hoàn vé
+            hoaDon.setTrangThaiHoaDon(2);//Huỷ thay vì dùng trạng thái khác
+            hoaDonRepository.save(hoaDon);
+            //Chuyển trạng thái yêu cầu hoàn vé: đã xử lý
+            danhSachHoanVe.setTrangThaiHoanVe(1);
+            return ResponseEntity.status(HttpStatus.OK).body("Hoàn vé thành công");
+        }
+        return  hoaDonResponse;
+    }
+
 }
