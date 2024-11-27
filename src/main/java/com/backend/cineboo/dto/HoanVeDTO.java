@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Data
 @Getter
 @Setter
-public class HoanVeDTO {
+public class HoanVeDTO{
 
     @NotNull
     @Range(min = 1)
