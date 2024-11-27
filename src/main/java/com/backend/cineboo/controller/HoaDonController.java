@@ -710,25 +710,18 @@ public class HoaDonController {
 
 
 
-    @Operation(summary = "Hoàn vé",
-            description = "Cộng điểm vào tài khoản người dùng theo điều kiện:\n" +
-                    "+) HoaDon/DonHang đã thanh toán.\n" +
-                    "+) HoaDon/DonHang chưa được in lần nào\n" +
-                    "+) Thời gian hoàn vé/HoaDon trước ít nhất 120h so với thời gian chiếu phim của SuatChieu gắn liền với HoaDon\n" +
-                    "Ví dụ: SuatChieu ngày 25. Có thể hoàn trong ngày 19 hoặc 20. Không thể hoàn trong ngày 21\n\n" +
-                    "Không quan tâm tới ngày mua. Chỉ quan tâm tới ThoiGianChieu và thời gian hiện tại")
+    @Operation(summary = "Xác nhận hoàn tiền",
+            description = "Sau khi hoàn tiền thủ công, gọi API này để đóng yêu cầu hoàn tiền")
     @PutMapping("/cancel/confirm/{hoanVeId}")
     public ResponseEntity confirmCancel(@PathVariable Long hoanVeId) {
         ResponseEntity hoaDonResponse = RepoUtility.findById(hoanVeId, danhSachHoanVeRepository);
         if (hoaDonResponse.getStatusCode().is2xxSuccessful()) {
             DanhSachHoanVe danhSachHoanVe = (DanhSachHoanVe) hoaDonResponse.getBody();
             HoaDon hoaDon = danhSachHoanVe.getHoaDon();
-            KhachHang khachHang = hoaDon.getKhachHang();
-            int cancelAmount = hoaDon.getTongSoTien().intValue();
-            //Cộng điểm cho khách hàng bằng với số tiền đã trả
-            khachHang.setDiem(khachHang.getDiem()+cancelAmount);
-            khachHangRepository.save(khachHang);
-            //Xác nhận hoàn thành yêu cầu hoàn vé
+            //Phòng tài chính tự chuyển tiền thủ công
+            //Sau đó gọi API để đóng yêu cầu
+
+            //Xác nhận hoàn thành yêu cầu hoàn vé/hoàn tiền
             hoaDon.setTrangThaiHoaDon(2);//Huỷ thay vì dùng trạng thái khác
             hoaDonRepository.save(hoaDon);
             //Chuyển trạng thái yêu cầu hoàn vé: đã xử lý
