@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 27, 2024 at 08:29 AM
+-- Generation Time: Nov 28, 2024 at 02:22 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -450,17 +450,18 @@ CREATE TABLE `phim` (
                         `QuocGia` varchar(100) NOT NULL,
                         `NoiDung` text DEFAULT NULL,
                         `GioiHanDoTuoi` int(11) NOT NULL,
-                        `TrangThai` int(11) DEFAULT NULL
+                        `TrangThai` int(11) DEFAULT NULL,
+                        `Diem` decimal(3,2) DEFAULT 0.00 CHECK (`Diem` > 0 and `Diem` <= 10)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `phim`
 --
 
-INSERT INTO `phim` (`ID`, `MaPhim`, `TenPhim`, `AnhPhim`, `DienVien`, `Nam`, `NoiDungMoTa`, `Trailer`, `NgayRaMat`, `ThoiLuong`, `QuocGia`, `NoiDung`, `GioiHanDoTuoi`, `TrangThai`) VALUES
-                                                                                                                                                                                         (1, 'PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '2024-01-01', 120, 'Viet Nam', 'Noi dung phim A', 1, 1),
-                                                                                                                                                                                         (2, 'PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '2024-01-01', 150, 'My', 'Noi dung phim B', 2, 1),
-                                                                                                                                                                                         (3, 'PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1);
+INSERT INTO `phim` (`ID`, `MaPhim`, `TenPhim`, `AnhPhim`, `DienVien`, `Nam`, `NoiDungMoTa`, `Trailer`, `NgayRaMat`, `ThoiLuong`, `QuocGia`, `NoiDung`, `GioiHanDoTuoi`, `TrangThai`, `Diem`) VALUES
+                                                                                                                                                                                                 (1, 'PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '2024-01-01', 120, 'Viet Nam', 'Noi dung phim A', 1, 1, 9.00),
+                                                                                                                                                                                                 (2, 'PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '2024-01-01', 150, 'My', 'Noi dung phim B', 2, 1, 0.00),
+                                                                                                                                                                                                 (3, 'PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00);
 
 -- --------------------------------------------------------
 
@@ -648,7 +649,7 @@ CREATE TABLE `qrtz_scheduler_state` (
 --
 
 INSERT INTO `qrtz_scheduler_state` (`SCHED_NAME`, `INSTANCE_NAME`, `LAST_CHECKIN_TIME`, `CHECKIN_INTERVAL`) VALUES
-    ('MyScheduler', 'Acer47521732691058385', 1732692576401, 7500);
+    ('MyScheduler', 'Acer47521732756828382', 1732756965875, 7500);
 
 -- --------------------------------------------------------
 
@@ -731,6 +732,32 @@ INSERT INTO `qrtz_triggers` (`SCHED_NAME`, `TRIGGER_NAME`, `TRIGGER_GROUP`, `JOB
                                                                                                                                                                                                                                                                                  ('MyScheduler', 'EndSuatChieuTrigger1', 'suatchieuGroup', 'EndSuatChieuJob1', 'suatchieuGroup', NULL, 1735736400000, -1, 5, 'WAITING', 'SIMPLE', 1735736400000, 0, NULL, 1, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000269647372000e6a6176612e6c616e672e4c6f6e673b8be490cc8f23df0200014a000576616c7565787200106a6176612e6c616e672e4e756d62657286ac951d0b94e08b020000787000000000000000017800),
                                                                                                                                                                                                                                                                                  ('MyScheduler', 'FreeAllGheFromSuatChieuTrigger1', 'suatchieuGroup', 'FreeAllGheFromSuatChieuJob1', 'suatchieuGroup', NULL, 1735736700000, -1, 5, 'WAITING', 'SIMPLE', 1735736700000, 0, NULL, 1, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000269647372000e6a6176612e6c616e672e4c6f6e673b8be490cc8f23df0200014a000576616c7565787200106a6176612e6c616e672e4e756d62657286ac951d0b94e08b020000787000000000000000017800),
                                                                                                                                                                                                                                                                                  ('MyScheduler', 'StartSuatChieuTrigger1', 'suatchieuGroup', 'StartSuatChieuJob1', 'suatchieuGroup', NULL, 1735729200000, -1, 5, 'WAITING', 'SIMPLE', 1735729200000, 0, NULL, 1, 0xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000269647372000e6a6176612e6c616e672e4c6f6e673b8be490cc8f23df0200014a000576616c7565787200106a6176612e6c616e672e4e756d62657286ac951d0b94e08b020000787000000000000000017800);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `review`
+--
+
+CREATE TABLE `review` (
+                          `ID` int(11) NOT NULL,
+                          `MaReview` varchar(50) GENERATED ALWAYS AS (concat('RV',`ID`)) VIRTUAL,
+                          `ID_KhachHang` int(11) NOT NULL,
+                          `ID_Phim` int(11) NOT NULL,
+                          `DanhGia` tinyint(4) NOT NULL CHECK (`DanhGia` > 0 and `DanhGia` <= 10),
+                          `BinhLuan` varchar(2000) NOT NULL,
+                          `TrangThaiReview` tinyint(4) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `review`
+--
+
+INSERT INTO `review` (`ID`, `ID_KhachHang`, `ID_Phim`, `DanhGia`, `BinhLuan`, `TrangThaiReview`) VALUES
+                                                                                                     (1, 1, 1, 7, 'OK', 1),
+                                                                                                     (2, 1, 2, 5, 'mid', 1),
+                                                                                                     (3, 1, 3, 5, 'Average', 1),
+                                                                                                     (4, 2, 3, 5, 'Average', 1);
 
 -- --------------------------------------------------------
 
@@ -1062,6 +1089,13 @@ ALTER TABLE `qrtz_triggers`
     ADD KEY `IDX_QRTZ_T_NFT_ST_MISFIRE_GRP` (`SCHED_NAME`,`MISFIRE_INSTR`,`NEXT_FIRE_TIME`,`TRIGGER_GROUP`,`TRIGGER_STATE`);
 
 --
+-- Indexes for table `review`
+--
+ALTER TABLE `review`
+    ADD PRIMARY KEY (`ID`),
+    ADD UNIQUE KEY `ID_KhachHang` (`ID_KhachHang`,`ID_Phim`);
+
+--
 -- Indexes for table `suatchieu`
 --
 ALTER TABLE `suatchieu`
@@ -1182,6 +1216,12 @@ ALTER TABLE `phongchieu`
 --
 ALTER TABLE `pttt`
     MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `review`
+--
+ALTER TABLE `review`
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `suatchieu`

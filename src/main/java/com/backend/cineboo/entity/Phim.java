@@ -7,9 +7,12 @@ package com.backend.cineboo.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -84,4 +87,9 @@ public class Phim {
 
     @Column(name = "TRANGTHAI")
     private Integer trangThai;
+
+    @Column(name="DIEM")
+    @DecimalMin(value = "0.0")
+//    @Digits(integer=3, fraction=2)
+    private BigDecimal diem;
 }
