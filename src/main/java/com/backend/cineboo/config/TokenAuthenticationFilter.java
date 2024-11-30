@@ -1,5 +1,8 @@
 package com.backend.cineboo.config;
 
+import com.backend.cineboo.entity.PhanLoaiTaiKhoan;
+import com.backend.cineboo.repository.KhachHangRepository;
+import com.backend.cineboo.repository.NhanVienRepository;
 import com.backend.cineboo.repository.TaiKhoanRepository;
 import com.backend.cineboo.utility.JWTUtil;
 import jakarta.servlet.FilterChain;
@@ -8,12 +11,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
@@ -23,6 +28,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private  JWTUtil jwtUtil;
+
+
 
 //    public TokenAuthenticationFilter(TaiKhoanRepository taiKhoanRepository, JWTUtil jwtUtil) {
 //        this.taiKhoanRepository = taiKhoanRepository;
@@ -39,8 +46,22 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             if (username != null) {
                 taiKhoanRepository.findByTenDangNhap(username).ifPresent(taiKhoan -> {
                     if (jwtUtil.validateToken(cutToken, taiKhoan)) {
+                       //Single role per user, because project leader said so
+                        String singleRole="";
+                        List<SimpleGrantedAuthority> roles=new ArrayList<>();
+                        PhanLoaiTaiKhoan phanLoaiTaiKhoan = taiKhoan.getPhanLoaiTaiKhoan();
+                        String tenPhanLoaiTaiKhoan = phanLoaiTaiKhoan.getTenLoaiTaiKhoan();
+                        if(phanLoaiTaiKhoan.getTenLoaiTaiKhoan().equalsIgnoreCase("NhanVien")){
+                            roles.add(new SimpleGrantedAuthority("NhanVien"));
+                             singleRole = taiKhoanRepository.getPhanLoaiNhanVien(taiKhoan.getId().toString()).orElse("");
+
+                        }else if(tenPhanLoaiTaiKhoan.equalsIgnoreCase("KhachHang")){
+                            roles.add(new SimpleGrantedAuthority("KhachHang"));
+                            singleRole=taiKhoanRepository.getPhanLoaiKhachHang(taiKhoan.getId().toString()).orElse("");
+                        }
+                        roles.add(new SimpleGrantedAuthority(singleRole));
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                                taiKhoan.getTenDangNhap(), null, new ArrayList<>()
+                                taiKhoan.getTenDangNhap(), null, roles
                         );
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
