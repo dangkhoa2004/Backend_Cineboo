@@ -162,11 +162,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <!--SALTING AND HASHING PASSWORD-->
 
@@ -225,8 +220,11 @@
         </dependency>
 
         <!--        ITEXTPDF-->
+<!--REDIS Stateful Session Management-->
 
-<!--Scheduling-->
+
+
+        <!--Scheduling-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
