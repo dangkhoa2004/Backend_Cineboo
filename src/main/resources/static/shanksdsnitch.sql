@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 28, 2024 at 02:22 AM
+-- Generation Time: Dec 02, 2024 at 03:18 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -78,7 +78,22 @@ INSERT INTO `chitiethoadon` (`ID`, `ID_HoaDon`, `ID_Ghe`, `TrangThaiChiTietHoaDo
                                                                                         (69, 60, 1, 1),
                                                                                         (70, 60, 13, 1),
                                                                                         (71, 61, 12, 0),
-                                                                                        (72, 62, 14, 1);
+                                                                                        (72, 62, 14, 1),
+                                                                                        (73, 63, 15, 0),
+                                                                                        (74, 64, 15, 0),
+                                                                                        (75, 65, 15, 0),
+                                                                                        (76, 66, 15, 0),
+                                                                                        (77, 67, 15, 0),
+                                                                                        (78, 68, 15, 0),
+                                                                                        (79, 69, 15, 0),
+                                                                                        (80, 70, 15, 0),
+                                                                                        (81, 71, 15, 0),
+                                                                                        (82, 72, 15, 0),
+                                                                                        (83, 73, 15, 0),
+                                                                                        (84, 74, 15, 0),
+                                                                                        (85, 75, 15, 0),
+                                                                                        (86, 76, 15, 0),
+                                                                                        (87, 77, 15, 0);
 
 -- --------------------------------------------------------
 
@@ -170,17 +185,76 @@ CREATE TABLE `ghe` (
 --
 
 INSERT INTO `ghe` (`ID`, `MaGhe`, `GiaTien`, `ID_PhongChieu`, `TrangThaiGhe`) VALUES
-                                                                                  (1, 'GheTestApi', 1000.00, 1, 1),
-                                                                                  (2, 'GHE002', 520000.00, 1, 1),
-                                                                                  (3, 'GHE003', 6890.00, 1, 0),
-                                                                                  (4, 'GHE004', 9000.00, 1, 0),
-                                                                                  (5, 'GHE005', 1000.00, 1, 1),
-                                                                                  (6, 'GHE006', 50000.00, 1, 1),
-                                                                                  (7, 'GHE007', 50000.00, 2, 1),
-                                                                                  (8, 'GHE008', 50000.00, 2, 1),
-                                                                                  (12, 'GheTestAPEEPEE', 1000.00, 1, 1),
-                                                                                  (13, 'GH0012', 1000.00, 1, 1),
-                                                                                  (14, 'Star', 1000.00, 1, 1);
+                                                                                  (1, 'S62', 1000.00, 1, 1),
+                                                                                  (2, 'S64', 520000.00, 1, 1),
+                                                                                  (3, 'S65', 6890.00, 1, 0),
+                                                                                  (4, 'S66', 9000.00, 1, 0),
+                                                                                  (5, 'S67', 1000.00, 1, 1),
+                                                                                  (6, 'S68', 50000.00, 1, 1),
+                                                                                  (7, 'S69', 50000.00, 2, 1),
+                                                                                  (8, 'S70', 50000.00, 2, 1),
+                                                                                  (12, 'S61', 1000.00, 1, 0),
+                                                                                  (13, 'S63', 1000.00, 1, 1),
+                                                                                  (14, 'S30', 1000.00, 1, 1),
+                                                                                  (15, 'S28', 1000.00, 1, 0),
+                                                                                  (16, 'S26', 1000.00, 1, 0),
+                                                                                  (19, 'S21', 195574.00, 1, 0),
+                                                                                  (20, 'S20', 78231.00, 1, 0),
+                                                                                  (28, 'S22', 52576.00, 1, 0),
+                                                                                  (32, 'S16', 150444.00, 1, 0),
+                                                                                  (44, 'S18', 79084.00, 1, 0),
+                                                                                  (46, 'S23', 188347.00, 1, 0),
+                                                                                  (50, 'S19', 61234.00, 1, 0),
+                                                                                  (56, 'S25', 84211.00, 1, 0),
+                                                                                  (57, 'S29', 64705.00, 1, 1),
+                                                                                  (58, 'S17', 192453.00, 1, 1),
+                                                                                  (59, 'S24', 158399.00, 1, 0),
+                                                                                  (60, 'S27', 82505.00, 1, 0),
+                                                                                  (61, 'S1', 1000.00, 1, 0),
+                                                                                  (62, 'S2', 1000.00, 1, 0),
+                                                                                  (63, 'S3', 1000.00, 1, 0),
+                                                                                  (64, 'S4', 1000.00, 1, 0),
+                                                                                  (65, 'S5', 1000.00, 1, 0),
+                                                                                  (66, 'S6', 1000.00, 1, 0),
+                                                                                  (67, 'S7', 1000.00, 1, 0),
+                                                                                  (68, 'S8', 1000.00, 1, 0),
+                                                                                  (69, 'S9', 1000.00, 1, 0),
+                                                                                  (70, 'S10', 1000.00, 1, 0),
+                                                                                  (71, 'S11', 1000.00, 1, 0),
+                                                                                  (72, 'S12', 1000.00, 1, 0),
+                                                                                  (73, 'S13', 1000.00, 1, 0),
+                                                                                  (74, 'S14', 1000.00, 1, 0),
+                                                                                  (75, 'S15', 1000.00, 1, 0),
+                                                                                  (76, 'S31', 1000.00, 1, 0),
+                                                                                  (77, 'S32', 1000.00, 1, 0),
+                                                                                  (78, 'S33', 1000.00, 1, 0),
+                                                                                  (79, 'S34', 1000.00, 1, 0),
+                                                                                  (80, 'S35', 1000.00, 1, 0),
+                                                                                  (81, 'S36', 1000.00, 1, 0),
+                                                                                  (82, 'S37', 1000.00, 1, 0),
+                                                                                  (83, 'S38', 1000.00, 1, 0),
+                                                                                  (84, 'S39', 1000.00, 1, 0),
+                                                                                  (85, 'S40', 1000.00, 1, 0),
+                                                                                  (86, 'S41', 1000.00, 1, 0),
+                                                                                  (87, 'S42', 1000.00, 1, 0),
+                                                                                  (88, 'S43', 1000.00, 1, 0),
+                                                                                  (89, 'S44', 1000.00, 1, 0),
+                                                                                  (90, 'S45', 1000.00, 1, 0),
+                                                                                  (91, 'S46', 1000.00, 1, 0),
+                                                                                  (92, 'S47', 1000.00, 1, 0),
+                                                                                  (93, 'S48', 1000.00, 1, 0),
+                                                                                  (94, 'S49', 1000.00, 1, 0),
+                                                                                  (95, 'S50', 1000.00, 1, 0),
+                                                                                  (96, 'S51', 1000.00, 1, 0),
+                                                                                  (97, 'S52', 1000.00, 1, 0),
+                                                                                  (98, 'S53', 1000.00, 1, 0),
+                                                                                  (99, 'S54', 1000.00, 1, 0),
+                                                                                  (100, 'S55', 1000.00, 1, 0),
+                                                                                  (101, 'S56', 1000.00, 1, 0),
+                                                                                  (102, 'S57', 1000.00, 1, 0),
+                                                                                  (103, 'S58', 1000.00, 1, 0),
+                                                                                  (104, 'S59', 1000.00, 1, 0),
+                                                                                  (105, 'S60', 1000.00, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -248,7 +322,22 @@ INSERT INTO `hoadon` (`ID`, `ID_KhachHang`, `ID_SuatChieu`, `ID_Voucher`, `ID_PT
                                                                                                                                                                               (59, 4, 1, NULL, 1, 'HD0058', 2, '2024-11-26 16:24:41', 20, 2000.00, 1),
                                                                                                                                                                               (60, 4, 1, 1, 1, 'HD0059', 2, '2024-11-26 16:57:03', 20, 1800.00, 1),
                                                                                                                                                                               (61, 4, 1, NULL, 1, 'HD0060', 1, '2024-11-26 17:02:05', 10, 1000.00, 0),
-                                                                                                                                                                              (62, 4, 1, NULL, 1, 'HD0061', 1, '2024-11-26 17:06:48', 10, 1000.00, 1);
+                                                                                                                                                                              (62, 4, 1, NULL, 1, 'HD0061', 1, '2024-11-26 17:06:48', 10, 1000.00, 1),
+                                                                                                                                                                              (63, 1, 1, NULL, NULL, 'HD0062', 1, '2024-11-29 16:29:09', 10, 1000.00, 0),
+                                                                                                                                                                              (64, 1, 1, NULL, NULL, 'HD0063', 1, '2024-11-29 16:42:39', 10, 1000.00, 0),
+                                                                                                                                                                              (65, 1, 6, NULL, NULL, 'HD0064', 1, '2024-11-29 17:00:56', 10, 1000.00, 0),
+                                                                                                                                                                              (66, 1, 1, NULL, NULL, 'HD0065', 1, '2024-11-29 17:03:34', 10, 1000.00, 0),
+                                                                                                                                                                              (67, 1, 1, NULL, NULL, 'HD0066', 1, '2024-11-29 17:06:44', 10, 1000.00, 0),
+                                                                                                                                                                              (68, 1, 1, NULL, NULL, 'HD0067', 1, '2024-11-29 17:07:22', 10, 1000.00, 0),
+                                                                                                                                                                              (69, 1, 1, NULL, NULL, 'HD0068', 1, '2024-11-29 17:09:01', 10, 1000.00, 0),
+                                                                                                                                                                              (70, 1, 1, NULL, NULL, 'HD0069', 1, '2024-11-29 17:09:24', 10, 1000.00, 0),
+                                                                                                                                                                              (71, 1, 1, NULL, NULL, 'HD0070', 1, '2024-11-29 17:10:05', 10, 1000.00, 0),
+                                                                                                                                                                              (72, 1, 1, NULL, NULL, 'HD0071', 1, '2024-11-29 17:15:05', 10, 1000.00, 0),
+                                                                                                                                                                              (73, 1, 1, NULL, NULL, 'HD0072', 1, '2024-11-29 17:18:58', 10, 1000.00, 0),
+                                                                                                                                                                              (74, 1, 1, NULL, NULL, 'HD0073', 1, '2024-11-29 17:19:34', 10, 1000.00, 0),
+                                                                                                                                                                              (75, 1, 1, NULL, 1, 'HD0074', 1, '2024-11-29 17:20:35', 10, 1000.00, 0),
+                                                                                                                                                                              (76, 1, 1, NULL, 1, 'HD0075', 1, '2024-11-29 17:25:31', 10, 1000.00, 0),
+                                                                                                                                                                              (77, 1, 1, NULL, 3, 'HD0076', 1, '2024-11-30 10:37:05', 10, 1000.00, 0);
 
 -- --------------------------------------------------------
 
@@ -459,7 +548,7 @@ CREATE TABLE `phim` (
 --
 
 INSERT INTO `phim` (`ID`, `MaPhim`, `TenPhim`, `AnhPhim`, `DienVien`, `Nam`, `NoiDungMoTa`, `Trailer`, `NgayRaMat`, `ThoiLuong`, `QuocGia`, `NoiDung`, `GioiHanDoTuoi`, `TrangThai`, `Diem`) VALUES
-                                                                                                                                                                                                 (1, 'PH001', 'Phim A', 'anhphim_a.jpg', 'Dien Vien A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '2024-01-01', 120, 'Viet Nam', 'Noi dung phim A', 1, 1, 9.00),
+                                                                                                                                                                                                 (1, 'PH001', 'One Piece Film A', 'anhphim_a.jpg', 'Dien Vien A', 2023, 'Mo ta phim A', 'trailer_a.mp4', '2024-01-01', 120, 'Viet Nam', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using \'Content here, content here\', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for \'lorem ipsum\' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).\n', 1, 1, 9.00),
                                                                                                                                                                                                  (2, 'PH002', 'Phim B', 'anhphim_b.jpg', 'Dien Vien B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '2024-01-01', 150, 'My', 'Noi dung phim B', 2, 1, 0.00),
                                                                                                                                                                                                  (3, 'PH003', 'Phim C', 'anhphim_c.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00);
 
@@ -649,7 +738,7 @@ CREATE TABLE `qrtz_scheduler_state` (
 --
 
 INSERT INTO `qrtz_scheduler_state` (`SCHED_NAME`, `INSTANCE_NAME`, `LAST_CHECKIN_TIME`, `CHECKIN_INTERVAL`) VALUES
-    ('MyScheduler', 'Acer47521732756828382', 1732756965875, 7500);
+    ('MyScheduler', 'Acer47521733100949231', 1733105883488, 7500);
 
 -- --------------------------------------------------------
 
@@ -779,12 +868,13 @@ CREATE TABLE `suatchieu` (
 --
 
 INSERT INTO `suatchieu` (`ID`, `MaSuatChieu`, `ThoiGianChieu`, `ID_Phim`, `ID_PhongChieu`, `TrangThaiSuatChieu`) VALUES
-                                                                                                                     (1, 'MSC005', '2025-01-01 18:00:00', 1, 1, 0),
-                                                                                                                     (2, 'SC002', '2024-12-02 20:00:00', 2, 1, 2),
-                                                                                                                     (3, 'SC003', '2024-01-03 21:00:00', 3, 2, 2),
-                                                                                                                     (4, 'MSC004', '2024-01-01 18:00:00', 1, 1, 1),
-                                                                                                                     (5, 'MSC005', '2024-01-01 18:00:00', 1, 1, 1),
-                                                                                                                     (6, 'MSC006', '2025-01-01 18:00:01', 1, 1, 2);
+                                                                                                                     (1, 'MSC001', '2024-12-05 18:00:00', 1, 1, 0),
+                                                                                                                     (2, 'MSC002', '2024-12-03 20:00:00', 2, 1, 2),
+                                                                                                                     (3, 'MSC003', '2024-11-30 21:00:00', 3, 2, 2),
+                                                                                                                     (4, 'MSC004', '2024-12-01 18:00:00', 1, 1, 1),
+                                                                                                                     (5, 'MSC005', '2024-12-02 18:00:00', 1, 1, 1),
+                                                                                                                     (6, 'MSC006', '2025-01-01 18:00:01', 1, 1, 2),
+                                                                                                                     (7, 'MSC007', '2024-12-01 05:30:47', 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -811,7 +901,7 @@ INSERT INTO `taikhoan` (`ID`, `TenDangNhap`, `MatKhau`, `TrangThaiTaiKhoan`, `ID
                                                                                                                          (1, 'tk1', '$2a$10$bOOwbY7XlEX1yU0hj5KaxuusAY7PqV0rf9NFUXMssrnoGC8lc0kSC', 1, 1, '', 'Fifth user'),
                                                                                                                          (2, 'tk2', '$2a$10$VVXhYwpxUdTQrLpURl57UO0H89kbTKvosB8YCPQqe2lVZTTIJ8m6q', 1, 1, '', 'Sixth user'),
                                                                                                                          (3, 'tk3', '$2a$10$Uko2FFUAYGOF1LQxzDM6Ve77ZGgj0M3AMxO5mBE4ZiuFhsUN5hG0.', 0, 2, '', 'Seventh user'),
-                                                                                                                         (4, 'tk4', '$2a$10$eFvzrIwkKVKTRkGSpesrbOjLoDHD4MglEyJ9Y7csrvbMBAiSrxA8O', 0, 2, '', 'Eighth user'),
+                                                                                                                         (4, 'tk4', '$2a$10$eFvzrIwkKVKTRkGSpesrbOjLoDHD4MglEyJ9Y7csrvbMBAiSrxA8O', 1, 2, '', 'Eighth user'),
                                                                                                                          (5, 'tk5', '$2a$10$cMVCilb3.wLa7GqntLvdxOGKUTqVsqbaks/pwkM.dzVf8.LIpFxnW', 1, 2, '', ''),
                                                                                                                          (6, 'mk6', '$2a$10$MJbAM0LNIZx0kWA5SmAwcuPsAZYhMiQYXQU9bSbgEkyqYjbrETYfG', 0, 2, '', ''),
                                                                                                                          (11, 'tk8', '$2a$10$umWGAOXhaS8Z.MKf5eCta.lHo.zjDaUOYXbxI2pLZV32FH0xkJeRm', 1, 2, '', ''),
@@ -1131,7 +1221,7 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT for table `chitiethoadon`
 --
 ALTER TABLE `chitiethoadon`
-    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
 
 --
 -- AUTO_INCREMENT for table `danhsachhoanve`
@@ -1155,13 +1245,13 @@ ALTER TABLE `dotuoi`
 -- AUTO_INCREMENT for table `ghe`
 --
 ALTER TABLE `ghe`
-    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 
 --
 -- AUTO_INCREMENT for table `hoadon`
 --
 ALTER TABLE `hoadon`
-    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
 -- AUTO_INCREMENT for table `khachhang`
@@ -1227,7 +1317,7 @@ ALTER TABLE `review`
 -- AUTO_INCREMENT for table `suatchieu`
 --
 ALTER TABLE `suatchieu`
-    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+    MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `taikhoan`
