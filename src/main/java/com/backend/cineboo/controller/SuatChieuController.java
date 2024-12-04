@@ -1,7 +1,9 @@
 package com.backend.cineboo.controller;
 
-import com.backend.cineboo.entity.SuatChieu;
-import com.backend.cineboo.repository.SuatChieuRepository;
+import com.backend.cineboo.dto.AddGheAndSuatChieuDTO;
+import com.backend.cineboo.dto.SuatChieuDTO;
+import com.backend.cineboo.entity.*;
+import com.backend.cineboo.repository.*;
 import com.backend.cineboo.scheduledJobs.EndSuatChieuJob;
 import com.backend.cineboo.scheduledJobs.FreeAllGheFromSuatChieuJob;
 import com.backend.cineboo.scheduledJobs.StartSuatChieuJob;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +41,21 @@ public class SuatChieuController {
 
     @Autowired
     SuatChieuRepository suatChieuRepository;
+
+    @Autowired
+    PhimRepository phimRepository;
+
+    @Autowired
+    GheAndSuatChieuRepository gheAndSuatChieuRepository;
+
+    @Autowired
+    PhongChieuRepository phongChieuRepository;
+
+    @Autowired
+    GheRepository gheRepository;
+
+    @Autowired
+    GheAndSuatChieuController gheAndSuatChieuController;
     private final String idPrefix = "MSC00";
 
     /**
@@ -104,7 +122,6 @@ public class SuatChieuController {
         if (response.getStatusCode().is2xxSuccessful()) {
             SuatChieu toBeUpdated = (SuatChieu) response.getBody();
             toBeUpdated.setMaSuatChieu(idPrefix + suatChieuRepository.getMaxTableId());
-            toBeUpdated.setPhongChieu(suatChieu.getPhongChieu());
             toBeUpdated.setThoiGianChieu(suatChieu.getThoiGianChieu());
             toBeUpdated.setTrangThaiSuatChieu(suatChieu.getTrangThaiSuatChieu());
             toBeUpdated.setPhim(suatChieu.getPhim());
@@ -116,7 +133,7 @@ public class SuatChieuController {
     /**
      * Thêm suất chiếu mới.
      *
-     * @param suatChieu     Thông tin suất chiếu mới.
+     * @param suatChieuDTO     Thông tin suất chiếu mới.
      * @param bindingResult Kết quả xác thực.
      * @return SuatChieu đã thêm hoặc phản hồi lỗi.
      */
@@ -126,29 +143,59 @@ public class SuatChieuController {
             @ApiResponse(responseCode = "400", description = "Yêu cầu không hợp lệ, có lỗi xác thực")
     })
     @PostMapping("/add")
-    public ResponseEntity add(@Valid @RequestBody SuatChieu suatChieu, BindingResult bindingResult) {
+    public ResponseEntity add(@Valid @RequestBody SuatChieuDTO suatChieuDTO, BindingResult bindingResult) {
         Map errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-        String id_PhongChieu = suatChieu.getPhongChieu().getId().toString();
-        String id_Phim = suatChieu.getPhim().getId().toString();
-        LocalDateTime thoiGianChieu = suatChieu.getThoiGianChieu();
 
-        SuatChieu duplicate = suatChieuRepository.checkDuplicate(id_Phim, id_PhongChieu, thoiGianChieu).orElse(null);
-        if (duplicate != null) {
-            String duplicateMsg = "Suất chiếu của phim " + id_Phim + " tại phòng " + id_PhongChieu + " vào lúc " + thoiGianChieu.toString() + " đã tồn tại";
+        Phim phim = phimRepository.findById(suatChieuDTO.getId_Phim()).orElse(null);
+        if(phim==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phim");
+        }
+        PhongChieu phongChieu = phongChieuRepository.findById(suatChieuDTO.getId_PhongChieu()).orElse(null);
+        if(phongChieu==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phòng chiếu");
+        }
+
+        LocalDateTime thoiGianChieu = suatChieuDTO.getThoiGianChieu();
+        //Kiểm tra trùng dựa trên Phim, ThoiGianChieu, PhongChieu
+        //Kiểm tra tại bảng GheAndSuatChieu
+        Integer duplicate = gheAndSuatChieuRepository.checkSuatChieuDuplicate(phim.getId().toString(), phongChieu.getId().toString(), thoiGianChieu.toString());
+        if (duplicate != null && duplicate == 1) {
+            String duplicateMsg = "Suất chiếu của phim " + phim.getMaPhim() + " tại phòng " + phongChieu.getMaPhong() + " vào lúc " + thoiGianChieu.toString() + " đã tồn tại";
             return ResponseEntity.status(HttpStatus.CONFLICT).body(duplicateMsg);
         }
+        SuatChieu suatChieu = new SuatChieu();
         suatChieu.setMaSuatChieu(idPrefix + (suatChieuRepository.getMaxTableId() + 1));
-        suatChieu.setId(null);//To make sure its an INSERT and Not Update since both use save()
+        suatChieu.setThoiGianChieu(thoiGianChieu);
+        suatChieu.setPhim(phim);
+        suatChieu.setTrangThaiSuatChieu(0);
         //SHOULD PROBABLY IMPLEMENT A CHECK HERE
         //IF THOIGIANCHIEU<= (LocalDateTime.now() + phim.getThoiLuong())
         //Then allow ADDING new SuatChieu
         //Basically, only when Phim finished its airing
         //Will we allow another airing of the same Phim, in the same PhongChieu
-        //For now, not implemented cuz FrontEnd will suffer when testing
-        suatChieu = suatChieuRepository.save(suatChieu);
+        //For now, not implemented
+        //just to be sure create new suatchieu
+        SuatChieu newlyAddedSuatChieu =  suatChieuRepository.save(suatChieu);
+
+        // Đã có suất chiếu sẽ phải có ghế
+        //Bắt đầu thêm Ghế vào Suất chiếu
+        AddGheAndSuatChieuDTO addGheAndSuatChieuDTO = new AddGheAndSuatChieuDTO();
+        addGheAndSuatChieuDTO.setId_SuatChieu(newlyAddedSuatChieu.getId());
+        addGheAndSuatChieuDTO.setId_PhongChieu(suatChieuDTO.getId_PhongChieu());
+        //Should directly cal GheAndSuatChieuController.add()
+        //Someone pls do it, im a bit busy
+        List<Ghe> ghes = gheRepository.findByID_PhongChieu(suatChieuDTO.getId_PhongChieu().toString());
+        for (Ghe ghe : ghes) {
+            //Add ghe to GheAndSuatChieu
+            GheAndSuatChieu gheAndSuatChieu = new GheAndSuatChieu();
+            gheAndSuatChieu.setId_Ghe(ghe);
+            gheAndSuatChieu.setId_SuatChieu(suatChieu);
+            gheAndSuatChieu.setTrangThaiGheAndSuatChieu(0);
+            gheAndSuatChieuRepository.save(gheAndSuatChieu);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(suatChieu);
     }
 

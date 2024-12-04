@@ -41,6 +41,8 @@ public class CheckoutController {
 
 
     @Autowired
+    GheAndSuatChieuRepository gheAndSuatChieuRepository;
+    @Autowired
     HoaDonRepository hoaDonRepository;
 
     @Autowired
@@ -130,8 +132,10 @@ public class CheckoutController {
         if (response.getStatusCode().is2xxSuccessful()) {
             try {
                 HoaDon hoaDon = (HoaDon) response.getBody();
+                GheAndSuatChieu firstGheAndSuatChieu = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu();
                 final String baseUrl = getBaseUrl(request);
-                final String productName = hoaDon.getSuatChieu().getPhim().getTenPhim() + hoaDon.getSuatChieu().getPhim().getGioiHanDoTuoi().getTenDoTuoi();
+                final String productName = firstGheAndSuatChieu.getId_SuatChieu().getPhim().getTenPhim()
+                        + firstGheAndSuatChieu.getId_SuatChieu().getPhim().getGioiHanDoTuoi().getTenDoTuoi();
 
                 StringBuilder details = new StringBuilder();
                 details.append(hoaDon.getId());
@@ -341,10 +345,10 @@ public class CheckoutController {
                     for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
                         chiTietHoaDon.setTrangThaiChiTietHoaDon(1);//Đã hoàn tất
                         chiTietHoaDonRepository.save(chiTietHoaDon);
-                        //Also disable Ghe
-                        Ghe boughtGhe = chiTietHoaDon.getGhe();
-                        boughtGhe.setTrangThaiGhe(1);
-                        gheRepository.save(boughtGhe);
+                        //Also disable GheAndSuatChieu from being available
+                        GheAndSuatChieu gheAndSuatChieu = chiTietHoaDon.getId_GheAndSuatChieu();
+                        gheAndSuatChieu.setTrangThaiGheAndSuatChieu(1);
+                        gheAndSuatChieuRepository.save(gheAndSuatChieu);
                     }
                 }
                 //Thêm điểm vào ĐÂY

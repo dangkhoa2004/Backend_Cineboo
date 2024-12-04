@@ -30,10 +30,10 @@ public class ChiTietHoaDon {
     @NotNull
     private HoaDon hoaDon;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_GHE")
+    @JoinColumn(name = "ID_GHEANDSUATCHIEU")
+    @OneToOne
     @NotNull
-    private Ghe ghe;
+    private GheAndSuatChieu id_GheAndSuatChieu;
 
     @Range(min = 0)
     @Column(name ="TRANGTHAICHITIETHOADON")

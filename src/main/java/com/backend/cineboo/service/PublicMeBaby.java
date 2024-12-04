@@ -16,7 +16,7 @@ import java.net.URL;
 public class PublicMeBaby {
 
 //    @Value(value = "${NGROK_TOKEN}")
-    private String ngrokToken="2p38nj1Nz2e1o0pnXm06BFBdhSI_5HkDB2tKs4dE6VknrvysJ";
+    private String ngrokToken="2pkK74s9r01kNrCyHi5QKweIszp_7UJcsQ7JEjbhFv91auotBc";
 
     public String startNgrok() throws Exception {
         // Ensure the token is set
@@ -60,7 +60,7 @@ public class PublicMeBaby {
 
         return publicUrl;
     }
-//    @EventListener(ContextRefreshedEvent.class)
+   @EventListener(ContextRefreshedEvent.class)
     public void contextRefreshedEvent() throws Exception {
         PublicMeBaby ngrokService = new PublicMeBaby();
         String ngrokUrl = ngrokService.startNgrok();

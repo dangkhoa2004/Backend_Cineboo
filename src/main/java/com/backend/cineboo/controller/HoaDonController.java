@@ -5,7 +5,7 @@ import com.backend.cineboo.dto.ChiTietHoaDonListDTO;
 import com.backend.cineboo.dto.HoanVeDTO;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
-import com.backend.cineboo.scheduledJobs.UnreserveGheJobs;
+import com.backend.cineboo.scheduledJobs.UnreserveGheAndSuatChieuJobs;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.InvoiceGenerator;
 import com.backend.cineboo.utility.RepoUtility;
@@ -81,6 +81,9 @@ public class HoaDonController {
     GheRepository gheRepository;
 
     @Autowired
+    GheAndSuatChieuRepository gheAndSuatChieuRepository;
+
+    @Autowired
     DanhSachHoanVeRepository danhSachHoanVeRepository;
 
     @Autowired
@@ -102,24 +105,24 @@ public class HoaDonController {
         return ResponseEntity.ok(hoaDons);
     }
 
-    private void revertSeatsAfter5Mins(Long hoaDonId) {
+    private void revertSeatsBySuatChieuAfter5Mins(Long hoaDonId) {
         //Check if HoaDon is paid
         HoaDon hoaDon = hoaDonRepository.findById(hoaDonId).orElse(null);
         //Otherwise nuke it to oblivion
         try {
-            JobDetail unbookGheJob = JobBuilder.newJob(UnreserveGheJobs.class)
-                    .withIdentity("unreserveGheJob" + hoaDonId, "hoaDonGroup")
+            JobDetail unbookGheAndSuatChieuJob = JobBuilder.newJob(UnreserveGheAndSuatChieuJobs.class)
+                    .withIdentity("unreserveGheAndSuatChieuJob" + hoaDonId, "hoaDonGroup")
                     .build();
 
             SimpleTrigger trigger = newTrigger()
-                    .withIdentity("unreserveGheTrigger" + hoaDonId, "hoaDonGroup")
-                    .forJob(unbookGheJob)
+                    .withIdentity("unreserveGheAndSuatChieuTrigger" + hoaDonId, "hoaDonGroup")
+                    .forJob(unbookGheAndSuatChieuJob)
                     .usingJobData("id", hoaDonId)
                     .startAt(futureDate(5, DateBuilder.IntervalUnit.MINUTE))
                     .withSchedule(simpleSchedule().withMisfireHandlingInstructionFireNow())
                     .build();
             scheduler.start();
-            scheduler.scheduleJob(unbookGheJob, trigger);
+            scheduler.scheduleJob(unbookGheAndSuatChieuJob, trigger);
             // Keep the app running to observe the scheduler
         } catch (SchedulerException e) {
             e.printStackTrace();
@@ -216,7 +219,6 @@ public class HoaDonController {
         if (response.getStatusCode().is2xxSuccessful()) {
             HoaDon hoaDonToBeUpdated = (HoaDon) response.getBody();
             hoaDonToBeUpdated.setKhachHang(hoaDon.getKhachHang());
-            hoaDonToBeUpdated.setSuatChieu(hoaDon.getSuatChieu());
             hoaDonToBeUpdated.setVoucher(hoaDon.getVoucher());
             hoaDonToBeUpdated.setSoLuong(hoaDon.getSoLuong());
             hoaDonToBeUpdated.setThoiGianThanhToan(hoaDon.getThoiGianThanhToan());
@@ -363,24 +365,30 @@ public class HoaDonController {
         ResponseEntity suatchieuResponse = RepoUtility.findById(hoaDon.getSuatChieuId(), suatChieuRepository);
         if (suatchieuResponse.getStatusCode().is2xxSuccessful()) {
             SuatChieu suatChieu = (SuatChieu) suatchieuResponse.getBody();
-            String id_PhongChieu = suatChieu.getPhongChieu().getId().toString();
-            List<Ghe> gheList = new ArrayList<Ghe>();
+            String id_PhongChieu = hoaDon.getPhongChieuId().toString();
+            List<Ghe> gheList = new ArrayList();
             for (ChiTietHoaDonListDTO helpMeImTooTiredForThis : chiTietHoaDonList) {
+                //Nếu bản ghi Ghế và suất chiếu có tồn tại và đã có trạng thái 1, thì ngừng tạo hoá đơn
+                //Nếu chưa có trạng thái 1 thì bắt đầu giữ chỗ, cho trangThai lên 2
                 String maGhe = helpMeImTooTiredForThis.getMaGhe();
+                //Lấy ghế để lấy ID
                 Ghe queriedGhe = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu, maGhe).orElse(null);
                 if (queriedGhe == null) {
-                    //Kiểm tra ghế lần cuối.
-                    // Nếu ghế đã được chọn thì ngừng tạo hoá đơn
-                    // Chưa được chọn thì lập tức cho giữ ghế
-                    if (queriedGhe.getTrangThaiGhe() != 0) {
+                    // If Ghe does not exist
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại trong phòng chiếu này");
+                }
+                    //Then find GheAndSuatChieu
+                    GheAndSuatChieu gheAndSuatChieu = gheAndSuatChieuRepository.findByGheAndSuatChieu(queriedGhe.getId().toString(),suatChieu.getId().toString()).orElse(null);
+                    if(gheAndSuatChieu==null){
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại trong suất chiếu này");
+                    }
+                    //if already booked, then return
+                    if(gheAndSuatChieu.getTrangThaiGheAndSuatChieu()!=0){//could be 1-booked, could be 2-holding
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ghế " + queriedGhe.getMaGhe() + " đã được chọn");
                     }
-                    queriedGhe.setTrangThaiGhe(2);//2 Tạm thời giữ ghế
-                    gheRepository.save(queriedGhe);
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại, ngừng tạo hoá đơn");
-                }
-                ;//Giữ ghế
-                gheList.add(queriedGhe);
+                    gheAndSuatChieu.setTrangThaiGheAndSuatChieu(2);//2 Tạm thời giữ ghế
+                    gheAndSuatChieuRepository.save(gheAndSuatChieu);
+                    gheList.add(queriedGhe);
             }
             //Tạo hoá đơn rỗng
             HoaDon blankInvoice = createBlankInvoice(hoaDon, gheList);
@@ -390,7 +398,7 @@ public class HoaDonController {
             //Lưu vào DB để tí còn có ID mà xử lý
 
             //Thêm hoá đơn chi tiết
-            boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList);
+            boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList,hoaDon.getSuatChieuId());
             if (!createdInvoiceDetail) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Lỗi khi tạo ChiTietHoaDon, ngừng tạo HoaDon");
             }
@@ -398,18 +406,21 @@ public class HoaDonController {
 
             HoaDon finalHoaDon = hoaDonRepository.findById(blankInvoice.getId()).orElse(null);
             if (finalHoaDon != null) {
-                //Reverse Seat here, more checks
+                //Reverse GheAndSuatChieu here, more checks
                 //This step is extra, kinda not needed, but i'm doing it anyway
                 //Just to be sure
                 List<ChiTietHoaDon> finalList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(finalHoaDon.getId().toString());
-                for (ChiTietHoaDon reverse : finalList) {
-                    Ghe reverseGhe = reverse.getGhe();
-                    if (reverseGhe != null) {
-                        reverseGhe.setTrangThaiGhe(1);
-                        gheRepository.save(reverseGhe);
+                for (ChiTietHoaDon chiTietHoaDon : finalList) {
+                    GheAndSuatChieu holdGheAndSuatChieu = gheAndSuatChieuRepository.findById(chiTietHoaDon.getId()).orElse(null);
+                    if (holdGheAndSuatChieu != null) {
+                        holdGheAndSuatChieu.setTrangThaiGheAndSuatChieu(2);
+                        // giữ ghế-duplicate code, just to be sure tho
+                        //will remove later when free
+                        gheAndSuatChieuRepository.save(holdGheAndSuatChieu);
                     }
                 }
-                revertSeatsAfter5Mins(finalHoaDon.getId());
+                //unbook after 5 minutes
+                revertSeatsBySuatChieuAfter5Mins(finalHoaDon.getId());
                 //Schedule a revert if not booked
                 return ResponseEntity.status(HttpStatus.OK).body(finalHoaDon);
             }
@@ -447,7 +458,6 @@ public class HoaDonController {
         }
         blankHoaDon.setKhachHang(khachHang);
 
-        blankHoaDon.setSuatChieu(suatChieu);
         blankHoaDon.setVoucher(null);
         blankHoaDon.setChiTietHoaDonList(null);
         blankHoaDon.setThoiGianThanhToan(LocalDateTime.now());
@@ -526,14 +536,14 @@ public class HoaDonController {
         return hoaDonResponse;
     }
 
-    private boolean createAndAddInvoiceDetailToInvoice(HoaDon hoaDon, List<Ghe> gheList) {
+    private boolean createAndAddInvoiceDetailToInvoice(HoaDon hoaDon, List<Ghe> gheList, Long idSuatChieu) {
         //Coder is having a cold and therefore low motivation
         //No more validation or constraint check to verify if hoaDon exists
         //Just.....do it
         for (Ghe ghe : gheList) {
             //Lượt qua danh sách Hoá đơn chi tiết
             //Tạo mới chi tiêt hoá đơn
-            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(ghe, hoaDon);
+            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(ghe.getId(),idSuatChieu, hoaDon);
             if (temp == null) {
                 return false;
             }
@@ -638,7 +648,9 @@ public class HoaDonController {
         ResponseEntity hoaDonResponse = RepoUtility.findById(hoaDonId, hoaDonRepository);
         if (hoaDonResponse.getStatusCode().is2xxSuccessful()) {
             HoaDon hoaDon = (HoaDon) hoaDonResponse.getBody();
-            LocalDateTime thoiGianChieu = hoaDon.getSuatChieu().getThoiGianChieu();
+            //This is bad, i know
+            //too rushed tho so whatever
+            LocalDateTime thoiGianChieu = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu().getThoiGianChieu();
             LocalDateTime now = LocalDateTime.now();
             Duration duration = Duration.between(now,thoiGianChieu);
             if(now.isAfter(thoiGianChieu)){
@@ -686,9 +698,12 @@ public class HoaDonController {
                         for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
                             chiTietHoaDon.setTrangThaiChiTietHoaDon(2);//Đã huỷ
                             chiTietHoaDonRepository.save(chiTietHoaDon);
-                            Ghe ghe = chiTietHoaDon.getGhe();
-                            ghe.setTrangThaiGhe(0);// huỷ book ghế
-                            gheRepository.save(ghe);
+                            GheAndSuatChieu gheAndSuatChieu= gheAndSuatChieuRepository.findById(chiTietHoaDon.getId_GheAndSuatChieu().getId()).orElse(null);
+                            if(gheAndSuatChieu!=null){
+                                gheAndSuatChieu.setTrangThaiGheAndSuatChieu(0);// huỷ book ghế
+                                gheAndSuatChieuRepository.save(gheAndSuatChieu);
+                            }
+
                         }
                         return ResponseEntity.status(HttpStatus.OK).body("Đã tạo yêu cầu hoàn vé");
                     }

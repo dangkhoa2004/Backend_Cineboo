@@ -2,8 +2,10 @@ package com.backend.cineboo.scheduledJobs;
 
 import com.backend.cineboo.entity.ChiTietHoaDon;
 import com.backend.cineboo.entity.Ghe;
+import com.backend.cineboo.entity.GheAndSuatChieu;
 import com.backend.cineboo.entity.HoaDon;
 import com.backend.cineboo.repository.ChiTietHoaDonRepository;
+import com.backend.cineboo.repository.GheAndSuatChieuRepository;
 import com.backend.cineboo.repository.GheRepository;
 import com.backend.cineboo.repository.HoaDonRepository;
 import org.quartz.Job;
@@ -12,10 +14,8 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
-public class UnreserveGheJobs implements Job {
+public class UnreserveGheAndSuatChieuJobs implements Job {
     @Autowired
     GheRepository gheRepository;
 
@@ -25,6 +25,8 @@ public class UnreserveGheJobs implements Job {
     @Autowired
     HoaDonRepository hoaDonRepository;
 
+    @Autowired
+    GheAndSuatChieuRepository gheAndSuatChieuRepository;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -44,11 +46,11 @@ public class UnreserveGheJobs implements Job {
         // Get hoaDon again, just to be sure
         List<ChiTietHoaDon> revertList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
         for (ChiTietHoaDon chiTietHoaDon : revertList) {
-            Ghe revertGhe = chiTietHoaDon.getGhe();
-            if (revertGhe != null) {
-                revertGhe.setTrangThaiGhe(0);//0 là ghế chưa book
-                gheRepository.save(revertGhe);
-                System.out.println("Reverting Ghe" + revertGhe.getMaGhe());
+            GheAndSuatChieu revertGheAndSuatChieu =chiTietHoaDon.getId_GheAndSuatChieu();
+            if (revertGheAndSuatChieu != null) {
+                revertGheAndSuatChieu.setTrangThaiGheAndSuatChieu(0);//0 là ghế chưa book
+                gheAndSuatChieuRepository.save(revertGheAndSuatChieu);
+                System.out.println("Reverting Ghe" + revertGheAndSuatChieu.getId_Ghe()+" Of SuatChieu "+revertGheAndSuatChieu.getId_SuatChieu());
             }
         }
     }

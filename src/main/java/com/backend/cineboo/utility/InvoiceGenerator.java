@@ -99,8 +99,9 @@ public class InvoiceGenerator {
         PTTT phuongThucThanhToan = hoaDon.getPttt();
         KhachHang khachHang = hoaDon.getKhachHang();
         BigDecimal tongSoTien = hoaDon.getTongSoTien();
-        Phim phim = hoaDon.getSuatChieu().getPhim();
-        SuatChieu suatChieu = hoaDon.getSuatChieu();
+        Phim phim = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu().getPhim();
+        SuatChieu suatChieu = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu();
+
         List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
 
 
@@ -110,7 +111,8 @@ public class InvoiceGenerator {
         BigDecimal originalPrice = BigDecimal.ZERO;
         for (ChiTietHoaDon chiTietHoaDon : chiTietHoaDonList) {
             //Damnit cant use lambda
-            originalPrice = originalPrice.add(chiTietHoaDon.getGhe().getGiaTien());
+
+            originalPrice = originalPrice.add(chiTietHoaDon.getId_GheAndSuatChieu().getId_Ghe().getGiaTien());
         }
         originalPrice = InvoiceGenerator.getDecimal18Point2(originalPrice);
 
@@ -187,7 +189,7 @@ public class InvoiceGenerator {
             doc.add(new Paragraph("Tên phim: " + phim.getTenPhim()).setFontSize(7f)).setFont(font);
             doc.add(new Paragraph("Thời lượng: " + phim.getThoiLuong()).setFontSize(7f)).setFont(font);
             doc.add(new Paragraph("Lịch chiếu: " + thoiGianChieu).setFontSize(7f)).setFont(font);
-            doc.add(new Paragraph("Địa điểm: " + suatChieu.getPhongChieu().getMaPhong()).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Địa điểm: " + hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_Ghe().getPhongChieu().getMaPhong()).setFontSize(7f)).setFont(font);
 
 
             doc.add(new Paragraph("Thời gian thanh toán: " + thoiGianThanhToan).setFontSize(7f)).setFont(font);
@@ -204,33 +206,36 @@ public class InvoiceGenerator {
             // Adding column names to the table
 
             table.addCell(new Cell().add("Số ghế")
-                            .setFontSize(6f)
-                            .setFont(fontBold)
-                            .setBorderTop(Border.NO_BORDER)
-                            .setBorderBottom(Border.NO_BORDER)
-                            .setBorderLeft(Border.NO_BORDER));
-                    table.addCell(new Cell().add("Đơn giá (VNĐ)")
-                            .setFontSize(6f)
-                            .setFont(fontBold)
-                            .setBorderTop(Border.NO_BORDER)
-                            .setBorderBottom(Border.NO_BORDER)
-                            .setBorderRight(Border.NO_BORDER));
+                    .setFontSize(6f)
+                    .setFont(fontBold)
+                    .setBorderTop(Border.NO_BORDER)
+                    .setBorderBottom(Border.NO_BORDER)
+                    .setBorderLeft(Border.NO_BORDER));
+            table.addCell(new Cell().add("Đơn giá (VNĐ)")
+                    .setFontSize(6f)
+                    .setFont(fontBold)
+                    .setBorderTop(Border.NO_BORDER)
+                    .setBorderBottom(Border.NO_BORDER)
+                    .setBorderRight(Border.NO_BORDER));
 
             // Adding rows to the table
             for (int i = 0; i < chiTietHoaDonList.size(); i++) {
                 table.addCell(new Cell().add(chiTietHoaDonList
-                        .get(i)
-                        .getGhe()
-                        .getMaGhe())
+                                .get(i)
+                                .getId_GheAndSuatChieu()
+                                .getId_Ghe()
+                                .getMaGhe())
                         .setFontSize(5f)
                         .setFont(font)
                         .setBorderTop(Border.NO_BORDER)
                         .setBorderBottom(Border.NO_BORDER)
                         .setBorderLeft(Border.NO_BORDER));
 
-                table.addCell(new Cell().add(chiTietHoaDonList.get(i)
-                        .getGhe().getGiaTien()
-                        .toString()).setFontSize(5f)
+                table.addCell(new Cell().add(chiTietHoaDonList
+                                .get(i)
+                                .getId_GheAndSuatChieu()
+                                .getId_Ghe().getGiaTien()
+                                .toString()).setFontSize(5f)
                         .setFont(font)
                         .setBorderTop(Border.NO_BORDER)
                         .setBorderBottom(Border.NO_BORDER)

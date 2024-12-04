@@ -33,9 +33,6 @@ public class SuatChieu {
     @JoinColumn(name = "ID_PHIM")
     private Phim phim;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_PHONGCHIEU")
-    private PhongChieu phongChieu;
 
     @Column(name="TRANGTHAISUATCHIEU")
     private Integer trangThaiSuatChieu;
