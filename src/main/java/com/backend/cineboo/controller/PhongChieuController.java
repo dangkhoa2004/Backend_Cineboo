@@ -99,5 +99,22 @@ public class PhongChieuController {
             return ResponseEntity.ok(phongChieuRepository.save((PhongChieu) response.getBody()));
         }
         return response;
+		
+		
+		
+    }    @Operation(summary = "Tìm kiếm phòng chiếu theo ID suất chiếu",
+            description = "Tìm kiếm phòng chiếu bằng ID Suất chiếu và trả về thông tin phòng chiếu.")
+    @GetMapping("/find/suatchieu/{idSuatChieu}")
+    public ResponseEntity findByIdSuatChieu(@PathVariable String idSuatChieu) {
+		if (idSuatChieu.matches("[0-9]+")){
+ 
+        PhongChieu phongChieu = phongChieuRepository.getPhongChieuByID_SuatChieu(idSuatChieu).orElse(null);
+		if(phongChieu != null){
+			return ResponseEntity.ok(phongChieu);
+		}
+		}
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được phòng chiếu cho suất chiếu này");
     }
+	
+	
 }

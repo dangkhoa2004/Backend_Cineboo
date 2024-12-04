@@ -3,7 +3,9 @@ package com.backend.cineboo.controller;
 import com.backend.cineboo.dto.AddGheDTO;
 import com.backend.cineboo.dto.GheWithoutSuatChieuId;
 import com.backend.cineboo.entity.Ghe;
+import com.backend.cineboo.entity.GheWithBookingStatus;
 import com.backend.cineboo.entity.PhongChieu;
+import com.backend.cineboo.entity.RevenuePerMovie;
 import com.backend.cineboo.repository.GheRepository;
 import com.backend.cineboo.repository.PhongChieuRepository;
 import com.backend.cineboo.utility.EntityValidator;
@@ -13,6 +15,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import jakarta.validation.Valid;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +44,15 @@ public class GheController {
     GheRepository gheRepository;
 
     @Autowired
+    private EntityManager entityManager;
+
+    @Autowired
     PhongChieuRepository phongChieuRepository;
+
     @Operation(summary = "Lấy danh sách ghế",
             description = "Trả về danh sách tất cả ghế trong hệ thống.")
     @GetMapping("/get")
-    public ResponseEntity<List<Ghe>> get(){
+    public ResponseEntity<List<Ghe>> get() {
         List<Ghe> ghes = new ArrayList<>();
         ghes = gheRepository.findAll();
         return ResponseEntity.ok(ghes);
@@ -69,8 +78,8 @@ public class GheController {
                     "Sẽ check trùng lặp dưa trên MaGhe và ID_PhongChieu\n\n" +
                     "Trạng thái mặc định là 0")
     @PostMapping("/add")
-    public ResponseEntity add(@Valid @RequestBody AddGheDTO ghe, BindingResult bindingResult){
-        Map<String,String> errors = EntityValidator.validateFields(bindingResult);
+    public ResponseEntity add(@Valid @RequestBody AddGheDTO ghe, BindingResult bindingResult) {
+        Map<String, String> errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
@@ -78,14 +87,14 @@ public class GheController {
 //        String prefix = "GH00";
 //        addedGhe.setMaGhe(prefix+gheRepository.getMaxTableId());//Cuz Fe wants to make it manual
         addedGhe.setMaGhe(ghe.getMaGhe());
-        ResponseEntity response = RepoUtility.findById(ghe.getId_PhongChieu(),phongChieuRepository);
-        if(response.getStatusCode().is2xxSuccessful()) {
+        ResponseEntity response = RepoUtility.findById(ghe.getId_PhongChieu(), phongChieuRepository);
+        if (response.getStatusCode().is2xxSuccessful()) {
             PhongChieu phongChieu = (PhongChieu) response.getBody();
             String id_PhongChieu = phongChieu.getId().toString();
             String maGhe = ghe.getMaGhe();
-            Ghe duplicate = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu,maGhe).orElse(null);
-            if(duplicate!=null){
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Ghế "+maGhe+" của Phòng chiêu "+id_PhongChieu+" đã tồn tại");
+            Ghe duplicate = gheRepository.findByID_PhongChieuAndMaGhe(id_PhongChieu, maGhe).orElse(null);
+            if (duplicate != null) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Ghế " + maGhe + " của Phòng chiêu " + id_PhongChieu + " đã tồn tại");
             }
             addedGhe.setPhongChieu(phongChieu);
             addedGhe.setGiaTien(ghe.getGiaTien());
@@ -138,7 +147,7 @@ public class GheController {
             description = "Tìm kiếm ghế dựa trên ID phim và thời gian chiếu.")
     @GetMapping("find/ID_PhimAndThoiGianChieu")
     public ResponseEntity findByPhimIdAndThoiGianChieu(@RequestParam("ID_Phim") String phimId, @RequestParam("ThoiGianChieu") String thoiGianChieu) {
-        List<GheWithoutSuatChieuId> ghes = gheRepository.findByIdPhimAndThoiGianChieu(phimId,thoiGianChieu);
+        List<GheWithoutSuatChieuId> ghes = gheRepository.findByIdPhimAndThoiGianChieu(phimId, thoiGianChieu);
         System.out.println(ghes);
         return ResponseEntity.ok(ghes);
     }
@@ -153,5 +162,32 @@ public class GheController {
     public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
         ResponseEntity response = RepoUtility.findByCustomColumn(gheRepository, columnName, value);
         return response;
+    }
+
+    @Operation(summary = "Tìm danh sách ghế có trạng thái booking dựa trên id_SuatChieu")
+    @GetMapping("findWithBooking/{id_SuatChieu}")
+    public ResponseEntity findGheWithStatus(@PathVariable String id_SuatChieu) {
+        if (id_SuatChieu.matches("[0-9]+")) {
+            String sql = "SELECT ghe.id, ghe.MaGhe,ghe.GiaTien, ghe.ID_PhongChieu,ghe.TrangThaiGhe,gheandsuatchieu.TRANGTHAIGHEANDSUATCHIEU\n" +
+                    "FROM GheAndSuatChieu \n" +
+                    "JOIN ghe on ghe.ID=gheandsuatchieu.ID_GHE\n" +
+                    "WHERE  ID_SuatChieu = :id ";
+            Query query = entityManager.createNativeQuery(sql);
+            query.setParameter("id", id_SuatChieu);
+            List<Object[]> rows = query.getResultList();
+            List<GheWithBookingStatus> result = new ArrayList<>(rows.size());
+            for (Object[] row : rows) {
+                GheWithBookingStatus gheWithBookingStatus = new GheWithBookingStatus();
+                gheWithBookingStatus.setId((Integer) row[0]);
+                gheWithBookingStatus.setMaGhe((String) row[1]);
+                gheWithBookingStatus.setGiaTien((BigDecimal) row[2]);
+                gheWithBookingStatus.setId_PhongChieu((Integer) row[3]);
+                gheWithBookingStatus.setTrangThaiGhe((Integer) row[4]);
+                gheWithBookingStatus.setTrangThaiGheAndSuatChieu((Byte) row[5]);
+                result.add(gheWithBookingStatus);
+            }
+            return ResponseEntity.ok(result);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sai mã suất chiếu");
     }
 }

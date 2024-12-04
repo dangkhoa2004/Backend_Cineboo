@@ -31,18 +31,20 @@ public class ThongKeController {
     public ResponseEntity pie(){
         String sql = "SELECT\n" +
                 "    p.TenPhim AS 'Tên Phim',\n" +
-                "    COUNT(hd.ID_SuatChieu) AS 'Lượt mua',\n" +
-                "    SUM(hd.TongSoTien) AS 'Doanh thu',    \n" +
+                "    COUNT(hd.ID) AS 'Lượt mua',\n" +
+                "    SUM(hd.TongSoTien) AS 'Doanh thu',\n" +
                 "    GROUP_CONCAT(DISTINCT t.TenTheLoai) AS 'Thể Loại',\n" +
                 "    p.Nam AS 'Năm'\n" +
-                "FROM hoadon hd\n" +
-                "         JOIN suatchieu sc ON hd.ID_SuatChieu = sc.ID\n" +
-                "         JOIN phim p ON sc.ID_Phim = p.ID\n" +
-                "         JOIN danhsachtlphim dstl ON p.ID = dstl.ID_Phim\n" +
-                "         JOIN theloaiphim t ON dstl.ID_TLPhim = t.ID\n" +
-                "WHERE hd.TrangThaiHoaDon = :paid OR hd.TrangThaiHoaDon= :printed \n" +
-                "GROUP BY sc.ID_Phim\n" +
-                "ORDER BY COUNT(hd.ID_SuatChieu) DESC;\n";
+                "FROM HoaDon hd\n" +
+                "    JOIN chitiethoadon on chitiethoadon.ID_HoaDon=hd.ID\n" +
+                "    JOIN gheandsuatchieu g on chitiethoadon.ID_GheAndSuatChieu = g.ID\n" +
+                "    join suatchieu s on g.ID_SUATCHIEU = s.ID\n" +
+                "    JOIN phim p on p.ID = s.ID_Phim\n" +
+                "JOIN danhsachtlphim d on p.ID = d.ID_Phim\n" +
+                "JOIN theloaiphim t on d.ID_TLPhim = t.ID\n" +
+                "WHERE hd.TrangThaiHoaDon = :paid OR hd.TrangThaiHoaDon = :printed\n" +
+                "GROUP BY p.ID\n" +
+                "ORDER BY COUNT(hd.ID) DESC;\n";
 
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("paid",1);
@@ -111,58 +113,60 @@ public class ThongKeController {
         if(!year.matches("^[12][0-9]{3}$")){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Sai định dạng năm");
         }
-        String sql = "WITH Months AS (\n" +
-                "    SELECT 'Tháng 1' AS Month, 1 AS MonthOrder\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 2', 2\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 3', 3\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 4', 4\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 5', 5\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 6', 6\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 7', 7\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 8', 8\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 9', 9\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 10', 10\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 11', 11\n" +
-                "    UNION ALL\n" +
-                "    SELECT 'Tháng 12', 12\n" +
-                "),\n" +
-                "     SeasonCategories AS (\n" +
-                "         SELECT\n" +
-                "             sc.ID_Phim,\n" +
-                "             hd.ID_KhachHang,\n" +
-                "             hd.TongSoTien,\n" +
-                "             MONTH(hd.thoiGianThanhToan) AS Thang\n" +
-                "         FROM hoadon hd\n" +
-                "                  JOIN suatchieu sc ON hd.ID_SuatChieu = sc.ID  -- Link HoaDon with SuatChieu\n" +
-                "         WHERE sc.ID_Phim IS NOT NULL\n" +
-                "           AND hd.ID_KhachHang IS NOT NULL\n" +
-                "           AND (hd.TrangThaiHoaDon= :paid OR hd.TrangThaiHoaDon= :printed )\n" +
-                "           AND YEAR(hd.thoiGianThanhToan) = :year\n" +
-                "     )\n" +
-                "SELECT\n" +
-                "    m.Month,\n" +
-                "    COALESCE(t.TotalInvoices, 0) AS TotalInvoices,\n" +
-                "    COALESCE(t.TotalAmount, 0) AS TotalAmount\n" +
-                "FROM Months m\n" +
-                "         LEFT JOIN (\n" +
-                "    SELECT\n" +
-                "        Thang,\n" +
-                "        COUNT(*) AS TotalInvoices,\n" +
-                "        SUM(TongSoTien) AS TotalAmount\n" +
-                "    FROM SeasonCategories\n" +
-                "    GROUP BY Thang\n" +
-                ") t ON m.MonthOrder = t.Thang\n" +
-                "ORDER BY m.MonthOrder;\n";
+        String sql = "WITH Months AS ( \n" +
+                "                    SELECT 'Tháng 1' AS Month, 1 AS MonthOrder \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 2', 2 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 3', 3 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 4', 4 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 5', 5 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 6', 6 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 7', 7 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 8', 8 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 9', 9 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 10', 10 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 11', 11 \n" +
+                "                    UNION ALL \n" +
+                "                    SELECT 'Tháng 12', 12 \n" +
+                "                ), \n" +
+                "                     SeasonCategories AS ( \n" +
+                "                         SELECT \n" +
+                "                             sc.ID_Phim, \n" +
+                "                             hd.ID_KhachHang, \n" +
+                "                             hd.TongSoTien, \n" +
+                "                             MONTH(hd.thoiGianThanhToan) AS Thang \n" +
+                "                         FROM hoadon hd \n" +
+                "                                  JOIN chitiethoadon c on hd.ID = c.ID_HoaDon\n" +
+                "                                    JOIN gheandsuatchieu g on g.ID = c.ID_GheAndSuatChieu\n" +
+                "                                    JOIN suatchieu sc on sc.ID = g.ID_SUATCHIEU-- Link HoaDon with SuatChieu\n" +
+                "                         WHERE sc.ID_Phim IS NOT NULL \n" +
+                "                           AND hd.ID_KhachHang IS NOT NULL \n" +
+                "                           AND (hd.TrangThaiHoaDon= :paid OR hd.TrangThaiHoaDon= :printed ) \n" +
+                "                           AND YEAR(hd.thoiGianThanhToan) = :year \n" +
+                "                     ) \n" +
+                "                SELECT \n" +
+                "                    m.Month, \n" +
+                "                    COALESCE(t.TotalInvoices, 0) AS TotalInvoices, \n" +
+                "                    COALESCE(t.TotalAmount, 0) AS TotalAmount \n" +
+                "                FROM Months m \n" +
+                "                         LEFT JOIN ( \n" +
+                "                    SELECT \n" +
+                "                        Thang, \n" +
+                "                        COUNT(*) AS TotalInvoices, \n" +
+                "                        SUM(TongSoTien) AS TotalAmount \n" +
+                "                    FROM SeasonCategories \n" +
+                "                    GROUP BY Thang \n" +
+                "                ) t ON m.MonthOrder = t.Thang \n" +
+                "                ORDER BY m.MonthOrder;";
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("year",year);
         query.setParameter("paid",1);

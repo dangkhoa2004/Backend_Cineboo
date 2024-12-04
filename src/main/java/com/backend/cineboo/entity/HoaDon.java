@@ -39,10 +39,6 @@ public class HoaDon {
     @NotNull
     private KhachHang khachHang;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_SUATCHIEU")
-    @NotNull
-    private SuatChieu suatChieu;
 
     @ManyToOne
     @JoinColumn(name = "ID_VOUCHER")

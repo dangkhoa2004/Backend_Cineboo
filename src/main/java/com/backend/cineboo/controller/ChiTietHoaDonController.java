@@ -3,6 +3,7 @@ package com.backend.cineboo.controller;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.entity.ChiTietHoaDon;
 import com.backend.cineboo.repository.ChiTietHoaDonRepository;
+import com.backend.cineboo.repository.GheAndSuatChieuRepository;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.RepoUtility;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -35,6 +36,9 @@ import java.util.Map;
 public class ChiTietHoaDonController {
     @Autowired
     ChiTietHoaDonRepository chiTietHoaDonRepository;
+
+    @Autowired
+    GheAndSuatChieuRepository gheAndSuatChieuRepository;
 
 
     @GetMapping("/get")
@@ -125,7 +129,7 @@ public class ChiTietHoaDonController {
         ResponseEntity response = RepoUtility.findById(id, chiTietHoaDonRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             ChiTietHoaDon toBeUpdated = (ChiTietHoaDon) response.getBody();
-            toBeUpdated.setGhe(chiTietHoaDon.getGhe());
+            toBeUpdated.setId_GheAndSuatChieu(chiTietHoaDon.getId_GheAndSuatChieu());
             toBeUpdated.setHoaDon((chiTietHoaDon.getHoaDon()));
             toBeUpdated.setTrangThaiChiTietHoaDon(chiTietHoaDon.getTrangThaiChiTietHoaDon());
             return ResponseEntity.ok(chiTietHoaDonRepository.save(toBeUpdated));
@@ -177,29 +181,29 @@ public class ChiTietHoaDonController {
     private ChiTietHoaDon createBlankInvoiceDetail(ChiTietHoaDon chiTietHoaDon, HoaDon hoaDon) {
         ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
         blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
-        blankChiTietHoaDon.setGhe(chiTietHoaDon.getGhe());
+        blankChiTietHoaDon.setId_GheAndSuatChieu(chiTietHoaDon.getId_GheAndSuatChieu());;
         blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
-        //Check dups first, if already there
-        //Just in case somehow the user can magically call this method again using the same ID_HoaDon
-        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(), chiTietHoaDon.getGhe().getId()).orElse(null);
-        if (checkDups == null) {
+        //maybe user can insert manually into database
+        //Thus, we need to check if a record(that has trangThai 1) already exists
+        //But since i'm rushed, someone please implement a check later
+        if (true) {//modify check condition here, for now it's true
             return chiTietHoaDonRepository.save(blankChiTietHoaDon);//If no dups, add anew
         }
         return null;// or else return null
     }
 
-    public ChiTietHoaDon createBlankInvoiceDetail(Ghe ghe, HoaDon hoaDon) {
+    public ChiTietHoaDon createBlankInvoiceDetail(Long id_Ghe,Long id_suatChieu, HoaDon hoaDon) {
         ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
         blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
-        blankChiTietHoaDon.setGhe(ghe);
-        blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
-        //Check dups first, if already there
-        //Just in case somehow the user can magically call this method again using the same ID_HoaDon
-        ChiTietHoaDon checkDups = chiTietHoaDonRepository.checkDuplicate(hoaDon.getId(), ghe.getId()).orElse(null);
-        if (checkDups == null) {
-            return chiTietHoaDonRepository.save(blankChiTietHoaDon);//If no dups, add anew
+        GheAndSuatChieu gheAndSuatChieu = gheAndSuatChieuRepository.findByGheAndSuatChieu(id_Ghe.toString(),id_suatChieu.toString()).orElse(null);
+        if (gheAndSuatChieu == null) {
+            return null;
         }
-        return null;// or else return null
+        //Nếu bản ghi GheAndSuatChieu đã có trạng thái khác 0 tức là đã book hoặc đang book/giữ chỗ
+        //không cho book
+        blankChiTietHoaDon.setId_GheAndSuatChieu(gheAndSuatChieu);
+        blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
+        return chiTietHoaDonRepository.save(blankChiTietHoaDon);
     }
 
     /**

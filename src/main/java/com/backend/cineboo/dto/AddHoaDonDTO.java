@@ -19,8 +19,13 @@ public class AddHoaDonDTO {
     @NotNull
     private Long suatChieuId;
 
+    @NotNull
+    private Long phongChieuId;
+
     @Valid
     @NotNull
     List<ChiTietHoaDonListDTO> chiTietHoaDonList;
+
+
 
 }
