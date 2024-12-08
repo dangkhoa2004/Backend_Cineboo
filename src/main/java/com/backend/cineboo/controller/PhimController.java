@@ -197,6 +197,7 @@ public class PhimController {
         toBeAdded.setNgayRaMat(addPhimDTO.getNgayRaMat());
         toBeAdded.setThoiLuong(addPhimDTO.getThoiLuong());
         toBeAdded.setQuocGia(addPhimDTO.getQuocGia());
+        toBeAdded.setTrailer(addPhimDTO.getTrailer());
         toBeAdded.setDanhSachTLPhims(null);
         toBeAdded.setTrangThai(addPhimDTO.getTrangThai());
         toBeAdded.setDiem(addPhimDTO.getDiem());
