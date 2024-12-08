@@ -1,9 +1,12 @@
 package com.backend.cineboo.controller;
 
+import com.backend.cineboo.dto.AddPhimDTO;
 import com.backend.cineboo.entity.DanhSachTLPhim;
 import com.backend.cineboo.entity.DoTuoi;
 import com.backend.cineboo.entity.Phim;
+import com.backend.cineboo.entity.TheLoaiPhim;
 import com.backend.cineboo.repository.DanhSachTLPhimReposiory;
+import com.backend.cineboo.repository.DoTuoiRepository;
 import com.backend.cineboo.repository.PhimRepository;
 import com.backend.cineboo.repository.TheLoaiPhimRepository;
 import com.backend.cineboo.utility.EntityValidator;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +40,9 @@ import java.util.Map;
 public class PhimController {
     @Autowired
     PhimRepository phimRepository;
+
+    @Autowired
+    DoTuoiRepository dotuoiRepository;
 
     @Autowired
     TheLoaiPhimRepository theLoaiPhimRepository;
@@ -127,6 +134,14 @@ public class PhimController {
             toBeUpdated.setThoiLuong(phim.getThoiLuong());
             toBeUpdated.setQuocGia(phim.getQuocGia());
             toBeUpdated.setNoiDung(phim.getNoiDung());
+            for(DanhSachTLPhim danhSachTLPhim : toBeUpdated.getDanhSachTLPhims()){
+                for(DanhSachTLPhim danhSachTLPhimNew : phim.getDanhSachTLPhims()){
+                    if(danhSachTLPhim.getId()==danhSachTLPhimNew.getId()){
+                        danhSachTLPhim.setTheLoaiPhim(danhSachTLPhimNew.getTheLoaiPhim());
+                        danhSachTLPhimReposiory.save(danhSachTLPhim);
+                    }
+                }
+            }
 
             //Xử lý độ tuổi
             DoTuoi fakeDoTuoi = new DoTuoi();
@@ -148,7 +163,7 @@ public class PhimController {
      * Với ID Phim vừa tạo
      * Và ID TheLoaiPhim có được từ Phim.DanhSachTLPhim.TheLoaiPhim.id
      *
-     * @param phim
+     * @param
      * @param bindingResult
      * @return Trả về Bad Request nếu ID Null.
      * Trả về Not found nếu phim không tồn tại.
@@ -161,7 +176,7 @@ public class PhimController {
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PostMapping("/add")
-    public ResponseEntity add(@Valid @RequestBody Phim phim, BindingResult bindingResult) {
+    public ResponseEntity add(@Valid @RequestBody AddPhimDTO addPhimDTO, BindingResult bindingResult) {
         //Đổi Mã phim bằng cách chỉnh sửa moviePrefix
         String moviePrefix = "MVS00";
 
@@ -169,33 +184,50 @@ public class PhimController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-        //Đặt mã phim MVS00 + ID mới nhất
-        phim.setMaPhim(moviePrefix + (phimRepository.getMaxTableId() + 1));
-        phim.setDanhSachTLPhims(phim.getDanhSachTLPhims());
-        //TẠM THỜI SET trạng thái là 1 khi vừa khởi tạo Phim
-        //Thêm Phim vào Database
-        Phim toBeAdded = phimRepository.save(phim);
-        //Lấy ID phim
-        Long phimId = toBeAdded.getId();
+
+
+        Phim toBeAdded = new Phim();
+        toBeAdded.setMaPhim(moviePrefix + (phimRepository.getMaxTableId() + 1));
+        toBeAdded.setTenPhim(addPhimDTO.getTenPhim());
+        toBeAdded.setAnhPhim(addPhimDTO.getAnhPhim());
+        toBeAdded.setDienVien(addPhimDTO.getDienVien());
+        toBeAdded.setNam(addPhimDTO.getNam());
+        toBeAdded.setNoiDungMoTa(addPhimDTO.getNoiDungMoTa());
+        toBeAdded.setNoiDung(addPhimDTO.getNoiDung());
+        toBeAdded.setNgayRaMat(addPhimDTO.getNgayRaMat());
+        toBeAdded.setThoiLuong(addPhimDTO.getThoiLuong());
+        toBeAdded.setQuocGia(addPhimDTO.getQuocGia());
+        toBeAdded.setNgayRaMat(addPhimDTO.getNgayRaMat());
+        toBeAdded.setDanhSachTLPhims(null);
+        DoTuoi doTuoi = dotuoiRepository.findById(addPhimDTO.getId_GioiHanDoTuoi()).orElse(null);
+        if(doTuoi==null){
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sai do tuoi");
+        }
+        toBeAdded.setGioiHanDoTuoi(doTuoi);
+        Phim newPhim =  phimRepository.save(toBeAdded);
+
+
+
+
 
         //Lượt qua Phim.DanhSachTLPhim
-        for (DanhSachTLPhim ds : phim.getDanhSachTLPhims()) {
-            //Lấy ID TheLoaiPhim để lưu vào DanhSachTLPhim sau đó
-            Long theLoaiPhimId = ds.getTheLoaiPhim().getId();
+        for (Long id_TheLoaiPhim : addPhimDTO.getId_TheLoaiPhims()) {
+            TheLoaiPhim theLoaiPhim = theLoaiPhimRepository.findById(id_TheLoaiPhim).orElse(null);
+            if(theLoaiPhim==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Thể loai phim không tồn tại");
+            }
+            DanhSachTLPhim danhSachTLPhim = new DanhSachTLPhim();
+            danhSachTLPhim.setPhim(newPhim);
+            danhSachTLPhim.setTheLoaiPhim(theLoaiPhim);
+            danhSachTLPhim.setTrangThai(1);
+            danhSachTLPhimReposiory.save(danhSachTLPhim);
             //Tạo bản ghi mới
-            DanhSachTLPhim newPhimAndTheLoai = new DanhSachTLPhim();
-
-            //Setup các property
-            newPhimAndTheLoai.setPhim(phimRepository.findById(phimId).get());
-            newPhimAndTheLoai.setTheLoaiPhim(theLoaiPhimRepository.findById(theLoaiPhimId).get());
-            newPhimAndTheLoai.setTrangThai(1);
-
-            //Thêm bản ghi mới vào DanhSachTLPhim
-
-            danhSachTLPhimReposiory.save(newPhimAndTheLoai);
         }
-        phim.setId(null);//To make sure its an INSERT and Not Update since both use save()
-        return ResponseEntity.status(HttpStatus.OK).body(phimRepository.save(phim));
+        newPhim = phimRepository.findById(newPhim.getId()).orElse(null);
+        if(newPhim==null){
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Loi them phim");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(newPhim);
     }
 
     /**
