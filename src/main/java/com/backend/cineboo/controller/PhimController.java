@@ -197,8 +197,9 @@ public class PhimController {
         toBeAdded.setNgayRaMat(addPhimDTO.getNgayRaMat());
         toBeAdded.setThoiLuong(addPhimDTO.getThoiLuong());
         toBeAdded.setQuocGia(addPhimDTO.getQuocGia());
-        toBeAdded.setNgayRaMat(addPhimDTO.getNgayRaMat());
         toBeAdded.setDanhSachTLPhims(null);
+        toBeAdded.setTrangThai(addPhimDTO.getTrangThai());
+        toBeAdded.setDiem(addPhimDTO.getDiem());
         DoTuoi doTuoi = dotuoiRepository.findById(addPhimDTO.getId_GioiHanDoTuoi()).orElse(null);
         if(doTuoi==null){
             return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sai do tuoi");
