@@ -5,9 +5,8 @@ import com.backend.cineboo.entity.RevenuePerMovie;
 import com.backend.cineboo.entity.UserSpentAmount;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +16,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/thongke")
 public class ThongKeController {
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
 
     @Operation(summary = "Thống kê doanh thu trên Phim",

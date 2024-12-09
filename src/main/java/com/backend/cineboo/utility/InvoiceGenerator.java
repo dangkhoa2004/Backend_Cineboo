@@ -75,7 +75,7 @@ public class InvoiceGenerator {
 
         String maHoaDonToOrderCode = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
         Long orderCode = Long.valueOf(maHoaDonToOrderCode);
-        String url = "http://localhost:8080/payos/get/" + orderCode; // Replace with your actual URL
+        String url = "http://localhost:8080/payos/get/" + orderCode;
         PaymentLinkData paymentLinkData = restTemplate.getForEntity(url, PaymentLinkData.class).getBody();
         System.out.println(paymentLinkData);
         System.out.println(paymentLinkData.getStatus());
@@ -320,5 +320,213 @@ public class InvoiceGenerator {
         // Restore the canvas state to avoid affecting other elements
         over.restoreState();
     }
+    public static String createTicket(HoaDon hoaDon,Long idGheAndSuatChieu) throws IOException {
+
+        String maHoaDonToOrderCode = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
+        Long orderCode = Long.valueOf(maHoaDonToOrderCode);
+        String url = "http://localhost:8080/payos/get/" + orderCode;
+        PaymentLinkData paymentLinkData = restTemplate.getForEntity(url, PaymentLinkData.class).getBody();
+        System.out.println(paymentLinkData);
+        System.out.println(paymentLinkData.getStatus());
+        if (!paymentLinkData.getStatus().equals("PAID")) {
+            //Meaning its Expired or Cancelled and shits
+            return null;
+        }
+
+        InputStream inputFont = InvoiceGenerator.class.getClassLoader().getResourceAsStream("fonts/VietFontsWeb1_ttf/vuArial.ttf");
+        InputStream inputFontBold = InvoiceGenerator.class.getClassLoader().getResourceAsStream("fonts/VietFontsWeb1_ttf/vuArialBold.ttf");
+
+        FontProgram fontProgram = FontProgramFactory.createFont(IOUtils.toByteArray(inputFont));
+        FontProgram fontBoldProgram = FontProgramFactory.createFont(IOUtils.toByteArray(inputFontBold));
+
+        PdfFont font = PdfFontFactory.createFont(fontProgram, PdfEncodings.IDENTITY_H, true);
+        PdfFont fontBold = PdfFontFactory.createFont(fontBoldProgram, PdfEncodings.IDENTITY_H, true);
+
+        String maHoaDon = hoaDon.getMaHoaDon();
+        Integer soLuong = hoaDon.getSoLuong();
+        Voucher voucher = hoaDon.getVoucher();
+        PTTT phuongThucThanhToan = hoaDon.getPttt();
+        KhachHang khachHang = hoaDon.getKhachHang();
+        BigDecimal tongSoTien = hoaDon.getTongSoTien();
+        Phim phim = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu().getPhim();
+        SuatChieu suatChieu = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu();
+
+        List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
+
+
+        String ticketName = maHoaDon + chiTietHoaDonList.size() + idGheAndSuatChieu;
+
+        //Get Original Price to display later
+
+
+
+        String nameBuilder = ticketName + ".pdf";
+        String directoryPath = "tickets/"; // Replace with your directory path
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs(); // Create the directory if it doesn't exist
+        }
+        // Creating a PdfDocument object
+        PdfWriter writer;
+        String absolutePath = directoryPath + nameBuilder;
+        try {
+
+
+            // Load the font using PdfFontFactory
+            writer = new PdfWriter(absolutePath);
+            PdfDocument pdf = new PdfDocument(writer);
+
+            // Set Page size to small (58cm width)
+            PageSize customPageSize = new PageSize(58 * 2.83f, 100 * 3.83f);  // Adjust for scaling
+            pdf.setDefaultPageSize(customPageSize);
+
+            // Creating a Document object
+            Document doc = new Document(pdf);
+            doc.setMargins(2f, 5f, 2f, 5f);
+
+
+            // Title: "CineBoo-Booking with a Touch"
+            Paragraph superTitle = new Paragraph("CineBoo")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFont(font)
+                    .setFontColor(new DeviceRgb(8, 73, 117))
+                    .setFontSize(11f);  // Slightly larger for the main title;
+            superTitle.setRole(PdfName.Title);
+            doc.add(superTitle);
+            Paragraph superTitle2 = new Paragraph("Tap and Book")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFont(font)
+                    .setFontColor(new DeviceRgb(8, 73, 117))
+                    .setFontSize(11f);  // Slightly larger for the main title;
+
+            superTitle.setRole(PdfName.Title);
+            doc.add(superTitle2);
+
+            // Draw line separator
+            SolidLine line = new SolidLine(0.5f);
+            line.setColor(new DeviceRgb(8, 73, 117));
+            LineSeparator separator = new LineSeparator(line);
+            separator.setMarginTop(5f);
+            separator.setMarginBottom(5f);
+            doc.add(separator);
+
+            // Main Title: "Hoá đơn đặt vé phim"
+            Paragraph title = new Paragraph("Vé xem phim")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFont(font)
+                    .setFontColor(new DeviceRgb(8, 73, 117))
+                    .setFontSize(10f);  // Title font size
+            title.setRole(PdfName.H1);
+            doc.add(title);
+
+            //Changing LocalDateTime to readable format
+            LocalDateTime paymentTime = hoaDon.getThoiGianThanhToan();
+            LocalDateTime airingTime = suatChieu.getThoiGianChieu();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String thoiGianThanhToan = paymentTime.format(formatter);
+            String thoiGianChieu = airingTime.format(formatter);
+
+            // Invoice Details
+            doc.add(new Paragraph("Mã thanh toán: " + maHoaDon).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Khách hàng: " + khachHang.getMaKhachHang()).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Tên phim: " + phim.getTenPhim()).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Thời lượng: " + phim.getThoiLuong()).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Lịch chiếu: " + thoiGianChieu).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Địa điểm: " + hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_Ghe().getPhongChieu().getMaPhong()).setFontSize(7f)).setFont(font);
+
+
+            doc.add(new Paragraph("Thời gian thanh toán: " + thoiGianThanhToan).setFontSize(7f)).setFont(font);
+            doc.add(new Paragraph("Thông tin vé:").setFontSize(7f));
+
+            // Creating a table
+            float[] pointColumnWidths = {50F, 50F};
+            Table table = new Table(pointColumnWidths);
+            table.setVerticalAlignment(VerticalAlignment.MIDDLE);
+            table.setTextAlignment(TextAlignment.CENTER);
+            table.setBorder(Border.NO_BORDER);
+            table.setHorizontalAlignment(HorizontalAlignment.CENTER);
+            table.setAutoLayout();
+            // Adding column names to the table
+
+            table.addCell(new Cell().add("Số ghế")
+                    .setFontSize(6f)
+                    .setFont(fontBold)
+                    .setBorderTop(Border.NO_BORDER)
+                    .setBorderBottom(Border.NO_BORDER)
+                    .setBorderLeft(Border.NO_BORDER));
+            table.addCell(new Cell().add("Đơn giá (VNĐ)")
+                    .setFontSize(6f)
+                    .setFont(fontBold)
+                    .setBorderTop(Border.NO_BORDER)
+                    .setBorderBottom(Border.NO_BORDER)
+                    .setBorderRight(Border.NO_BORDER));
+            BigDecimal price=BigDecimal.ZERO;
+            // Adding rows to the table
+            for (int i = 0; i < chiTietHoaDonList.size(); i++) {
+                if(chiTietHoaDonList.get(i).getId_GheAndSuatChieu().getId()!=idGheAndSuatChieu){
+                    continue;//Skip if not the right ticket
+                }
+                price = chiTietHoaDonList.get(i).getGiaTien();
+                table.addCell(new Cell().add(chiTietHoaDonList
+                                .get(i)
+                                .getId_GheAndSuatChieu()
+                                .getId_Ghe()
+                                .getMaGhe())
+                        .setFontSize(5f)
+                        .setFont(font)
+                        .setBorderTop(Border.NO_BORDER)
+                        .setBorderBottom(Border.NO_BORDER)
+                        .setBorderLeft(Border.NO_BORDER));
+
+                table.addCell(new Cell().add(chiTietHoaDonList
+                                .get(i)
+                                .getId_GheAndSuatChieu()
+                                .getId_Ghe().getGiaTien()
+                                .toString()).setFontSize(5f)
+                        .setFont(font)
+                        .setBorderTop(Border.NO_BORDER)
+                        .setBorderBottom(Border.NO_BORDER)
+                        .setBorderRight(Border.NO_BORDER));
+            }
+            doc.add(table);
+
+            // Draw another line separator
+//                doc.add(separator);//No separator
+
+            // Quantity and total amount
+            //Add original price
+            doc.add(new Paragraph("Tổng: " + price.toString()).setFontSize(7f)).setFont(font);
+
+
+            doc.add(new Paragraph("Phương thức thanh toán: " + phuongThucThanhToan.getTenPTTT()).setFontSize(10f)).setFont(font);
+
+            // Total amount
+            Paragraph total = new Paragraph("Thành tiền: " + price + " VNĐ").setFontSize(10f).setFont(fontBold);
+            doc.add(total);
+
+            // Draw line separator
+
+            doc.add(separator);
+            // Last text
+            Paragraph endTitle = new Paragraph("Cảm ơn Quý khách")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFont(font)
+                    .setFontColor(new DeviceRgb(8, 73, 117))
+                    .setFontSize(7f);  // Slightly larger for the main title;
+            doc.add(endTitle);
+            // Closing the document
+            //Or not, place barcode too
+            InvoiceGenerator.addQR(idGheAndSuatChieu.toString(), pdf, 1, 95f, 240f);
+            doc.close();
+
+        } catch (FileNotFoundException exception) {
+            Logger.getLogger(InvoiceGenerator.class.getName()).log(Level.SEVERE, "Error generating invoice PDF", exception);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return absolutePath;
+    }
+
+
 
 }

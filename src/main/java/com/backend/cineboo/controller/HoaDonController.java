@@ -6,6 +6,7 @@ import com.backend.cineboo.dto.HoanVeDTO;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
 import com.backend.cineboo.scheduledJobs.UnreserveGheAndSuatChieuJobs;
+import com.backend.cineboo.service.PrinterServices;
 import com.backend.cineboo.utility.EntityValidator;
 import com.backend.cineboo.utility.InvoiceGenerator;
 import com.backend.cineboo.utility.RepoUtility;
@@ -31,6 +32,7 @@ import vn.payos.PayOS;
 import vn.payos.exception.PayOSException;
 import vn.payos.type.PaymentLinkData;
 
+import java.awt.print.PrinterException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -377,18 +379,22 @@ public class HoaDonController {
                     // If Ghe does not exist
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại trong phòng chiếu này");
                 }
-                    //Then find GheAndSuatChieu
-                    GheAndSuatChieu gheAndSuatChieu = gheAndSuatChieuRepository.findByGheAndSuatChieu(queriedGhe.getId().toString(),suatChieu.getId().toString()).orElse(null);
-                    if(gheAndSuatChieu==null){
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại trong suất chiếu này");
-                    }
-                    //if already booked, then return
-                    if(gheAndSuatChieu.getTrangThaiGheAndSuatChieu()!=0){//could be 1-booked, could be 2-holding
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ghế " + queriedGhe.getMaGhe() + " đã được chọn");
-                    }
-                    gheAndSuatChieu.setTrangThaiGheAndSuatChieu(2);//2 Tạm thời giữ ghế
-                    gheAndSuatChieuRepository.save(gheAndSuatChieu);
-                    gheList.add(queriedGhe);
+                //Check if Ghe is disabled(for maintainance or something)
+                if (queriedGhe.getTrangThaiGhe() == 4) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế đang bảo trì");
+                }
+                //Then find GheAndSuatChieu
+                GheAndSuatChieu gheAndSuatChieu = gheAndSuatChieuRepository.findByGheAndSuatChieu(queriedGhe.getId().toString(), suatChieu.getId().toString()).orElse(null);
+                if (gheAndSuatChieu == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ghế không tồn tại trong suất chiếu này");
+                }
+                //if already booked, then return
+                if (gheAndSuatChieu.getTrangThaiGheAndSuatChieu() != 0) {//could be 1-booked, could be 2-holding
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ghế " + queriedGhe.getMaGhe() + " đã được chọn");
+                }
+                gheAndSuatChieu.setTrangThaiGheAndSuatChieu(2);//2 Tạm thời giữ ghế
+                gheAndSuatChieuRepository.save(gheAndSuatChieu);
+                gheList.add(queriedGhe);
             }
             //Tạo hoá đơn rỗng
             HoaDon blankInvoice = createBlankInvoice(hoaDon, gheList);
@@ -398,7 +404,7 @@ public class HoaDonController {
             //Lưu vào DB để tí còn có ID mà xử lý
 
             //Thêm hoá đơn chi tiết
-            boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList,hoaDon.getSuatChieuId());
+            boolean createdInvoiceDetail = createAndAddInvoiceDetailToInvoice(blankInvoice, gheList, hoaDon.getSuatChieuId());
             if (!createdInvoiceDetail) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Lỗi khi tạo ChiTietHoaDon, ngừng tạo HoaDon");
             }
@@ -543,7 +549,7 @@ public class HoaDonController {
         for (Ghe ghe : gheList) {
             //Lượt qua danh sách Hoá đơn chi tiết
             //Tạo mới chi tiêt hoá đơn
-            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(ghe.getId(),idSuatChieu, hoaDon);
+            ChiTietHoaDon temp = chiTietHoaDonController.createBlankInvoiceDetail(ghe, idSuatChieu, hoaDon);
             if (temp == null) {
                 return false;
             }
@@ -652,23 +658,22 @@ public class HoaDonController {
             //too rushed tho so whatever
             LocalDateTime thoiGianChieu = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu().getThoiGianChieu();
             LocalDateTime now = LocalDateTime.now();
-            Duration duration = Duration.between(now,thoiGianChieu);
-            if(now.isAfter(thoiGianChieu)){
+            Duration duration = Duration.between(now, thoiGianChieu);
+            if (now.isAfter(thoiGianChieu)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Suất chiếu đã kết thúc, không thể hoàn vé");
             }
             long hours = duration.toHours();
-            if(hours>0 && hours<120){
+            if (hours > 0 && hours < 120) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Quá thời hạn hoàn vé");
             }
             int trangThaiHoaDon = hoaDon.getTrangThaiHoaDon();
-            if( trangThaiHoaDon==0){
+            if (trangThaiHoaDon == 0) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn chưa thanh toán, không thể hoàn trả");
-            }else if(trangThaiHoaDon==2){
+            } else if (trangThaiHoaDon == 2) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Hoá đơn đã huỷ, không thể hoàn vé");
-            }else if(trangThaiHoaDon==3){
+            } else if (trangThaiHoaDon == 3) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Vé đã in, không thể hoàn lại");
-            }
-            else if(trangThaiHoaDon==4){
+            } else if (trangThaiHoaDon == 4) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Yêu cầu hoàn vé đã tồn tại");
             }
             //Kiểm tra hoá đơn đã thanh toán chưa
@@ -678,10 +683,10 @@ public class HoaDonController {
                 PaymentLinkData paymentLinkData = payOS.getPaymentLinkInformation(orderCode);
                 //Checking both on PayOS and backend server
                 //Should i do this? Dunno
-                if(paymentLinkData.getStatus().equals("PAID") && trangThaiHoaDon==1){
+                if (paymentLinkData.getStatus().equals("PAID") && trangThaiHoaDon == 1) {
                     //Check duplicate first, just to be sure
                     int duplicate = danhSachHoanVeRepository.checkDuplicate(hoaDonId.toString());
-                    if(duplicate==0){
+                    if (duplicate == 0) {
                         DanhSachHoanVe danhSachHoanVe = new DanhSachHoanVe();
                         danhSachHoanVe.setLyDoHoanVe(hoanVeDTO.getLyDoHoanVe());
                         danhSachHoanVe.setThoiGianHoanVe(LocalDateTime.now());
@@ -694,12 +699,12 @@ public class HoaDonController {
                         hoaDon.setTrangThaiHoaDon(4);
                         hoaDonRepository.save(hoaDon);
                         //Giờ đi huỷ ghế và ChiTietHoaDon
-                        List<ChiTietHoaDon> chiTietHoaDonList= chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
-                        for(ChiTietHoaDon chiTietHoaDon: chiTietHoaDonList){
+                        List<ChiTietHoaDon> chiTietHoaDonList = chiTietHoaDonRepository.getChiTietHoaDonsByID_HoaDon(hoaDonId.toString());
+                        for (ChiTietHoaDon chiTietHoaDon : chiTietHoaDonList) {
                             chiTietHoaDon.setTrangThaiChiTietHoaDon(2);//Đã huỷ
                             chiTietHoaDonRepository.save(chiTietHoaDon);
-                            GheAndSuatChieu gheAndSuatChieu= gheAndSuatChieuRepository.findById(chiTietHoaDon.getId_GheAndSuatChieu().getId()).orElse(null);
-                            if(gheAndSuatChieu!=null){
+                            GheAndSuatChieu gheAndSuatChieu = gheAndSuatChieuRepository.findById(chiTietHoaDon.getId_GheAndSuatChieu().getId()).orElse(null);
+                            if (gheAndSuatChieu != null) {
                                 gheAndSuatChieu.setTrangThaiGheAndSuatChieu(0);// huỷ book ghế
                                 gheAndSuatChieuRepository.save(gheAndSuatChieu);
                             }
@@ -722,9 +727,6 @@ public class HoaDonController {
     }
 
 
-
-
-
     @Operation(summary = "Xác nhận hoàn tiền",
             description = "Sau khi hoàn tiền thủ công, gọi API này để đóng yêu cầu hoàn tiền")
     @PutMapping("/cancel/confirm/{hoanVeId}")
@@ -743,7 +745,65 @@ public class HoaDonController {
             danhSachHoanVe.setTrangThaiHoanVe(1);
             return ResponseEntity.status(HttpStatus.OK).body("Hoàn vé thành công");
         }
-        return  hoaDonResponse;
+        return hoaDonResponse;
+    }
+
+
+
+    @Operation(summary = "In vé",
+            description = "In ra n file PDF tương ứng với n vé\n\n" +
+                    "Chưa nghĩ ra cách in ra máy POS do không có máy thật để test\n\n" +
+                    "Và do \n\n" +
+                    "Chưa tìm ra cách giả lập máy POS trên Windows\n\n" +
+                    "Không có thiết bị Android để giả lập máy POS\n\n" +
+                    "Thiết bị Desktop yếu không thể giả lập Android để giả lập máy POS")
+    @PutMapping("/print/{maHoaDon}")
+    public ResponseEntity printTicket(@PathVariable String maHoaDon){
+        //Im tired, gonna do this the dirty way
+        HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon).orElse(null);
+        if(hoaDon==null){
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được hoá đơn");
+        }
+        int ticketTotal = hoaDon.getChiTietHoaDonList().size();
+        int ticketCounter=0;
+        //Not gonna check if hoaDon is paid here
+        // Will implement if required, otherwise whatever
+        PrinterServices printerServices = new PrinterServices();
+        for(ChiTietHoaDon chiTietHoaDon : hoaDon.getChiTietHoaDonList()){
+            GheAndSuatChieu ticket = chiTietHoaDon.getId_GheAndSuatChieu();//not really id, actually GheAndSuatChieu, i forgot to change it
+           if(ticket.getTrangThaiGheAndSuatChieu()==3){
+               //If ticket already printed, then skip
+               continue;
+           }
+            //Create ticket and get path
+            String ticketPath = null;
+            try {
+                ticketPath = InvoiceGenerator.createTicket(hoaDon,ticket.getId());
+            } catch (IOException e) {
+               return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi tạo vé");
+            }
+            File file = new File(ticketPath);
+            if(!file.exists()){
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi in vé: Không thể tìm được đường dẫn vé");
+            }
+            try {
+                printerServices.printMeAPDF(ticketPath,PrinterServices.DEFAULT_PRINTER);
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi in vé: Không thể tìm được đường dẫn vé");
+            } catch (PrinterException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi in vé: Không thể in vé");
+            }
+            //or use this if you want to print it as text
+            //It just convert the ticket to text and still export as pdf tho
+//            printerServices.printReceipt(ticketPath,PrinterServices.DEFAULT_PRINTER);
+            //After done printing, setTrangThai so that it won't be printed again
+            ticket.setTrangThaiGheAndSuatChieu(3);
+            ticketCounter++;
+        }
+        if(ticketCounter==ticketTotal) {
+            return ResponseEntity.status(HttpStatus.OK).body("In vé thành công");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("In được "+ticketCounter+"/"+ticketTotal+" vé");
     }
 
 }

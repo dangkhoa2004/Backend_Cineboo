@@ -192,15 +192,18 @@ public class ChiTietHoaDonController {
         return null;// or else return null
     }
 
-    public ChiTietHoaDon createBlankInvoiceDetail(Long id_Ghe,Long id_suatChieu, HoaDon hoaDon) {
-        ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
-        blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
-        GheAndSuatChieu gheAndSuatChieu = gheAndSuatChieuRepository.findByGheAndSuatChieu(id_Ghe.toString(),id_suatChieu.toString()).orElse(null);
+    public ChiTietHoaDon createBlankInvoiceDetail(Ghe ghe,Long id_suatChieu, HoaDon hoaDon) {
+        //Tìm bản ghi GheAndSuatChieu của chitiethoadon
+        //Không cần check booking do đã check ở hàm chính
+        GheAndSuatChieu gheAndSuatChieu = gheAndSuatChieuRepository.findByGheAndSuatChieu(ghe.getId().toString(),id_suatChieu.toString()).orElse(null);
         if (gheAndSuatChieu == null) {
             return null;
         }
         //Nếu bản ghi GheAndSuatChieu đã có trạng thái khác 0 tức là đã book hoặc đang book/giữ chỗ
         //không cho book
+        ChiTietHoaDon blankChiTietHoaDon = new ChiTietHoaDon();
+        blankChiTietHoaDon.setHoaDon(hoaDon);//ChiTietHoaDon la nestedObject cua HoaDon. HoaDon su dung JSonIgnore de tranh lap vo han
+        blankChiTietHoaDon.setGiaTien(ghe.getGiaTien());//For future statistics idk
         blankChiTietHoaDon.setId_GheAndSuatChieu(gheAndSuatChieu);
         blankChiTietHoaDon.setTrangThaiChiTietHoaDon(0);//Set 0 by default
         return chiTietHoaDonRepository.save(blankChiTietHoaDon);
