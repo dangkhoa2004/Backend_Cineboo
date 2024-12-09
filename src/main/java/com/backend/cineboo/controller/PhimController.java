@@ -1,6 +1,7 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.AddPhimDTO;
+import com.backend.cineboo.dto.UpdatePhimDTO;
 import com.backend.cineboo.entity.DanhSachTLPhim;
 import com.backend.cineboo.entity.DoTuoi;
 import com.backend.cineboo.entity.Phim;
@@ -99,7 +100,7 @@ public class PhimController {
 
 
     /**
-     * @param phim
+     * @param updatePhimDTO
      * @param bindingResult
      * @param id
      * @return Trả về Bad Request nếu ID Null.
@@ -116,40 +117,57 @@ public class PhimController {
             @ApiResponse(responseCode = "404", description = "Not Found"),
             @ApiResponse(responseCode = "500", description = "Internal_Server_Error")})
     @PutMapping("/update/{id}")
-    public ResponseEntity update(@Valid @RequestBody Phim phim, BindingResult bindingResult, @PathVariable("id") Long id) {
+    public ResponseEntity update(@Valid @RequestBody UpdatePhimDTO updatePhimDTO, BindingResult bindingResult, @PathVariable("id") Long id) {
         Map errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        if(updatePhimDTO.getId()!=id){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ID không trùng khớp");
+        }
+
+
         ResponseEntity response = RepoUtility.findById(id, phimRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             Phim toBeUpdated = (Phim) response.getBody();
             toBeUpdated.setMaPhim("MVS00" + phimRepository.getMaxTableId());
-            toBeUpdated.setTenPhim(phim.getTenPhim());
-            toBeUpdated.setAnhPhim(phim.getAnhPhim());
-            toBeUpdated.setDienVien(phim.getDienVien());
-            toBeUpdated.setNam(phim.getNam());
-            toBeUpdated.setNoiDungMoTa(phim.getNoiDungMoTa());
-            toBeUpdated.setTrailer(phim.getTrailer());
-            toBeUpdated.setThoiLuong(phim.getThoiLuong());
-            toBeUpdated.setQuocGia(phim.getQuocGia());
-            toBeUpdated.setNoiDung(phim.getNoiDung());
-            for(DanhSachTLPhim danhSachTLPhim : toBeUpdated.getDanhSachTLPhims()){
-                for(DanhSachTLPhim danhSachTLPhimNew : phim.getDanhSachTLPhims()){
-                    if(danhSachTLPhim.getId()==danhSachTLPhimNew.getId()){
-                        danhSachTLPhim.setTheLoaiPhim(danhSachTLPhimNew.getTheLoaiPhim());
-                        danhSachTLPhimReposiory.save(danhSachTLPhim);
-                    }
+            toBeUpdated.setTenPhim(updatePhimDTO.getTenPhim());
+            toBeUpdated.setAnhPhim(updatePhimDTO.getAnhPhim());
+            toBeUpdated.setDienVien(updatePhimDTO.getDienVien());
+            toBeUpdated.setNam(updatePhimDTO.getNam());
+            toBeUpdated.setNoiDungMoTa(updatePhimDTO.getNoiDungMoTa());
+            toBeUpdated.setTrailer(updatePhimDTO.getTrailer());
+            toBeUpdated.setNgayRaMat(updatePhimDTO.getNgayRaMat());
+            toBeUpdated.setThoiLuong(updatePhimDTO.getThoiLuong());
+            toBeUpdated.setQuocGia(updatePhimDTO.getQuocGia());
+            toBeUpdated.setNoiDung(updatePhimDTO.getNoiDung());
+            DoTuoi doTuoi = dotuoiRepository.findById(updatePhimDTO.getId_GioiHanDoTuoi()).orElse(null);
+            if(doTuoi==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy độ tuổi");
+            }
+            toBeUpdated.setGioiHanDoTuoi(doTuoi);
+            toBeUpdated.setTrangThai(updatePhimDTO.getTrangThai());
+            toBeUpdated.setDiem(updatePhimDTO.getDiem());
+
+            danhSachTLPhimReposiory.deleteAllByID_Phim(id.toString());
+
+            List<DanhSachTLPhim> danhSachTLPhimList = new ArrayList<>();
+            for(Long theLoaiPhimId : updatePhimDTO.getId_TheLoaiPhims()){
+                TheLoaiPhim theLoaiPhim = theLoaiPhimRepository.findById(theLoaiPhimId).orElse(null);
+                if(theLoaiPhim==null){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không có thể loại phim với ID là "+theLoaiPhimId);
                 }
+                DanhSachTLPhim danhSachTLPhim = new DanhSachTLPhim();
+                danhSachTLPhim.setTheLoaiPhim(theLoaiPhim);
+                danhSachTLPhim.setPhim(toBeUpdated);
+                danhSachTLPhim.setTrangThai(1);
+                danhSachTLPhimList.add(danhSachTLPhim);
             }
 
-            //Xử lý độ tuổi
-            DoTuoi fakeDoTuoi = new DoTuoi();
-            fakeDoTuoi.setId(phim.getGioiHanDoTuoi().getId());
-            toBeUpdated.setGioiHanDoTuoi(fakeDoTuoi);
-            //TẠM THỜI Không thực hiện Set trạng thái
-            //Lưu vào Database
-            return ResponseEntity.status(HttpStatus.OK).body(phimRepository.save(toBeUpdated));
+            phimRepository.save(toBeUpdated);
+            danhSachTLPhimReposiory.saveAll(danhSachTLPhimList);
+            Phim savedPhim = phimRepository.findById(id).orElse(null);
+            return ResponseEntity.status(HttpStatus.OK).body(savedPhim);
         }
         return response;
     }
