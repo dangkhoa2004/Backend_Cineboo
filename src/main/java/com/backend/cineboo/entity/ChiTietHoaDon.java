@@ -5,9 +5,13 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
+
+import java.math.BigDecimal;
 
 /**
  *
@@ -38,4 +42,9 @@ public class ChiTietHoaDon {
     @Range(min = 0)
     @Column(name ="TRANGTHAICHITIETHOADON")
     private Integer trangThaiChiTietHoaDon;
+
+
+    @DecimalMin(value = "0.0")
+    private BigDecimal giaTien;
+
 }

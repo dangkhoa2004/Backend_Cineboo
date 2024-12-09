@@ -5,7 +5,6 @@ import com.backend.cineboo.dto.GheWithoutSuatChieuId;
 import com.backend.cineboo.entity.Ghe;
 import com.backend.cineboo.entity.GheWithBookingStatus;
 import com.backend.cineboo.entity.PhongChieu;
-import com.backend.cineboo.entity.RevenuePerMovie;
 import com.backend.cineboo.repository.GheRepository;
 import com.backend.cineboo.repository.PhongChieuRepository;
 import com.backend.cineboo.utility.EntityValidator;
@@ -16,6 +15,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.validation.Valid;
 import org.apache.commons.collections.MapUtils;
@@ -43,7 +43,7 @@ public class GheController {
     @Autowired
     GheRepository gheRepository;
 
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
@@ -59,13 +59,13 @@ public class GheController {
     }
 
     @Operation(summary = "Vô hiệu hóa ghế",
-            description = "Đặt trạng thái ghế thành không khả dụng bằng cách sử dụng ID.")
+            description = "Đặt trạng thái ghế thành không khả dụng bằng cách sử dụng ID. Trạng thái có giá trị 4")
     @PutMapping("/disable/{id}")
     public ResponseEntity disable(@PathVariable Long id) {
         ResponseEntity response = RepoUtility.findById(id, gheRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             Ghe ghe = (Ghe) response.getBody();
-            ghe.setTrangThaiGhe(0);
+            ghe.setTrangThaiGhe(4);
             gheRepository.save(ghe);
             return ResponseEntity.status(HttpStatus.OK).body("Disable Ghe thành công");
         }
