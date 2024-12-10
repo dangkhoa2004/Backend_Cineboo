@@ -850,7 +850,7 @@ public class HoaDonController {
     @Operation(summary = "In vé bằng máy in nhiệt",
             description = "In ra n vé ứng với mã hoá đơn truyền vào\n\n" +
                     "Chỉ sử dụng được cho các máy in hỗ trợ lệnh ESC/POS")
-    @GetMapping("/print/thermal/bytes/{maHoaDon}")
+    @PutMapping("/print/thermal/bytes/{maHoaDon}")
     public ResponseEntity printThermalTicketAsRawBytes(@PathVariable String maHoaDon) {
         //Im tired, gonna do this the dirty way
         HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon).orElse(null);
