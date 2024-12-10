@@ -51,9 +51,13 @@ public interface GheRepository extends JpaRepository<Ghe,Long> {
     Optional<Ghe> findByID_PhongChieuAndMaGhe(String id_PhongChieu, String maGhe);
 	
 	
-	  @Query(value = "SELECT ghe.id, ghe.MaGhe,ghe.GiaTien, ghe.ID_PhongChieu,ghe.TrangThaiGhe,gheandsuatchieu.TRANGTHAIGHEANDSUATCHIEU FROM GheAndSuatChieu  JOIN ghe on ghe.ID=gheandsuatchieu.ID_GHE WHERE  ID_SuatChieu = ? "
+
+
+
+      @Query(value = "SELECT EXISTS(select * FROM ghe JOIN phongchieu on ghe.ID_PhongChieu=phongchieu.ID WHERE phongchieu.ID= ? LIMIT 1)"
             ,nativeQuery = true)
-    List<GheWithBookingStatus> findGheWithBookingStatus(String id_suatChieu);
-	
+    Integer checkIfGheOfPhongChieuExists(String id_suatChieu);
+
+
 	
 }

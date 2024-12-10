@@ -1,7 +1,8 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.AddGheAndSuatChieuDTO;
-import com.backend.cineboo.dto.SuatChieuDTO;
+import com.backend.cineboo.dto.AddMultipleSuatChieuDTO;
+import com.backend.cineboo.dto.AddSuatChieuDTO;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.*;
 import com.backend.cineboo.scheduledJobs.EndSuatChieuJob;
@@ -16,18 +17,19 @@ import jakarta.validation.Valid;
 import org.apache.commons.collections.MapUtils;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -118,6 +120,15 @@ public class SuatChieuController {
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
+        Phim phim = phimRepository.findById(suatChieu.getPhim().getId()).orElse(null);
+        if (phim == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Phim không tồn tại dựa");
+        }
+        PhongChieu phongChieu = phongChieuRepository.findById(suatChieu.getId_PhongChieu()).orElse(null);
+        if (phongChieu == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phòng chiếu");
+        }
+
         ResponseEntity response = RepoUtility.findById(id, suatChieuRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             SuatChieu toBeUpdated = (SuatChieu) response.getBody();
@@ -125,6 +136,7 @@ public class SuatChieuController {
             toBeUpdated.setThoiGianChieu(suatChieu.getThoiGianChieu());
             toBeUpdated.setTrangThaiSuatChieu(suatChieu.getTrangThaiSuatChieu());
             toBeUpdated.setPhim(suatChieu.getPhim());
+            toBeUpdated.setId_PhongChieu(suatChieu.getId_PhongChieu());
             return ResponseEntity.status(HttpStatus.OK).body(suatChieuRepository.save(toBeUpdated));
         }
         return response;
@@ -133,8 +145,8 @@ public class SuatChieuController {
     /**
      * Thêm suất chiếu mới.
      *
-     * @param suatChieuDTO     Thông tin suất chiếu mới.
-     * @param bindingResult Kết quả xác thực.
+     * @param addSuatChieuDTO Thông tin suất chiếu mới.
+     * @param bindingResult   Kết quả xác thực.
      * @return SuatChieu đã thêm hoặc phản hồi lỗi.
      */
     @Operation(summary = "Thêm suất chiếu mới", description = "Thêm một suất chiếu mới vào hệ thống")
@@ -142,34 +154,34 @@ public class SuatChieuController {
             @ApiResponse(responseCode = "200", description = "Thêm suất chiếu thành công"),
             @ApiResponse(responseCode = "400", description = "Yêu cầu không hợp lệ, có lỗi xác thực")
     })
+    @Transactional
     @PostMapping("/add")
-    public ResponseEntity add(@Valid @RequestBody SuatChieuDTO suatChieuDTO, BindingResult bindingResult) {
+    public ResponseEntity add(@Valid @RequestBody AddSuatChieuDTO addSuatChieuDTO, BindingResult bindingResult) {
         Map errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
 
-        Phim phim = phimRepository.findById(suatChieuDTO.getId_Phim()).orElse(null);
-        if(phim==null){
+        Phim phim = phimRepository.findById(addSuatChieuDTO.getId_Phim()).orElse(null);
+        if (phim == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phim");
         }
-        PhongChieu phongChieu = phongChieuRepository.findById(suatChieuDTO.getId_PhongChieu()).orElse(null);
-        if(phongChieu==null){
+        PhongChieu phongChieu = phongChieuRepository.findById(addSuatChieuDTO.getId_PhongChieu()).orElse(null);
+        if (phongChieu == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phòng chiếu");
         }
-
-        LocalDateTime thoiGianChieu = suatChieuDTO.getThoiGianChieu();
-        //Kiểm tra trùng dựa trên Phim, ThoiGianChieu, PhongChieu
-        //Kiểm tra tại bảng GheAndSuatChieu
-        Integer duplicate = gheAndSuatChieuRepository.checkSuatChieuDuplicate(phim.getId().toString(), phongChieu.getId().toString(), thoiGianChieu.toString());
-        if (duplicate != null && duplicate == 1) {
-            String duplicateMsg = "Suất chiếu của phim " + phim.getMaPhim() + " tại phòng " + phongChieu.getMaPhong() + " vào lúc " + thoiGianChieu.toString() + " đã tồn tại";
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(duplicateMsg);
+        Integer exists = gheRepository.checkIfGheOfPhongChieuExists(addSuatChieuDTO.getId_PhongChieu().toString());
+        if (exists == 0) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Phòng chiếu " + phongChieu.getMaPhong() + " hiện tại chưa có ghế");
         }
+
+        LocalDateTime thoiGianChieu = addSuatChieuDTO.getThoiGianChieu();
+
         SuatChieu suatChieu = new SuatChieu();
         suatChieu.setMaSuatChieu(idPrefix + (suatChieuRepository.getMaxTableId() + 1));
         suatChieu.setThoiGianChieu(thoiGianChieu);
         suatChieu.setPhim(phim);
+        suatChieu.setId_PhongChieu(addSuatChieuDTO.getId_PhongChieu());
         suatChieu.setTrangThaiSuatChieu(0);
         //SHOULD PROBABLY IMPLEMENT A CHECK HERE
         //IF THOIGIANCHIEU<= (LocalDateTime.now() + phim.getThoiLuong())
@@ -178,25 +190,35 @@ public class SuatChieuController {
         //Will we allow another airing of the same Phim, in the same PhongChieu
         //For now, not implemented
         //just to be sure create new suatchieu
-        SuatChieu newlyAddedSuatChieu =  suatChieuRepository.save(suatChieu);
 
-        // Đã có suất chiếu sẽ phải có ghế
-        //Bắt đầu thêm Ghế vào Suất chiếu
-        AddGheAndSuatChieuDTO addGheAndSuatChieuDTO = new AddGheAndSuatChieuDTO();
-        addGheAndSuatChieuDTO.setId_SuatChieu(newlyAddedSuatChieu.getId());
-        addGheAndSuatChieuDTO.setId_PhongChieu(suatChieuDTO.getId_PhongChieu());
-        //Should directly cal GheAndSuatChieuController.add()
-        //Someone pls do it, im a bit busy
-        List<Ghe> ghes = gheRepository.findByID_PhongChieu(suatChieuDTO.getId_PhongChieu().toString());
-        for (Ghe ghe : ghes) {
-            //Add ghe to GheAndSuatChieu
-            GheAndSuatChieu gheAndSuatChieu = new GheAndSuatChieu();
-            gheAndSuatChieu.setId_Ghe(ghe);
-            gheAndSuatChieu.setId_SuatChieu(suatChieu);
-            gheAndSuatChieu.setTrangThaiGheAndSuatChieu(0);
-            gheAndSuatChieuRepository.save(gheAndSuatChieu);
+        SuatChieu latestSuatchieu = suatChieuRepository.getLatestSuatChieuByPhongChieu(addSuatChieuDTO.getId_PhongChieu().toString()).orElse(null);
+        LocalDateTime latestDateOfSuatChieu = latestSuatchieu.getThoiGianChieu();
+        LocalDateTime latestAllowedDate = latestDateOfSuatChieu.plusMinutes(phim.getThoiLuong());
+        if (
+                latestSuatchieu == null
+                        || thoiGianChieu.isAfter(latestAllowedDate)
+        ) {
+            try {
+                SuatChieu newlyAddedSuatChieu = suatChieuRepository.save(suatChieu);
+                // Đã có suất chiếu sẽ phải có ghế
+                //Bắt đầu thêm Ghế vào Suất chiếu
+                AddGheAndSuatChieuDTO addGheAndSuatChieuDTO = new AddGheAndSuatChieuDTO();
+                addGheAndSuatChieuDTO.setId_SuatChieu(newlyAddedSuatChieu.getId());
+                addGheAndSuatChieuDTO.setId_PhongChieu(addSuatChieuDTO.getId_PhongChieu());
+                //Should directly cal GheAndSuatChieuController.add()
+                //Someone pls do it, im a bit busy
+                BindingResult bindingResultGheAndSuatChieu = new BindException(new Object(), "GheAndSuatChieu");
+                gheAndSuatChieuController.add(addGheAndSuatChieuDTO, bindingResultGheAndSuatChieu);
+
+                return ResponseEntity.status(HttpStatus.OK).body(suatChieu);
+            } catch (DuplicateKeyException duplicateKeyException) {
+                //Just in case users somehow are able to insert duplicate unique keys
+                duplicateKeyException.printStackTrace();
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đã tồn tại phim trong khung giờ này");
+            }
+
         }
-        return ResponseEntity.status(HttpStatus.OK).body(suatChieu);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Yêu cầu thời gian chiếu phải sau: " + latestAllowedDate);
     }
 
     /**
@@ -358,5 +380,81 @@ public class SuatChieuController {
             scheduler.scheduleJob(startSuatChieuJob, startSuatChieuTrigger);//setTrangThai tất cả ghế về 0
             System.out.println("SuatChieu will start on " + startAtDate);
         }
+    }
+
+
+    /**
+     * Thêm nhiều suất chiếu mới.
+     *
+     * @param AddMultipleSuatChieuDTO Thông tin suất chiếu mới.
+     * @param bindingResult           Kết quả xác thực.
+     * @return SuatChieu đã thêm hoặc phản hồi lỗi.
+     */
+    @Operation(summary = "Thêm nhiều suất chiếu mới", description = "Thêm nhiều suất chiếu mới vào hệ thống")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Thêm suất chiếu thành công"),
+            @ApiResponse(responseCode = "400", description = "Yêu cầu không hợp lệ, có lỗi xác thực")
+    })
+    @PostMapping("/add/multiple")
+    @Transactional
+    public ResponseEntity addMultiple(@Valid @RequestBody AddMultipleSuatChieuDTO addMultipleSuatChieuDTO, BindingResult bindingResult) {
+        Map errors = EntityValidator.validateFields(bindingResult);
+        if (MapUtils.isNotEmpty(errors)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        }
+        List<String> maSuatChieus = new ArrayList<>();
+        Phim phim = phimRepository.findById(addMultipleSuatChieuDTO.getId_Phim()).orElse(null);
+        if (phim == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phim");
+        }
+        PhongChieu phongChieu = phongChieuRepository.findById(addMultipleSuatChieuDTO.getId_PhongChieu()).orElse(null);
+        if (phongChieu == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phòng chiếu");
+        }
+        Integer exists = gheRepository.checkIfGheOfPhongChieuExists(addMultipleSuatChieuDTO.getId_PhongChieu().toString());
+        if (exists == 0) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Phòng chiếu " + phongChieu.getMaPhong() + " hiện tại chưa có ghế");
+        }
+        for (int i = 0; i < addMultipleSuatChieuDTO.getThoiGianChieuList().size(); i++) {
+            LocalDateTime thoiGianChieu = addMultipleSuatChieuDTO.getThoiGianChieuList().get(i);
+
+            SuatChieu suatChieu = new SuatChieu();
+            //Could totally use Virtual property in database to automatically setMaSuatChieu
+            //Hopefully this will be fixed by someone in the future
+            //For now, we use ancient caveman technique
+            suatChieu.setMaSuatChieu(idPrefix + (suatChieuRepository.getMaxTableId() + (i + 1)));
+            suatChieu.setThoiGianChieu(thoiGianChieu);
+            suatChieu.setPhim(phim);
+            suatChieu.setId_PhongChieu(addMultipleSuatChieuDTO.getId_PhongChieu());
+            suatChieu.setTrangThaiSuatChieu(0);
+
+            suatChieu.setThoiGianChieu(thoiGianChieu);
+            SuatChieu latestSuatchieu = suatChieuRepository.getLatestSuatChieuByPhongChieu(addMultipleSuatChieuDTO.getId_PhongChieu().toString()).orElse(null);
+            LocalDateTime latestDateOfSuatChieu = latestSuatchieu.getThoiGianChieu();
+            LocalDateTime latestAllowedDate = latestDateOfSuatChieu.plusMinutes(phim.getThoiLuong());
+            if (
+                    latestSuatchieu == null
+                            || thoiGianChieu.isAfter(latestAllowedDate)
+            ) {
+                try {
+                    SuatChieu newlyAddedSuatChieu = suatChieuRepository.save(suatChieu);
+                    // Đã có suất chiếu sẽ phải có ghế
+                    //Bắt đầu thêm Ghế vào Suất chiếu
+                    AddGheAndSuatChieuDTO addGheAndSuatChieuDTO = new AddGheAndSuatChieuDTO();
+                    addGheAndSuatChieuDTO.setId_SuatChieu(newlyAddedSuatChieu.getId());
+                    addGheAndSuatChieuDTO.setId_PhongChieu(addMultipleSuatChieuDTO.getId_PhongChieu());
+                    BindingResult bindingResultGheAndSuatChieu = new BindException(new Object(), "GheAndSuatChieu");
+                    gheAndSuatChieuController.add(addGheAndSuatChieuDTO, bindingResultGheAndSuatChieu);
+                    maSuatChieus.add(suatChieu.getMaSuatChieu());
+                } catch (DuplicateKeyException duplicateKeyException) {
+                    //Just in case users somehow are able to insert duplicate unique keys
+                    duplicateKeyException.printStackTrace();
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đã tồn tại phim trong khung giờ này");
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Thời gian chiếu không hợp lệ(" + thoiGianChieu + "). Yêu cầu thời gian chiếu phải sau: " + latestAllowedDate+" . Các bản ghi sau khoảng thời gian("+thoiGianChieu+") không được lưu");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("Thêm thành công các suất chiếu: " + Arrays.toString(maSuatChieus.toArray()));
     }
 }
