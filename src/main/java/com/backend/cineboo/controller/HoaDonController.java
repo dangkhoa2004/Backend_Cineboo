@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.core5.http.ContentType;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -35,9 +36,14 @@ import vn.payos.type.PaymentLinkData;
 import java.awt.print.PrinterException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -749,7 +755,6 @@ public class HoaDonController {
     }
 
 
-
     @Operation(summary = "In vé",
             description = "In ra n file PDF tương ứng với n vé\n\n" +
                     "Chưa nghĩ ra cách in ra máy POS do không có máy thật để test\n\n" +
@@ -758,36 +763,36 @@ public class HoaDonController {
                     "Không có thiết bị Android để giả lập máy POS\n\n" +
                     "Thiết bị Desktop yếu không thể giả lập Android để giả lập máy POS")
     @PutMapping("/print/{maHoaDon}")
-    public ResponseEntity printTicket(@PathVariable String maHoaDon){
+    public ResponseEntity printTicket(@PathVariable String maHoaDon) {
         //Im tired, gonna do this the dirty way
         HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon).orElse(null);
-        if(hoaDon==null){
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được hoá đơn");
+        if (hoaDon == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được hoá đơn");
         }
         int ticketTotal = hoaDon.getChiTietHoaDonList().size();
-        int ticketCounter=0;
+        int ticketCounter = 0;
         //Not gonna check if hoaDon is paid here
         // Will implement if required, otherwise whatever
         PrinterServices printerServices = new PrinterServices();
-        for(ChiTietHoaDon chiTietHoaDon : hoaDon.getChiTietHoaDonList()){
+        for (ChiTietHoaDon chiTietHoaDon : hoaDon.getChiTietHoaDonList()) {
             GheAndSuatChieu ticket = chiTietHoaDon.getId_GheAndSuatChieu();//not really id, actually GheAndSuatChieu, i forgot to change it
-           if(ticket.getTrangThaiGheAndSuatChieu()==3){
-               //If ticket already printed, then skip
-               continue;
-           }
+            if (ticket.getTrangThaiGheAndSuatChieu() == 3) {
+                //If ticket already printed, then skip
+                continue;
+            }
             //Create ticket and get path
             String ticketPath = null;
             try {
-                ticketPath = InvoiceGenerator.createTicket(hoaDon,ticket.getId());
+                ticketPath = InvoiceGenerator.createTicket(hoaDon, ticket.getId());
             } catch (IOException e) {
-               return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi tạo vé");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi tạo vé");
             }
             File file = new File(ticketPath);
-            if(!file.exists()){
+            if (!file.exists()) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi in vé: Không thể tìm được đường dẫn vé");
             }
             try {
-                printerServices.printMeAPDF(ticketPath,PrinterServices.DEFAULT_PRINTER);
+                printerServices.printMeAPDF(ticketPath, PrinterServices.DEFAULT_PRINTER);
             } catch (IOException e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi in vé: Không thể tìm được đường dẫn vé");
             } catch (PrinterException e) {
@@ -800,10 +805,87 @@ public class HoaDonController {
             ticket.setTrangThaiGheAndSuatChieu(3);
             ticketCounter++;
         }
-        if(ticketCounter==ticketTotal) {
+        if (ticketCounter == ticketTotal) {
             return ResponseEntity.status(HttpStatus.OK).body("In vé thành công");
         }
-        return ResponseEntity.status(HttpStatus.OK).body("In được "+ticketCounter+"/"+ticketTotal+" vé");
+        return ResponseEntity.status(HttpStatus.OK).body("In được " + ticketCounter + "/" + ticketTotal + " vé");
     }
 
+
+    @Operation(summary = "In vé bằng máy in nhiệt",
+            description = "In ra n vé ứng với mã hoá đơn truyền vào\n\n" +
+                    "Chỉ sử dụng được cho các máy in hỗ trợ lệnh ESC/POS")
+    @GetMapping("/print/thermal/bin/{maHoaDon}")
+    public ResponseEntity printThermalTicketAsBin(@PathVariable String maHoaDon) {
+        //Im tired, gonna do this the dirty way
+        HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon).orElse(null);
+        if (hoaDon == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được hoá đơn");
+        }
+        if (hoaDon.getTrangThaiHoaDon() == 3) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đã in vé của hoá đơn này trước đó");
+        }
+        String binFilePath = InvoiceGenerator.thermalTicketGenerator(hoaDon);
+        if (StringUtils.isBlank(binFilePath)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gặp lỗi trong quá trình xuất vé");
+        }
+        hoaDon.setTrangThaiHoaDon(3);
+
+        File binFile = new File(binFilePath);
+
+        try {
+            if (binFile.exists()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + binFile.getName() + "\"")
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .body(new InputStreamResource(new FileInputStream(binFile)));
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+
+    @Operation(summary = "In vé bằng máy in nhiệt",
+            description = "In ra n vé ứng với mã hoá đơn truyền vào\n\n" +
+                    "Chỉ sử dụng được cho các máy in hỗ trợ lệnh ESC/POS")
+    @PutMapping("/print/thermal/bytes/{maHoaDon}")
+    public ResponseEntity printThermalTicketAsRawBytes(@PathVariable String maHoaDon) {
+        //Im tired, gonna do this the dirty way
+        HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon).orElse(null);
+        if (hoaDon == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm được hoá đơn");
+        }
+        if (hoaDon.getTrangThaiHoaDon() == 3) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đã in vé của hoá đơn này trước đó");
+        }
+        String binFilePath = InvoiceGenerator.thermalTicketGenerator(hoaDon);
+        if (StringUtils.isBlank(binFilePath)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gặp lỗi trong quá trình xuất vé");
+        }
+        hoaDon.setTrangThaiHoaDon(3);
+
+        File binFile = new File(binFilePath);
+
+        try {
+            if (binFile.exists()) {
+                byte[] rawBytes = Files.readAllBytes(binFile.toPath());
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + binFile.getName() + "\"")
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .body(rawBytes);
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 }
+
+
+
+
+

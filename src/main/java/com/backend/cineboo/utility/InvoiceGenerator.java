@@ -36,12 +36,10 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.web.client.RestTemplate;
 import vn.payos.type.PaymentLinkData;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -49,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.backend.cineboo.utility.ESC_POS_Commands.*;
 
 /**
  * @author Administrator
@@ -320,7 +320,8 @@ public class InvoiceGenerator {
         // Restore the canvas state to avoid affecting other elements
         over.restoreState();
     }
-    public static String createTicket(HoaDon hoaDon,Long idGheAndSuatChieu) throws IOException {
+
+    public static String createTicket(HoaDon hoaDon, Long idGheAndSuatChieu) throws IOException {
 
         String maHoaDonToOrderCode = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
         Long orderCode = Long.valueOf(maHoaDonToOrderCode);
@@ -357,7 +358,6 @@ public class InvoiceGenerator {
         String ticketName = maHoaDon + chiTietHoaDonList.size() + idGheAndSuatChieu;
 
         //Get Original Price to display later
-
 
 
         String nameBuilder = ticketName + ".pdf";
@@ -460,10 +460,10 @@ public class InvoiceGenerator {
                     .setBorderTop(Border.NO_BORDER)
                     .setBorderBottom(Border.NO_BORDER)
                     .setBorderRight(Border.NO_BORDER));
-            BigDecimal price=BigDecimal.ZERO;
+            BigDecimal price = BigDecimal.ZERO;
             // Adding rows to the table
             for (int i = 0; i < chiTietHoaDonList.size(); i++) {
-                if(chiTietHoaDonList.get(i).getId_GheAndSuatChieu().getId()!=idGheAndSuatChieu){
+                if (chiTietHoaDonList.get(i).getId_GheAndSuatChieu().getId() != idGheAndSuatChieu) {
                     continue;//Skip if not the right ticket
                 }
                 price = chiTietHoaDonList.get(i).getGiaTien();
@@ -529,4 +529,99 @@ public class InvoiceGenerator {
 
 
 
+    public static String thermalTicketGenerator(HoaDon hoaDon) {
+        String maHoaDonToOrderCode = hoaDon.getMaHoaDon().replaceAll("[^\\d-]|-(?=\\D)", "");
+        Long orderCode = Long.valueOf(maHoaDonToOrderCode);
+        String url = "http://localhost:8080/payos/get/" + orderCode;
+        PaymentLinkData paymentLinkData = restTemplate.getForEntity(url, PaymentLinkData.class).getBody();
+        System.out.println(paymentLinkData);
+        System.out.println(paymentLinkData.getStatus());
+        if (!paymentLinkData.getStatus().equals("PAID")) {
+            //Meaning its Expired or Cancelled and shits
+            return null;
+        }
+//        <-- code to check if hoadon is paid, uncomment later
+        String nameBuilder = "thermal_ticket_"+hoaDon.getMaHoaDon()+ ".bin";
+        String directoryPath = "thermal_tickets/"; // Replace with your directory path
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs(); // Create the directory if it doesn't exist
+        }
+        String absolutePath = directoryPath+nameBuilder;
+        // ESC/POS commands (raw bytes)
+
+
+        String maHoaDon = hoaDon.getMaHoaDon();
+        PTTT phuongThucThanhToan = hoaDon.getPttt();
+        List<ChiTietHoaDon> chiTietHoaDonList = hoaDon.getChiTietHoaDonList();
+        KhachHang khachHang = hoaDon.getKhachHang();
+        for(ChiTietHoaDon chiTietHoaDon :chiTietHoaDonList){
+            if(chiTietHoaDon.getId_GheAndSuatChieu()==null){
+                return null;
+            }
+        }
+        Phim phim = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu().getPhim();
+        SuatChieu suatChieu = hoaDon.getChiTietHoaDonList().get(0).getId_GheAndSuatChieu().getId_SuatChieu();
+        String ten = khachHang.getHo() + " " + khachHang.getTenDem() + " " + khachHang.getTen();
+
+        int printed = 0;
+        int ticketCount = chiTietHoaDonList.size();
+
+
+        try {
+            ////////////START HERE/////////////////////////////////////////////
+            try (OutputStream outputStream = new FileOutputStream(absolutePath)) {
+                outputStream.write(initializePrinter);
+                for (ChiTietHoaDon chiTietHoaDon : chiTietHoaDonList) {
+                    String ticketName = maHoaDon + chiTietHoaDonList.size() + chiTietHoaDon.getId_GheAndSuatChieu().getId();
+                    outputStream.write(alignCenter);
+                    outputStream.write("==============================================\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(boldOn);
+                    outputStream.write("CINEBOO\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write("Tap and Book\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(boldOff);
+                    outputStream.write("==============================================\n\n".getBytes(StandardCharsets.UTF_8));
+
+                    outputStream.write(alignCenter);
+                    outputStream.write("Ve Xem Phim\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write("--- Thong Tin Ve ---\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(alignLeft);
+                    outputStream.write("----------------------------------------------\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Ma Ve:          " + ticketName + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Khach Hang:     " + TextUtilities.removeDiacritics(ten) + "\n\n").getBytes(StandardCharsets.UTF_8));
+
+                    outputStream.write(("Ten Phim:       " + TextUtilities.removeDiacritics(phim.getTenPhim()) + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Thoi Gian Chieu: " + suatChieu.getThoiGianChieu() + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Ma Ghe:         " + chiTietHoaDon.getId_GheAndSuatChieu().getId_Ghe().getMaGhe() + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Phong Chieu:    " + chiTietHoaDon.getId_GheAndSuatChieu().getId_Ghe().getPhongChieu().getMaPhong() + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write("----------------------------------------------\n".getBytes(StandardCharsets.UTF_8));
+
+
+                    outputStream.write(("Gia Tien:       " + chiTietHoaDon.getId_GheAndSuatChieu().getId_Ghe().getGiaTien() + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("So Luong:       " + 1 + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Thanh Tien:     " + chiTietHoaDon.getId_GheAndSuatChieu().getId_Ghe().getGiaTien() + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Phuong Thuc Thanh Toan: " + TextUtilities.removeDiacritics(phuongThucThanhToan.getTenPTTT()) + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("Thoi Gian Thanh Toan: " + hoaDon.getThoiGianThanhToan() + "\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write("----------------------------------------------\n\n".getBytes(StandardCharsets.UTF_8));
+
+                    outputStream.write(alignCenter);
+                    outputStream.write(boldOn);
+                    outputStream.write("Cam on Quy Khach!\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(boldOff);
+                    outputStream.write("==============================================\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(cutPaperPartial);
+                    printed++;
+                }
+                outputStream.write(cutPaperFull);
+                if (printed != ticketCount) {
+                    return null;
+                }
+                return absolutePath;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
+
+
