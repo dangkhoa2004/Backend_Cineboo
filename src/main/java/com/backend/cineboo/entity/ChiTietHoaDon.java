@@ -45,6 +45,7 @@ public class ChiTietHoaDon {
 
 
     @DecimalMin(value = "0.0")
+    @Column(name="GIATIEN")
     private BigDecimal giaTien;
 
 }
