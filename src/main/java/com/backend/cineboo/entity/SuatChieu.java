@@ -36,4 +36,7 @@ public class SuatChieu {
 
     @Column(name="TRANGTHAISUATCHIEU")
     private Integer trangThaiSuatChieu;
+
+    @Column(name="ID_PHONGCHIEU")
+    private Long id_PhongChieu;
 }
