@@ -6,12 +6,14 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 
 @Configuration
 public class PublicAPIServices {
 
 //    @Value(value = "${NGROK_TOKEN}")
-    private String ngrokToken="2pkK74s9r01kNrCyHi5QKweIszp_7UJcsQ7JEjbhFv91auotBc";
+    private String ngrokToken = "2pkK74s9r01kNrCyHi5QKweIszp_7UJcsQ7JEjbhFv91auotBc";
 
     public String startNgrok() throws Exception {
         // Ensure the token is set
@@ -55,15 +57,15 @@ public class PublicAPIServices {
 
         return publicUrl;
     }
-   @EventListener(ContextRefreshedEvent.class)
+
+    @EventListener(ContextRefreshedEvent.class)
     public void contextRefreshedEvent() throws Exception {
         PublicAPIServices ngrokService = new PublicAPIServices();
         String ngrokUrl = ngrokService.startNgrok();
         System.out.println("Tạo tài khoản PayOS");
         System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");
         System.out.println("Điển URL phía dưới vào mục Webhook");
-        System.out.println("URL public: " + ngrokUrl+"/payos/confirm-webhook");
+        System.out.println("URL public: " + ngrokUrl + "/payos/confirm-webhook");
     }
-
 
 }
