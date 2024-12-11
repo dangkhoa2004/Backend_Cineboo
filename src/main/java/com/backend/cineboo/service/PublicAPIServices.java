@@ -1,19 +1,14 @@
 package com.backend.cineboo.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 @Configuration
-public class PublicMeBaby {
+public class PublicAPIServices {
 
 //    @Value(value = "${NGROK_TOKEN}")
     private String ngrokToken="2pkK74s9r01kNrCyHi5QKweIszp_7UJcsQ7JEjbhFv91auotBc";
@@ -62,7 +57,7 @@ public class PublicMeBaby {
     }
    @EventListener(ContextRefreshedEvent.class)
     public void contextRefreshedEvent() throws Exception {
-        PublicMeBaby ngrokService = new PublicMeBaby();
+        PublicAPIServices ngrokService = new PublicAPIServices();
         String ngrokUrl = ngrokService.startNgrok();
         System.out.println("Tạo tài khoản PayOS");
         System.out.println("Tạo kênh thanh toán. Vào Cài Đặt");

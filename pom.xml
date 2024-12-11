@@ -166,7 +166,7 @@
         <!--SALTING AND HASHING PASSWORD-->
 
 
-<!--        ITEXTPDF-->
+        <!--        ITEXTPDF-->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>kernel</artifactId>
@@ -220,8 +220,7 @@
         </dependency>
 
         <!--        ITEXTPDF-->
-<!--REDIS Stateful Session Management-->
-
+        <!--REDIS Stateful Session Management-->
 
 
         <!--Scheduling-->
@@ -230,9 +229,9 @@
             <artifactId>spring-boot-starter-quartz</artifactId>
             <version>3.4.0</version>
         </dependency>
-<!--Scheduling-->
+        <!--Scheduling-->
 
-<!--        Printing pdf-->
+        <!--        Printing pdf-->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
