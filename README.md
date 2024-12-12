@@ -33,21 +33,36 @@ Dưới đây là một mẫu README cho dự án Spring Boot của bạn:
 ## Cấu trúc dự án
 
 ```
-cineboo.backend
-├── src
-│   ├── main
-│   │   ├── java
-│   │   │   └── com.cineboo.backend
-│   │   │       ├── config          # Cấu hình chung cho ứng dụng (security, JWT, etc.)
-│   │   │       ├── controller      # Xử lý các request API
-│   │   │       ├── entity          # Các mô hình (model) của cơ sở dữ liệu
-│   │   │       ├── repository      # Tầng giao tiếp với cơ sở dữ liệu
-│   │   │       ├── service         # Xử lý logic nghiệp vụ
-│   │   │       └── request         # Các DTO để nhận dữ liệu từ client
-│   │   └── resources
-│   │       ├── application.yml     # Cấu hình ứng dụng
-│   │       └── schema.sql          # Cấu trúc database (nếu có)
-└── pom.xml                          # Cấu hình Maven và dependencies
+Backend_Cineboo/
+├── .mvn/                     # Wrapper Maven để build dự án.
+├── src/
+│   ├── main/
+│   │   ├── java/com/backend/cineboo/
+│   │   │   ├── config/         # Cấu hình toàn bộ ứng dụng (CORS, Security,...).
+│   │   │   ├── controller/     # Lớp điều khiển (API endpoint).
+│   │   │   ├── dto/            # Các lớp dữ liệu truyền tải (Data Transfer Object).
+│   │   │   ├── entity/         # Các lớp mô hình ánh xạ với bảng cơ sở dữ liệu (JPA Entities).
+│   │   │   ├── repository/     # Lớp giao tiếp với cơ sở dữ liệu (Spring Data JPA).
+│   │   │   ├── scheduledJobs/  # Các tác vụ chạy định kỳ (Scheduler).
+│   │   │   ├── service/        # Xử lý logic nghiệp vụ (business logic).
+│   │   │   ├── utility/        # Các lớp tiện ích dùng chung.
+│   │   │   └── Application.java # Entry point chính của Spring Boot.
+│   │   ├── resources/
+│   │   │   ├── css/            # Tệp CSS (nếu cần dùng cho email templates hoặc giao diện server-rendered).
+│   │   │   ├── fonts/          # Font hoặc tài nguyên liên quan.
+│   │   │   ├── static/         # Tài nguyên tĩnh (ảnh, file tải về,...).
+│   │   │   ├── templates/      # File HTML (nếu sử dụng Thymeleaf hoặc template engine khác).
+│   │   │   └── application.properties # Cấu hình chính cho ứng dụng.
+│   ├── test/
+│   │   ├── java/com/backend/cineboo/ # Các lớp kiểm thử (unit test, integration test).
+├── target/                    # Thư mục chứa file build (JAR/WAR) sau khi biên dịch.
+├── .gitattributes             # File cấu hình Git (encoding, line endings,...).
+├── .gitignore                 # Danh sách file/thư mục cần bỏ qua khi commit.
+├── mvnw                       # File script Maven Wrapper cho Linux/Mac.
+├── mvnw.cmd                   # File script Maven Wrapper cho Windows.
+├── nbactions.xml              # Cấu hình cho NetBeans (nếu dùng IDE này).
+├── pom.xml                    # File cấu hình Maven (dependencies, plugins, build,...).
+└── README.md                  # Tài liệu mô tả dự án.
 ```
 
 ## Cấu hình
