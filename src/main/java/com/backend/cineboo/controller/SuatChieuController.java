@@ -191,13 +191,36 @@ public class SuatChieuController {
         //For now, not implemented
         //just to be sure create new suatchieu
 
-        SuatChieu latestSuatchieu = suatChieuRepository.getLatestSuatChieuByPhongChieu(addSuatChieuDTO.getId_PhongChieu().toString()).orElse(null);
-        LocalDateTime latestDateOfSuatChieu = latestSuatchieu.getThoiGianChieu();
-        LocalDateTime latestAllowedDate = latestDateOfSuatChieu.plusMinutes(phim.getThoiLuong());
-        if (
-                latestSuatchieu == null
-                        || thoiGianChieu.isAfter(latestAllowedDate)
-        ) {
+
+        List<SuatChieu> suatChieuList = suatChieuRepository.getAllAfterOrOnTodayAndById_PhongChieu(suatChieu.getId_PhongChieu().toString());
+        boolean allowNewSuatChieu = false;
+        for (int i = 0; i < suatChieuList.size(); i++) {
+            if (i == 0) { //Trước suất chiếu cũ nhất
+                if (thoiGianChieu.plusMinutes(suatChieu.getPhim().getThoiLuong())
+                        .isBefore(suatChieuList.get(0).getThoiGianChieu())) {
+                    allowNewSuatChieu = true;
+                    break;
+                }
+            } else if (i == suatChieuList.size() - 1) { // Sau suất chiếu mới nhất
+                SuatChieu lastSuatChieu = suatChieuList.get(i);
+                if (thoiGianChieu
+                        .isAfter(lastSuatChieu.getThoiGianChieu()
+                                .plusMinutes(lastSuatChieu.getPhim().getThoiLuong()))
+                ) {
+                    allowNewSuatChieu = true;
+                    break;
+                }
+            } else { // Nằm giữa các suất chiếu
+                SuatChieu suatChieuBefore = suatChieuList.get(i - 1);
+                SuatChieu suatChieuAfter = suatChieuList.get(i);
+                if (thoiGianChieu.isAfter(suatChieuBefore.getThoiGianChieu().plusMinutes(suatChieuBefore.getPhim().getThoiLuong()))
+                        && thoiGianChieu.isBefore(suatChieuAfter.getThoiGianChieu())) {
+                    allowNewSuatChieu = true;
+                    break;
+                }
+            }
+        }
+        if (allowNewSuatChieu) {
             try {
                 SuatChieu newlyAddedSuatChieu = suatChieuRepository.save(suatChieu);
                 // Đã có suất chiếu sẽ phải có ghế
@@ -218,7 +241,7 @@ public class SuatChieuController {
             }
 
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Yêu cầu thời gian chiếu phải sau: " + latestAllowedDate);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Không có khung giờ trống cho suatchieu mới");
     }
 
     /**
@@ -386,7 +409,7 @@ public class SuatChieuController {
     /**
      * Thêm nhiều suất chiếu mới.
      *
-     * @param AddMultipleSuatChieuDTO Thông tin suất chiếu mới.
+     * @param addMultipleSuatChieuDTO Thông tin suất chiếu mới.
      * @param bindingResult           Kết quả xác thực.
      * @return SuatChieu đã thêm hoặc phản hồi lỗi.
      */
@@ -428,14 +451,35 @@ public class SuatChieuController {
             suatChieu.setId_PhongChieu(addMultipleSuatChieuDTO.getId_PhongChieu());
             suatChieu.setTrangThaiSuatChieu(0);
 
-            suatChieu.setThoiGianChieu(thoiGianChieu);
-            SuatChieu latestSuatchieu = suatChieuRepository.getLatestSuatChieuByPhongChieu(addMultipleSuatChieuDTO.getId_PhongChieu().toString()).orElse(null);
-            LocalDateTime latestDateOfSuatChieu = latestSuatchieu.getThoiGianChieu();
-            LocalDateTime latestAllowedDate = latestDateOfSuatChieu.plusMinutes(phim.getThoiLuong());
-            if (
-                    latestSuatchieu == null
-                            || thoiGianChieu.isAfter(latestAllowedDate)
-            ) {
+            List<SuatChieu> suatChieuList = suatChieuRepository.getAllAfterOrOnTodayAndById_PhongChieu(suatChieu.getId_PhongChieu().toString());
+            boolean allowNewSuatChieu = false;
+            for (int x = 0; x < suatChieuList.size(); x++) {
+                if (x == 0) { //Trước suất chiếu cũ nhất
+                    if (thoiGianChieu.plusMinutes(suatChieu.getPhim().getThoiLuong())
+                            .isBefore(suatChieuList.get(0).getThoiGianChieu())) {
+                        allowNewSuatChieu = true;
+                        break;
+                    }
+                } else if (x == suatChieuList.size() - 1) { // Sau suất chiếu mới nhất
+                    SuatChieu lastSuatChieu = suatChieuList.get(x);
+                    if (thoiGianChieu
+                            .isAfter(lastSuatChieu.getThoiGianChieu()
+                                    .plusMinutes(lastSuatChieu.getPhim().getThoiLuong()))
+                    ) {
+                        allowNewSuatChieu = true;
+                        break;
+                    }
+                } else { // Nằm giữa các suất chiếu
+                    SuatChieu suatChieuBefore = suatChieuList.get(x - 1);
+                    SuatChieu suatChieuAfter = suatChieuList.get(x);
+                    if (thoiGianChieu.isAfter(suatChieuBefore.getThoiGianChieu().plusMinutes(suatChieuBefore.getPhim().getThoiLuong()))
+                            && thoiGianChieu.isBefore(suatChieuAfter.getThoiGianChieu())) {
+                        allowNewSuatChieu = true;
+                        break;
+                    }
+                }
+            }
+            if (allowNewSuatChieu) {
                 try {
                     SuatChieu newlyAddedSuatChieu = suatChieuRepository.save(suatChieu);
                     // Đã có suất chiếu sẽ phải có ghế
@@ -452,7 +496,7 @@ public class SuatChieuController {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đã tồn tại phim trong khung giờ này");
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Thời gian chiếu không hợp lệ(" + thoiGianChieu + "). Yêu cầu thời gian chiếu phải sau: " + latestAllowedDate+" . Các bản ghi sau khoảng thời gian("+thoiGianChieu+") không được lưu");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Thời gian chiếu không hợp lệ(" + thoiGianChieu +"). Đã có suất chiếu tồn tại trong khung giờ này");
             }
         }
         return ResponseEntity.status(HttpStatus.OK).body("Thêm thành công các suất chiếu: " + Arrays.toString(maSuatChieus.toArray()));
