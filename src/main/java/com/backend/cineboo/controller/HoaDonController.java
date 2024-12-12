@@ -829,12 +829,14 @@ public class HoaDonController {
         if (StringUtils.isBlank(binFilePath)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gặp lỗi trong quá trình xuất vé");
         }
-        hoaDon.setTrangThaiHoaDon(3);
+
 
         File binFile = new File(binFilePath);
 
         try {
             if (binFile.exists()) {
+                hoaDon.setTrangThaiHoaDon(3);
+                hoaDonRepository.save(hoaDon);
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + binFile.getName() + "\"")
                         .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -864,12 +866,14 @@ public class HoaDonController {
         if (StringUtils.isBlank(binFilePath)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gặp lỗi trong quá trình xuất vé");
         }
-        hoaDon.setTrangThaiHoaDon(3);
+
 
         File binFile = new File(binFilePath);
 
         try {
             if (binFile.exists()) {
+                hoaDon.setTrangThaiHoaDon(3);
+                hoaDonRepository.save(hoaDon);
                 byte[] rawBytes = Files.readAllBytes(binFile.toPath());
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + binFile.getName() + "\"")
