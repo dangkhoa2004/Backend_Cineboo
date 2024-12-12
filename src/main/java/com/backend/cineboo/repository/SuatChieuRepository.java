@@ -22,6 +22,8 @@ public interface SuatChieuRepository extends JpaRepository<SuatChieu,Long> {
     @Query(value = "SELECT * FROM SuatChieu WHERE Date(ThoiGianChieu)= ? ",nativeQuery = true)
     List<SuatChieu> findByThoiGianChieu(String thoiGianChieu);
 
-    @Query(value = "SELECT * from suatchieu where ID_PhongChieu= ? order by suatchieu.ThoiGianChieu DESC limit 1",nativeQuery = true)
-    Optional<SuatChieu> getLatestSuatChieuByPhongChieu( String id_PhongChieu);
+
+
+    @Query(value = "SELECT * FROM suatchieu WHERE thoigianchieu >= CURDATE() AND ID_PhongChieu = ? ORDER BY ThoiGianChieu ASC", nativeQuery = true)
+    List<SuatChieu> getAllAfterOrOnTodayAndById_PhongChieu(String id_PhongChieu);
 }
