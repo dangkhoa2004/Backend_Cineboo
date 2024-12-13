@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 13, 2024 lúc 05:31 AM
+-- Thời gian đã tạo: Th12 13, 2024 lúc 07:04 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -158,24 +158,31 @@ CREATE TABLE `danhsachtlphim` (
 --
 
 INSERT INTO `danhsachtlphim` (`ID`, `ID_Phim`, `ID_TLPhim`, `TrangThai`) VALUES
-(7, 4, 1, 1),
-(16, 5, 1, 1),
-(17, 5, 3, 1),
-(18, 6, 1, 1),
-(19, 7, 2, 1),
-(20, 7, 4, 1),
-(21, 8, 2, 1),
-(22, 8, 4, 1),
 (23, 9, 2, 1),
 (24, 9, 4, 1),
 (27, 10, 2, 1),
 (28, 10, 4, 1),
-(32, 1, 3, 1),
-(33, 1, 2, 1),
-(34, 2, 2, 1),
-(35, 2, 4, 1),
-(36, 3, 4, 1),
-(37, 3, 3, 1);
+(38, 1, 3, 1),
+(39, 2, 2, 1),
+(40, 3, 3, 1),
+(41, 3, 6, 1),
+(42, 4, 2, 1),
+(43, 5, 4, 1),
+(44, 5, 5, 1),
+(45, 6, 3, 1),
+(46, 7, 4, 1),
+(47, 7, 5, 1),
+(48, 8, 2, 1),
+(49, 8, 5, 1),
+(50, 44, 2, 1),
+(51, 44, 5, 1),
+(52, 44, 4, 1),
+(53, 45, 3, 1),
+(59, 48, 4, 1),
+(60, 48, 5, 1),
+(61, 46, 6, 1),
+(62, 47, 5, 1),
+(63, 47, 4, 1);
 
 -- --------------------------------------------------------
 
@@ -1791,16 +1798,19 @@ CREATE TABLE `phim` (
 --
 
 INSERT INTO `phim` (`ID`, `MaPhim`, `TenPhim`, `AnhPhim`, `DienVien`, `Nam`, `NoiDungMoTa`, `Trailer`, `NgayRaMat`, `ThoiLuong`, `QuocGia`, `NoiDung`, `GioiHanDoTuoi`, `TrangThai`, `Diem`) VALUES
-(1, 'MVS0045', 'Linh Miêu: Quỷ Nhập Tràng', 'https://cdn.galaxycine.vn/media/2024/11/14/linh-mieu-2_1731569950588.jpg', 'Dien Vien A', 2024, '', '', '2024-01-01', 120, 'Việt Nam', '', 2, 1, 9.00),
-(2, 'MVS0045', 'Hành trình của Moana 2', 'https://cdn.galaxycine.vn/media/2024/12/4/moana-2-500_1733308287086.jpg', 'Dien Vien B', 2024, 'Mo ta phim B', 'trailer_b.mp4', '2024-01-01', 150, 'My', 'Noi dung phim B', 3, 1, 4.00),
-(3, 'MVS0045', 'Chiến Địa Tử Thi', 'https://cdn.galaxycine.vn/media/2024/11/19/chien-dia-tu-thi-500_1732002114850.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
-(4, 'PH004', 'Cười Xuyên Biên Giới', 'https://cdn.galaxycine.vn/media/2024/11/12/cuoi-xuyen-bien-gioi-500_1731395845993.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
-(5, 'PH005', 'Wicked', 'https://cdn.galaxycine.vn/media/2024/10/23/wicked-500_1729656608464.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
-(6, 'PH006', 'Quỷ Treo Đầu', 'https://cdn.galaxycine.vn/media/2024/11/20/qu-treo-dau-500_1732094526458.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
-(7, 'PH007', 'BLue Preiod', 'https://cdn.galaxycine.vn/media/2024/11/21/blue-period-500_1732162662218.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
-(8, 'PH008', 'Mật Mã Đỏ', 'https://cdn.galaxycine.vn/media/2024/11/8/red-one-500_1731035309958.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
-(44, 'MVS0044', 'Công Tử Bạc Liêu', 'https://cdn.galaxycine.vn/media/2024/11/15/cong-tu-bac-lieu-500_1731641572864.jpg', 'Song Luân, Kaiti Nguyễn', 2024, '', '', '2024-12-06', 113, 'Việt Nam', '', 3, 1, 7.20),
-(45, 'MVS0045', 'Tết Âm Hồn', 'https://cdn.galaxycine.vn/media/2024/11/27/tet-am-hon-500_1732679184107.jpg', 'Donny Alamsyah, Fauzan Nasrul, Anantya Kirana', 2024, 'test', 'test.com', '2024-12-10', 120, 'test', 'test', 2, 1, 9.10);
+(1, 'MVS0045', 'Linh Miêu: Quỷ Nhập Tràng', 'https://cdn.galaxycine.vn/media/2024/11/14/linh-mieu-2_1731569950588.jpg', 'Dien Vien A', 2024, '', '', '2024-11-19', 109, 'Việt Nam', 'Linh Miêu: Quỷ Nhập Tràng lấy cảm hứng từ truyền thuyết dân gian về “quỷ nhập tràng” để xây dựng cốt truyện. Phim lồng ghép những nét văn hóa đặc trưng của Huế như nghệ thuật khảm sành - một văn hóa đặc sắc của thời nhà Nguyễn, đề cập đến các vấn đề về giai cấp và quan điểm trọng nam khinh nữ. Đặc biệt, hình ảnh rước kiệu thây ma và những hình nhân giấy không chỉ biểu trưng cho tai ương hay điềm dữ mà còn là hiện thân của nghiệp quả.', 2, 1, 9.00),
+(2, 'MVS0045', 'Hành trình của Moana 2', 'https://cdn.galaxycine.vn/media/2024/12/4/moana-2-500_1733308287086.jpg', 'Dien Vien B', 2024, '', 'trailer_b.mp4', '2024-11-29', 99, 'My', '“Hành Trình của Moana 2” là màn tái hợp của Moana và Maui sau 3 năm, trở lại trong chuyến phiêu lưu cùng với những thành viên mới. Theo tiếng gọi của tổ tiên, Moana sẽ tham gia cuộc hành trình đến những vùng biển xa xôi của Châu Đại Dương và sẽ đi tới vùng biển nguy hiểm, đã mất tích từ lâu.', 3, 1, 4.00),
+(3, 'MVS0045', 'Chiến Địa Tử Thi', 'https://cdn.galaxycine.vn/media/2024/11/19/chien-dia-tu-thi-500_1732002114850.jpg', 'Dien Vien C', 2024, '', '', '2024-01-01', 105, 'Thái Lan', 'Operation Undead / Chiến Địa Tử Thi lấy bối cảnh miền Nam Thái Lan trong một cuộc xâm lược ít được biết đến của quân đội Nhật Bản thời kỳ Thế chiến 2. Mek (Nonkul) là một hạ sĩ quan trong quân đội Thái Lan mang tình yêu lớn với đất nước, sẵn sàng hy sinh thân mình vì đại cuộc. Ngược lại, người em trai Mok (Awat Rattanaphinta) là một chàng trai trẻ thích tự do, không bao giờ muốn trở thành một người lính như cha và anh trai mình. Đối với Mok, việc tham gia chiến tranh giống như vứt bỏ mạng sống một cách vô ích. Tuy nhiên, Mok không may bị nhiễm bệnh và biến thành một xác sống đói ăn, điên loạn tấn công con người. Cùng lúc đó, Mek nhận lệnh gia nhập một đơn vị bí ẩn của Nhật Bản để truy lùng những người bị nhiễm bệnh, anh nhận ra người em trai Mok nằm trong danh sách mục tiêu. Khi đứng giữa tình thân và sự an nguy của đất nước, Mek sẽ đưa ra lựa chọn như thế nào?', 2, 1, 5.00),
+(4, 'MVS0045', 'Cười Xuyên Biên Giới', 'https://cdn.galaxycine.vn/media/2024/11/12/cuoi-xuyen-bien-gioi-500_1731395845993.jpg', 'Dien Vien C', 2024, '', 'trailer_c.mp4', '2024-11-13', 113, 'Hàn Quốc', 'Cười Xuyên Biên Giới kể về hành trình của Jin-bong (Ryu Seung-ryong) - cựu vô địch bắn cung quốc gia, sau khi nghỉ hưu, anh đã trở thành một nhân viên văn phòng bình thường. Đứng trước nguy cơ bị sa thải, Jin-bong phải nhận một nhiệm vụ bất khả thi là bay đến nửa kia của trái đất trong nỗ lực tuyệt vọng để sinh tồn.  Sống sót sau một sự cố đe doạ tính mạng, Jin-bong đã “hạ cánh” xuống khu rừng Amazon, nơi anh gặp bộ ba thổ dân bản địa có kỹ năng bắn cung thượng thừa: Sika, Eeba và Walbu. Tin rằng đã tìm ra cách để tự cứu mình, Jin-bong hợp tác với phiên dịch ngáo ngơ Bbang-sik (Jin Sun-kyu) và đưa ba chiến thần cung thủ đến Hàn Quốc cho một nhiệm vụ táo bạo.\n', 3, 1, 5.00),
+(5, 'MVS0045', 'Wicked', 'https://cdn.galaxycine.vn/media/2024/10/23/wicked-500_1729656608464.jpg', 'Dien Vien C', 2024, '', 'trailer_c.mp4', '2024-11-22', 161, 'Mỹ', 'Wicked, câu chuyện chưa kể về các phù thủy xứ Oz, có sự tham gia của nữ viên viên Cynthia Erivo người từng đoạt giải Emmy, Grammy và Tony trong vai Elphaba, một phù thủy trẻ với làn da xanh đặc biệt, người vẫn chưa khám phá ra sức mạnh tiềm ẩn bên trong mình và “công chúa nhạc pop” Ariana Grande trong vai Glinda, một phù thủy trẻ nổi tiếng, được tô điểm bởi đặc quyền và tham vọng, người vẫn chưa khám phá ra trái tim thực sự của mình.', 3, 1, 5.00),
+(6, 'MVS0045', 'Quỷ Treo Đầu', 'https://cdn.galaxycine.vn/media/2024/11/20/qu-treo-dau-500_1732094526458.jpg', 'Dien Vien C', 2024, '', '', '2024-11-29', 97, 'Thái Lan', 'Petai & Nicha - cặp đôi trẻ đẹp liên tục bị quấy phá sau khi chuyển đến ngôi nhà gia truyền của Nicha.Từ những tiếng động cót két chói tai đến những cái chết mất xác; tất cả đều xuất phát từ một lời nguyền cổ xưa ma quái.', 2, 1, 5.00),
+(7, 'MVS0045', 'BLue Preiod', 'https://cdn.galaxycine.vn/media/2024/11/21/blue-period-500_1732162662218.jpg', 'Dien Vien C', 2024, '', '', '2024-11-27', 115, 'Nhật Bản', 'Dựa trên bộ manga ăn khách cùng tên của tác giả Yamaguchi Tsubasa đã chiến thắng giải Manga Taisho năm 2020. Dưới vỏ bọc của một nam sinh xuất sắc, Yatora Yaguchi luôn cố gắng hết sức để làm hài lòng mọi người. Cậu chưa bao giờ cảm thấy mình thật sự đang sống cho đến khi cậu bắt đầu vẽ bức tranh về khung cảnh sáng sớm dưới màu xanh huyền ảo tại Shibuya. Lần đầu tiên trong cuộc đời tăm tối của mình, Yatora nhận ra được nhịp đập trái tim mạnh mẽ dành cho hội họa và nghệ thuật. \"Tôi không phải thiên tài, nhưng tôi sẽ phấn đấu cho đến khi trở thành thiên tài!\"', 1, 1, 5.00),
+(8, 'MVS0045', 'Mật Mã Đỏ', 'https://cdn.galaxycine.vn/media/2024/11/8/red-one-500_1731035309958.jpg', 'Dien Vien C', 2024, '', 'trailer_c.mp4', '2024-11-07', 123, 'Mỹ', 'Sau khi Ông già Noel (mật danh: Red One) bị bắt cóc, Trưởng An ninh Bắc Cực (Dwayne Johnson) phải hợp tác với thợ săn tiền thưởng khét tiếng nhất thế giới (Chris Evans) trong một nhiệm vụ kịch tính xuyên lục địa để giải cứu Giáng Sinh.\n', 3, 1, 5.00),
+(44, 'MVS0045', 'Công Tử Bạc Liêu', 'https://cdn.galaxycine.vn/media/2024/11/15/cong-tu-bac-lieu-500_1731641572864.jpg', 'Song Luân, Kaiti Nguyễn', 2024, '', '', '2024-12-06', 113, 'Việt Nam', 'Lấy cảm hứng từ giai thoại nổi tiếng của nhân vật được mệnh danh là thiên hạ đệ nhất chơi ngông, Công Tử Bạc Liêu là bộ phim tâm lý hài hước, lấy bối cảnh Nam Kỳ Lục Tỉnh xưa của Việt Nam. BA HƠN - Con trai được thương yêu hết mực của ông Hội đồng Lịnh vốn là chủ ngân hàng đầu tiên tại Việt Nam, sau khi du học Pháp về đã sử dụng cả gia sản của mình vào những trò vui tiêu khiển, ăn chơi trác tán – nên được người dân gọi bằng cái tên Công Tử Bạc Liêu.\n\nXem thêm tại: https://www.galaxycine.vn/phim/cong-tu-bac-lieu/', 1, 1, 7.20),
+(45, 'MVS0045', 'Tết Âm Hồn', 'https://cdn.galaxycine.vn/media/2024/11/27/tet-am-hon-500_1732679184107.jpg', 'Donny Alamsyah, Fauzan Nasrul, Anantya Kirana', 2024, '', '', '2024-12-06', 99, 'Indonesia', 'Lấy cảm hứng từ giai thoại nổi tiếng của nhân vật được mệnh danh là thiên hạ đệ nhất chơi ngông, Công Tử Bạc Liêu là bộ phim tâm lý hài hước, lấy bối cảnh Nam Kỳ Lục Tỉnh xưa của Việt Nam. BA HƠN - Con trai được thương yêu hết mực của ông Hội đồng Lịnh vốn là chủ ngân hàng đầu tiên tại Việt Nam, sau khi du học Pháp về đã sử dụng cả gia sản của mình vào những trò vui tiêu khiển, ăn chơi trác tán – nên được người dân gọi bằng cái tên Công Tử Bạc Liêu.\n\nXem thêm tại: https://www.galaxycine.vn/phim/cong-tu-bac-lieu/', 2, 1, 9.10),
+(46, 'MVS0048', 'Kraven - Thợ Săn Thủ Lĩnh', 'https://cdn.galaxycine.vn/media/2024/11/7/kraven-the-hunter-500_1730972945631.jpg', 'Aaron Taylor Johnsonm, Russell Crowe', 2024, '', '', '2024-12-13', 127, 'Mỹ', 'Kraven the Hunter là câu chuyện đầy khốc liệt và hoành tráng về sự hình thành của một trong những phản diện biểu tượng nhất của Marvel - kẻ thù truyền kiếp của Spiderman. Aaron Taylor-Johnson đảm nhận vai Kraven, một người đàn ông có người cha mafia vô cùng tàn nhẫn, Nikolai Kravinoff (Russell Crowe) - người đã đưa anh vào con đường báo thù với những hệ quả tàn khốc. Điều này thúc đẩy anh không chỉ trở thành thợ săn vĩ đại nhất thế giới, mà còn là một trong những nhân vật đáng sợ nhất.', 2, 1, 8.50),
+(47, 'MVS0048', 'Gia Đình Hoàn Hảo', 'https://cdn.galaxycine.vn/media/2024/12/11/gia-dinh-hoan-hao-500_1733887353260.jpg', 'Kim Hee Ae, Jang Dong Gun, Sul Kyoung Gu', 2024, '', '', '2024-12-13', 104, 'Hàn Quốc', 'Jae-wan là một luật sư chuyên bào chữa thành công cho những vụ án giết người. Em trai Jae-wan là một bác sĩ lương tri, luôn ưu tiên và đặt bệnh nhân lên trên lợi ích của chính mình. Bất ngờ, một sự việc nghiêm trọng giữa hai người con của hai anh em đã diễn ra và đặt ra cho họ một bài toán lương tâm về hướng giải quyết.', 1, 1, 8.00),
+(48, 'MVS0048', 'Mufasa: Vua Sư Tử', 'https://cdn.galaxycine.vn/media/2024/12/11/mufasa-500_1733891077187.jpg', 'Aaron Pierre', 2024, '', '', '2024-12-18', 1, 'Mỹ', 'Thương hiệu kinh điển và nổi tiếng nhất nhì hãng Disney sẽ trở lại vào cuối năm nay với tác phẩm Mufasa: The Lion King. Phim kể về cuộc đời Mufasa – người cha đáng kính của Simba. Dù là tiền truyện, Mufasa: The Lion King vẫn lồng ghép nhân vật quen thuộc từ The Lion King. Khi Rafiki sẽ kể cho con gái Simba và Nala – cô bé Kiara về ông nội. Cùng lúc ấy, cặp đôi quen thuộc Timon và Pumbaa sẽ ở cạnh thêm thắt chi tiết hài hước. Nhiều năm trước câu chuyện chính, chú sư tử con Mufasa bơ vơ trơ trọi giữa đồng cỏ châu Phi. Dù không mang dòng máu hoàng gia nhưng Mufasa trở thành vua sư tử vĩ đại sau một hành trình đầy hấp dẫn và kịch tính.   Teaser phim đem đến cho công chúng trải nghiệm mãn nhãn nhờ phần kĩ xảo hoành tráng qua cảnh sắc thiên nhiên hùng vĩ, trải dài khắp các mùa với đủ địa hình đồi núi, thác nước, sông, rừng cây, đầm lầy… châu Phi. Mufasa gặp vô vàn tình huống giật gân như cuộc đối đầu con cá sấu khát máu hay cuộc di tản của đàn voi khổng lồ… cũng như hình ảnh gợi nhớ The Lion King như cuộc dạo chơi trên lưng đàn hà mã hay đủ loại động vật cùng nhau nhảy múa. Đặc biệt, Mufasa: The Lion King sẽ còn hé lộ mối quan hệ giữa hai anh em Mufasa và Taka (Kelvin Harrison Jr.). Trưởng thành và trải qua nhiều biến cố, tại sao Taka lại trở thành kẻ phản diện Scar tàn nhẫn trong The Lion King?  ', 3, 1, 9.90);
 
 -- --------------------------------------------------------
 
@@ -1988,7 +1998,7 @@ CREATE TABLE `qrtz_scheduler_state` (
 --
 
 INSERT INTO `qrtz_scheduler_state` (`SCHED_NAME`, `INSTANCE_NAME`, `LAST_CHECKIN_TIME`, `CHECKIN_INTERVAL`) VALUES
-('MyScheduler', 'LAPTOP-4PHR6C801734054355760', 1734064305407, 7500);
+('MyScheduler', 'LAPTOP-4PHR6C801734054355760', 1734069876129, 7500);
 
 -- --------------------------------------------------------
 
@@ -2497,7 +2507,7 @@ ALTER TABLE `danhsachhoanve`
 -- AUTO_INCREMENT cho bảng `danhsachtlphim`
 --
 ALTER TABLE `danhsachtlphim`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT cho bảng `dotuoi`
@@ -2563,7 +2573,7 @@ ALTER TABLE `phanloaitaikhoan`
 -- AUTO_INCREMENT cho bảng `phim`
 --
 ALTER TABLE `phim`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT cho bảng `phongchieu`
