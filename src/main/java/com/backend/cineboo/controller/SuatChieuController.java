@@ -460,6 +460,16 @@ public class SuatChieuController {
                         allowNewSuatChieu = true;
                         break;
                     }
+                    if (suatChieuList.size() == 1) {
+                        SuatChieu lastSuatChieu = suatChieuList.get(x);
+                        if (thoiGianChieu
+                                .isAfter(lastSuatChieu.getThoiGianChieu()
+                                        .plusMinutes(lastSuatChieu.getPhim().getThoiLuong()))
+                        ) {
+                            allowNewSuatChieu = true;
+                            break;
+                        }
+                    }
                 } else if (x == suatChieuList.size() - 1) { // Sau suất chiếu mới nhất
                     SuatChieu lastSuatChieu = suatChieuList.get(x);
                     if (thoiGianChieu
@@ -469,11 +479,18 @@ public class SuatChieuController {
                         allowNewSuatChieu = true;
                         break;
                     }
+                    SuatChieu suatChieuBefore = suatChieuList.get(x - 1);
+                    SuatChieu suatChieuAfter = suatChieuList.get(x);
+                    if (thoiGianChieu.isAfter(suatChieuBefore.getThoiGianChieu().plusMinutes(suatChieuBefore.getPhim().getThoiLuong()))
+                            && thoiGianChieu.plusMinutes(suatChieu.getPhim().getThoiLuong()).isBefore(suatChieuAfter.getThoiGianChieu())) {
+                        allowNewSuatChieu = true;
+                        break;
+                    }
                 } else { // Nằm giữa các suất chiếu
                     SuatChieu suatChieuBefore = suatChieuList.get(x - 1);
                     SuatChieu suatChieuAfter = suatChieuList.get(x);
                     if (thoiGianChieu.isAfter(suatChieuBefore.getThoiGianChieu().plusMinutes(suatChieuBefore.getPhim().getThoiLuong()))
-                            && thoiGianChieu.isBefore(suatChieuAfter.getThoiGianChieu())) {
+                            && thoiGianChieu.plusMinutes(suatChieu.getPhim().getThoiLuong()).isBefore(suatChieuAfter.getThoiGianChieu())) {
                         allowNewSuatChieu = true;
                         break;
                     }
@@ -496,7 +513,7 @@ public class SuatChieuController {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Đã tồn tại phim trong khung giờ này");
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Thời gian chiếu không hợp lệ(" + thoiGianChieu +"). Đã có suất chiếu tồn tại trong khung giờ này");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Thời gian chiếu không hợp lệ(" + thoiGianChieu + "). Đã có suất chiếu tồn tại trong khung giờ này");
             }
         }
         return ResponseEntity.status(HttpStatus.OK).body("Thêm thành công các suất chiếu: " + Arrays.toString(maSuatChieus.toArray()));
