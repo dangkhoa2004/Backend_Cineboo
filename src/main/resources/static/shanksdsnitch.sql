@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 11, 2024 lúc 07:46 AM
+-- Thời gian đã tạo: Th12 13, 2024 lúc 05:31 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -112,7 +112,11 @@ INSERT INTO `chitiethoadon` (`ID`, `ID_HoaDon`, `ID_GheAndSuatChieu`, `TrangThai
 (103, 89, 204, 1, 1000.00),
 (104, 91, 301, 0, 1000.00),
 (105, 92, 303, 1, 1000.00),
-(106, 92, 304, 1, 1000.00);
+(106, 92, 304, 1, 1000.00),
+(107, 93, 1, 0, 1000.00),
+(108, 93, 2, 0, 1000.00),
+(109, 94, 1, 0, 1000.00),
+(110, 94, 11, 0, 1000.00);
 
 -- --------------------------------------------------------
 
@@ -154,12 +158,6 @@ CREATE TABLE `danhsachtlphim` (
 --
 
 INSERT INTO `danhsachtlphim` (`ID`, `ID_Phim`, `ID_TLPhim`, `TrangThai`) VALUES
-(1, 1, 1, 1),
-(2, 1, 2, 1),
-(3, 2, 1, 1),
-(4, 2, 3, 1),
-(5, 3, 4, 1),
-(6, 3, 5, 1),
 (7, 4, 1, 1),
 (16, 5, 1, 1),
 (17, 5, 3, 1),
@@ -171,7 +169,13 @@ INSERT INTO `danhsachtlphim` (`ID`, `ID_Phim`, `ID_TLPhim`, `TrangThai`) VALUES
 (23, 9, 2, 1),
 (24, 9, 4, 1),
 (27, 10, 2, 1),
-(28, 10, 4, 1);
+(28, 10, 4, 1),
+(32, 1, 3, 1),
+(33, 1, 2, 1),
+(34, 2, 2, 1),
+(35, 2, 4, 1),
+(36, 3, 4, 1),
+(37, 3, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -192,10 +196,7 @@ CREATE TABLE `dotuoi` (
 INSERT INTO `dotuoi` (`ID`, `MaDoTuoi`, `TenDoTuoi`) VALUES
 (1, 'DT001', 'R15'),
 (2, 'DT002', 'R18'),
-(3, 'DT003', 'R13'),
-(4, 'MD25', 'R25'),
-(5, 'DT296', 'R20'),
-(6, 'DT003', 'R200');
+(3, 'DT003', 'R13');
 
 -- --------------------------------------------------------
 
@@ -521,10 +522,10 @@ INSERT INTO `gheandsuatchieu` (`ID`, `ID_GHE`, `ID_SUATCHIEU`, `TRANGTHAIGHEANDS
 (104, 104, 12, 2),
 (105, 105, 12, 2),
 (106, 106, 12, 2),
-(107, 107, 12, 0),
-(108, 108, 12, 0),
-(109, 109, 12, 0),
-(110, 110, 12, 0),
+(107, 107, 12, 2),
+(108, 108, 12, 2),
+(109, 109, 12, 2),
+(110, 110, 12, 2),
 (111, 111, 12, 0),
 (112, 112, 12, 0),
 (113, 113, 12, 0),
@@ -1591,7 +1592,9 @@ INSERT INTO `hoadon` (`ID`, `ID_KhachHang`, `ID_Voucher`, `ID_PTTT`, `MaHoaDon`,
 (89, 1, NULL, 3, 'HD0088', 1, '2024-12-09 17:13:59', 10, 1000.00, 1),
 (90, 1, NULL, NULL, 'HD0089', 2, '2024-12-10 14:21:13', 20, 2000.00, 0),
 (91, 1, NULL, 3, 'HD0090', 1, '2024-12-10 14:30:55', 10, 1000.00, 0),
-(92, 1, NULL, 3, 'HD0091', 2, '2024-12-10 14:32:29', 20, 2000.00, 1);
+(92, 1, NULL, 3, 'HD0091', 2, '2024-12-10 14:32:29', 20, 2000.00, 1),
+(93, 1, NULL, 3, 'HD0092', 2, '2024-12-12 00:02:42', 20, 2000.00, 0),
+(94, 1, NULL, 3, 'HD0093', 2, '2024-12-12 10:27:56', 20, 2000.00, 0);
 
 -- --------------------------------------------------------
 
@@ -1622,11 +1625,12 @@ CREATE TABLE `khachhang` (
 --
 
 INSERT INTO `khachhang` (`ID`, `ID_PhanLoai`, `ID_TaiKhoan`, `MaKhachHang`, `Ten`, `TenDem`, `Ho`, `NgaySinh`, `SoDienThoai`, `GioiTinh`, `Email`, `DanToc`, `DiaChi`, `Diem`, `TrangThaiKhachHang`) VALUES
-(1, 1, 3, 'KH001', 'East', 'D', 'Look', '1995-05-05', '0900000001', 1, 'kh1@example.com', 'Kinh', 'Dia chi khach 1', 1011549, 1),
+(1, 1, 3, 'KH001', 'Khoa', 'Đăng', 'Cao', '2004-08-13', '0869938981', 1, '04dkhoa04@gmail.com', 'Kinh', 'Số Nhà 4B66, Ngõ 296 Ngô Gia Tự, Phường Cát Bi, Quận Hải An, Hải Phòng', 1011549, 1),
 (2, 2, 4, 'KH002', 'Le', 'Thi', 'E', '1996-06-06', '0900000002', 0, 'kh2@example.com', 'Kinh', 'Dia chi khach 2', 50, 1),
 (3, 1, 5, 'KH003', 'Rat', 'D', 'Shanks', '2024-11-08', '0192856725', 0, 'shanks@ratmail.com', 'Kinh', '5 Bailey Str.', 50, 0),
 (4, 1, 6, 'KH004', 'Stairs', 'D', 'Down', '2024-11-13', '0127682456', 0, 'DownDStairs@email.com', 'Kinh', 'East Blue', 30, 0),
-(5, 1, 11, 'KH005', 'string', 'string', 'string', '2024-11-13', '0908997890', 0, 'string@gmail.com', 'string', 'string', 0, 1);
+(5, 1, 11, 'KH005', 'string', 'string', 'string', '2024-11-13', '0908997890', 0, 'string@gmail.com', 'string', 'string', 0, 1),
+(6, 1, 13, 'KH006', 'Huy', 'Hoàng', 'Võ', '2004-08-13', '0869938981', 0, 'Huy@gmail.com', 'Kinh', 'Hải Phòng', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -1676,7 +1680,7 @@ CREATE TABLE `nhanvien` (
 --
 
 INSERT INTO `nhanvien` (`ID`, `ID_ChucVu`, `ID_TaiKhoan`, `MaNhanVien`, `Ten`, `TenDem`, `Ho`, `NgaySinh`, `GioiTinh`, `Email`, `DanToc`, `DiaChi`, `TrangThaiNhanVien`) VALUES
-(1, 1, 1, 'NV001', 'Dragon', 'Is A Fraud', 'frfr', '1990-01-01', 1, 'nv1@example.com', 'Kinh', 'Dia chi 1', 1),
+(1, 1, 1, 'KH001', 'Khoa', 'Đăng', 'Cao', '2004-08-13', 1, '04dkhoa04@gmail.com', 'Kinh', 'Số Nhà 4B66, Ngõ 296 Ngô Gia Tự, Phường Cát Bi, Quận Hải An, Hải Phòng', 1),
 (2, 2, 2, 'NV002', 'Le', 'Thi', 'B', '1992-02-02', 0, 'nv2@example.com', 'Kinh', 'Dia chi 2', 1),
 (7, 7, 12, 'NV003', 'Save Me', 'Too Hungry', 'I\'m not even a tester', '2024-11-13', 0, 'fml@email.com', 'Whatever', 'Earth', 1);
 
@@ -1787,9 +1791,9 @@ CREATE TABLE `phim` (
 --
 
 INSERT INTO `phim` (`ID`, `MaPhim`, `TenPhim`, `AnhPhim`, `DienVien`, `Nam`, `NoiDungMoTa`, `Trailer`, `NgayRaMat`, `ThoiLuong`, `QuocGia`, `NoiDung`, `GioiHanDoTuoi`, `TrangThai`, `Diem`) VALUES
-(1, 'linh-mieu', 'Linh Miêu: Quỷ Nhập Tràng', 'https://cdn.galaxycine.vn/media/2024/11/14/linh-mieu-2_1731569950588.jpg', 'Dien Vien A', 2024, '', '', '2024-01-01', 120, 'Việt Nam', '', 2, 1, 9.00),
-(2, 'PH002', 'Hành trình của Moana 2', 'https://cdn.galaxycine.vn/media/2024/12/4/moana-2-500_1733308287086.jpg', 'Dien Vien B', 2022, 'Mo ta phim B', 'trailer_b.mp4', '2024-01-01', 150, 'My', 'Noi dung phim B', 2, 1, 4.00),
-(3, 'PH003', 'Chiến Địa Tử Thi', 'https://cdn.galaxycine.vn/media/2024/11/19/chien-dia-tu-thi-500_1732002114850.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
+(1, 'MVS0045', 'Linh Miêu: Quỷ Nhập Tràng', 'https://cdn.galaxycine.vn/media/2024/11/14/linh-mieu-2_1731569950588.jpg', 'Dien Vien A', 2024, '', '', '2024-01-01', 120, 'Việt Nam', '', 2, 1, 9.00),
+(2, 'MVS0045', 'Hành trình của Moana 2', 'https://cdn.galaxycine.vn/media/2024/12/4/moana-2-500_1733308287086.jpg', 'Dien Vien B', 2024, 'Mo ta phim B', 'trailer_b.mp4', '2024-01-01', 150, 'My', 'Noi dung phim B', 3, 1, 4.00),
+(3, 'MVS0045', 'Chiến Địa Tử Thi', 'https://cdn.galaxycine.vn/media/2024/11/19/chien-dia-tu-thi-500_1732002114850.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
 (4, 'PH004', 'Cười Xuyên Biên Giới', 'https://cdn.galaxycine.vn/media/2024/11/12/cuoi-xuyen-bien-gioi-500_1731395845993.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
 (5, 'PH005', 'Wicked', 'https://cdn.galaxycine.vn/media/2024/10/23/wicked-500_1729656608464.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
 (6, 'PH006', 'Quỷ Treo Đầu', 'https://cdn.galaxycine.vn/media/2024/11/20/qu-treo-dau-500_1732094526458.jpg', 'Dien Vien C', 2024, 'Mo ta phim C', 'trailer_c.mp4', '2024-01-01', 90, 'Han Quoc', 'Noi dung phim C', 2, 1, 5.00),
@@ -1816,9 +1820,9 @@ CREATE TABLE `phongchieu` (
 --
 
 INSERT INTO `phongchieu` (`ID`, `MaPhong`, `TongSoGhe`, `TrangThaiPhongChieu`) VALUES
-(1, 'PC001', 100, 1),
-(2, 'PC002', 150, 1),
-(3, 'PC003', 200, 1),
+(1, 'PC001', 60, 1),
+(2, 'PC002', 60, 1),
+(3, 'PC003', 60, 1),
 (4, 'PhongAn', 20, 0),
 (5, 'PhongAn', 20, 0),
 (6, 'PC005', 20, 0);
@@ -1841,7 +1845,7 @@ CREATE TABLE `pttt` (
 --
 
 INSERT INTO `pttt` (`ID`, `MaPTTT`, `TenPTTT`, `TrangThaiPTTT`) VALUES
-(1, 'PT001', 'Tiền mặtt', 1),
+(1, 'PT001', 'Tiền mặt', 1),
 (2, 'PT002', 'Thẻ tín dụng', 1),
 (3, 'PT003', 'Chuyển khoản', 1),
 (4, 'PTTT5', 'Vay nợ', 0),
@@ -1984,7 +1988,7 @@ CREATE TABLE `qrtz_scheduler_state` (
 --
 
 INSERT INTO `qrtz_scheduler_state` (`SCHED_NAME`, `INSTANCE_NAME`, `LAST_CHECKIN_TIME`, `CHECKIN_INTERVAL`) VALUES
-('MyScheduler', 'LAPTOP-4PHR6C801733898965144', 1733899568528, 7500);
+('MyScheduler', 'LAPTOP-4PHR6C801734054355760', 1734064305407, 7500);
 
 -- --------------------------------------------------------
 
@@ -2114,23 +2118,23 @@ CREATE TABLE `suatchieu` (
 --
 
 INSERT INTO `suatchieu` (`ID`, `MaSuatChieu`, `ThoiGianChieu`, `ID_Phim`, `TrangThaiSuatChieu`, `ID_PhongChieu`) VALUES
-(1, 'MSC001', '2024-12-05 18:00:00', 1, 0, 1),
+(1, 'MSC001', '2024-12-12 18:00:00', 1, 0, 1),
 (2, 'MSC002', '2024-12-03 20:00:00', 2, 2, 1),
 (3, 'MSC003', '2024-11-30 21:00:00', 3, 2, NULL),
-(4, 'MSC004', '2024-12-01 18:00:00', 1, 1, NULL),
-(5, 'MSC005', '2024-12-02 18:00:00', 1, 1, NULL),
-(6, 'MSC006', '2025-01-05 20:00:01', 1, 2, NULL),
-(7, 'MSC007', '2024-12-01 05:30:47', 1, 1, NULL),
+(4, 'MSC004', '2024-12-12 08:00:00', 1, 1, NULL),
+(5, 'MSC005', '2024-12-17 10:00:00', 1, 1, NULL),
+(6, 'MSC006', '2024-12-16 12:00:00', 1, 2, NULL),
+(7, 'MSC007', '2024-12-15 14:00:00', 1, 1, NULL),
 (8, 'MSC008', '2024-12-03 09:49:42', 3, 0, NULL),
 (9, 'MSC009', '2024-12-03 09:49:42', 3, 0, NULL),
-(10, 'MSC0010', '2024-12-04 09:49:42', 3, 0, NULL),
+(10, 'MSC0010', '2024-12-12 09:49:42', 3, 0, NULL),
 (11, 'MSC0011', '2024-12-03 09:49:42', 2, 0, NULL),
 (12, 'MSC0012', '2024-12-03 09:49:42', 2, 0, 2),
-(13, 'MSC0013', '2024-12-07 08:22:13', 1, 0, 1),
+(13, 'MSC0013', '2024-12-13 20:00:00', 1, 0, 1),
 (15, 'MSC0014', '2024-12-09 09:11:05', 5, 0, NULL),
 (16, 'MSC0016', '2024-12-10 19:00:00', 5, 0, 1),
 (17, 'MSC0017', '2024-12-10 19:20:00', 6, 0, 1),
-(18, 'MSC0018', '2024-12-10 13:57:23', 1, 0, 2),
+(18, 'MSC0018', '2024-12-14 16:00:00', 1, 0, 2),
 (19, 'MSC0019', '2024-12-10 18:57:23', 10, 0, 2),
 (20, 'MSC0020', '2024-12-14 03:58:37', 10, 0, 1),
 (21, 'MSC0021', '2024-12-14 09:58:37', 10, 0, 1),
@@ -2172,7 +2176,8 @@ INSERT INTO `taikhoan` (`ID`, `TenDangNhap`, `MatKhau`, `TrangThaiTaiKhoan`, `ID
 (5, 'tk5', '$2a$10$cMVCilb3.wLa7GqntLvdxOGKUTqVsqbaks/pwkM.dzVf8.LIpFxnW', 1, 2, '', ''),
 (6, 'mk6', '$2a$10$MJbAM0LNIZx0kWA5SmAwcuPsAZYhMiQYXQU9bSbgEkyqYjbrETYfG', 0, 2, '', ''),
 (11, 'tk8', '$2a$10$umWGAOXhaS8Z.MKf5eCta.lHo.zjDaUOYXbxI2pLZV32FH0xkJeRm', 1, 2, '', ''),
-(12, 'tk7', '$2a$10$1iPL6RrmGBR7/ax0mY85o.8T2iWUso3ZpEq5FJcOf5yxy8WVg5Kfa', 1, 1, '', '');
+(12, 'tk7', '$2a$10$1iPL6RrmGBR7/ax0mY85o.8T2iWUso3ZpEq5FJcOf5yxy8WVg5Kfa', 1, 1, '', ''),
+(13, 'huy04', '$2a$10$CxV9hHHbFdLt6IwEPolcDODyhuZ9Gze1PN4ms/vL46hahxZxDf7CS', 1, 2, '', '');
 
 -- --------------------------------------------------------
 
@@ -2192,18 +2197,12 @@ CREATE TABLE `theloaiphim` (
 --
 
 INSERT INTO `theloaiphim` (`ID`, `MaTLPhim`, `TenTheLoai`, `TrangThai`) VALUES
-(1, 'R19+', 'Adultery', 1),
+(1, 'TL001', 'Ngoại tình', 1),
 (2, 'TL002', 'Hài hước', 1),
 (3, 'TL003', 'Kinh dị', 1),
 (4, 'TL004', 'Tâm lý', 1),
 (5, 'TL005', 'Tình cảm', 1),
-(6, 'TL001', 'Hành động', 1),
-(7, 'TL002', 'Hài hước', 1),
-(8, 'TL003', 'Kinh dị', 1),
-(9, 'TL004', 'Tâm lý', 1),
-(10, 'TL005', 'Tình cảm', 1),
-(11, 'TL0010', '?', 0),
-(12, 'TL0011', '??', 0);
+(6, 'TL006', 'Hành động', 1);
 
 -- --------------------------------------------------------
 
@@ -2230,7 +2229,7 @@ CREATE TABLE `voucher` (
 --
 
 INSERT INTO `voucher` (`ID`, `MaVoucher`, `GiaTriDoi`, `TruTienPhanTram`, `TruTienSo`, `SoTienToiThieu`, `GiamToiDa`, `NgayBatDau`, `NgayKetThuc`, `SoLuong`, `TrangThaiVoucher`) VALUES
-(1, 'VC001', 500, 10, NULL, 1.00, 50000.00, '2024-01-01', '2024-12-31', 9, 1),
+(1, 'VC001', 500, 10, 500.00, 500.00, 50000.00, '2024-01-01', '2025-01-01', 9, 1),
 (2, 'VC002', 1000, NULL, 12520.00, 50000.00, 20000.00, '2024-01-01', '2025-06-30', 1, 1),
 (3, 'VC003', 700, 5, NULL, 200000.00, 100000.00, '2024-02-01', '2024-12-22', 6, 1),
 (4, 'TestVoucher15', 1, 1, NULL, 0.00, 1.00, '2024-11-12', '2024-11-12', 10, 1),
@@ -2486,7 +2485,7 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT cho bảng `chitiethoadon`
 --
 ALTER TABLE `chitiethoadon`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
 
 --
 -- AUTO_INCREMENT cho bảng `danhsachhoanve`
@@ -2498,7 +2497,7 @@ ALTER TABLE `danhsachhoanve`
 -- AUTO_INCREMENT cho bảng `danhsachtlphim`
 --
 ALTER TABLE `danhsachtlphim`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT cho bảng `dotuoi`
@@ -2522,13 +2521,13 @@ ALTER TABLE `gheandsuatchieu`
 -- AUTO_INCREMENT cho bảng `hoadon`
 --
 ALTER TABLE `hoadon`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT cho bảng `khachhang`
 --
 ALTER TABLE `khachhang`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `khoqua`
@@ -2594,7 +2593,7 @@ ALTER TABLE `suatchieu`
 -- AUTO_INCREMENT cho bảng `taikhoan`
 --
 ALTER TABLE `taikhoan`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT cho bảng `theloaiphim`
