@@ -1,7 +1,7 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.NhanVienRegister;
-import com.backend.cineboo.dto.NhanVienRegister;
+import com.backend.cineboo.dto.UpdateNhanVienWithEmailAndWithoutChucVuAndTrangThaiAndMaNhanVien;
 import com.backend.cineboo.entity.*;
 import com.backend.cineboo.repository.ChucVuRepository;
 import com.backend.cineboo.repository.NhanVienRepository;
@@ -71,26 +71,30 @@ public class NhanVienController {
             taiKhoan.setOtp("");//None
             taiKhoan.setPhanLoaiTaiKhoan(new PhanLoaiTaiKhoan(Long.valueOf("1"), "NhanVien", 0));//Khách hàng = 2
             taiKhoan.setTrangThaiTaiKhoan(0);//Chưa kích hoạt
+            taiKhoan.setEmail(nhanVienRegister.getEmail());
             taiKhoanRepository.save(taiKhoan);//Tạo mới tài khoản
             String prefix = "NV00";
             //Create new NhanVien
             NhanVien newNhanVien = new NhanVien();
             String maNhanVien = String.valueOf(nhanVienRepository.getMaxTableId() + 1);
-            newNhanVien.setMaNhanVien(prefix+maNhanVien);
+            newNhanVien.setMaNhanVien(prefix + maNhanVien);
             newNhanVien.setTen(nhanVienRegister.getTen());
             newNhanVien.setTenDem(nhanVienRegister.getTenDem());
             newNhanVien.setHo(nhanVienRegister.getHo());
             newNhanVien.setNgaySinh(nhanVienRegister.getNgaySinh());
             newNhanVien.setGioiTinh(nhanVienRegister.getGioiTinh());
-            newNhanVien.setEmail(nhanVienRegister.getEmail());
             newNhanVien.setDanToc(nhanVienRegister.getDanToc());
             newNhanVien.setDiaChi(nhanVienRegister.getDiaChi());
+            newNhanVien.setSoDienThoai(nhanVienRegister.getSoDienThoai());
 
 
             Long idChucVu = nhanVienRegister.getIdChucVu();
-            PhanLoaiChucVu chucVu = chucVuRepository.findById(idChucVu).get();
-            newNhanVien.setChucVu(chucVu) ;
-           
+            PhanLoaiChucVu chucVu = chucVuRepository.findById(idChucVu).orElse(null);
+            if(chucVu==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim duoc chuc vu cua nhan vien nay");
+            }
+            newNhanVien.setChucVu(chucVu);
+
             NhanVien addedNhanVien = nhanVienRepository.save(newNhanVien);//Thêm profile khách hàng
             if (addedNhanVien != null) {
                 //Nếu thêm profile thành công
@@ -116,9 +120,9 @@ public class NhanVienController {
             description = "Vô hiệu hóa nhân viên\n\n" +
                     "Và tài khoản đi kèm(cái này chưa test).")
     @PutMapping("/disable/{id_NhanVien}")
-    public ResponseEntity disable(@PathVariable Long id_NhanVien){
-        ResponseEntity response = RepoUtility.findById(id_NhanVien,nhanVienRepository);
-        if(response.getStatusCode().is2xxSuccessful()){
+    public ResponseEntity disable(@PathVariable Long id_NhanVien) {
+        ResponseEntity response = RepoUtility.findById(id_NhanVien, nhanVienRepository);
+        if (response.getStatusCode().is2xxSuccessful()) {
             NhanVien nhanVien = (NhanVien) response.getBody();
 
             TaiKhoan taiKhoan = nhanVien.getTaiKhoan();
@@ -135,12 +139,14 @@ public class NhanVienController {
 
     @Operation(summary = "Update employee information", description = "Update employee details by ID.")
     @PutMapping("/update/{id}")
-    public ResponseEntity updateNhanVien(@Valid @RequestBody NhanVien nhanVien, BindingResult bindingResult, @PathVariable("id") Long id) {
+    public ResponseEntity updateNhanVien(@Valid @RequestBody UpdateNhanVienWithEmailAndWithoutChucVuAndTrangThaiAndMaNhanVien nhanVien, BindingResult bindingResult, @PathVariable("id") Long id) {
         Map<String, String> errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-
+        if(nhanVien.getId()!=id){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID không trùng khớp");
+        }
         ResponseEntity response = RepoUtility.findById(id, nhanVienRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             NhanVien toBeUpdated = (NhanVien) response.getBody();
@@ -149,10 +155,23 @@ public class NhanVienController {
             toBeUpdated.setHo(nhanVien.getHo());
             toBeUpdated.setNgaySinh(nhanVien.getNgaySinh());
             toBeUpdated.setGioiTinh(nhanVien.getGioiTinh());
-            toBeUpdated.setEmail(nhanVien.getEmail());
             toBeUpdated.setDanToc(nhanVien.getDanToc());
             toBeUpdated.setDiaChi(nhanVien.getDiaChi());
-            return ResponseEntity.ok(nhanVienRepository.save(toBeUpdated));
+            toBeUpdated.setSoDienThoai(nhanVien.getSoDienThoai());
+            TaiKhoan associatedTaiKhoan = toBeUpdated.getTaiKhoan();
+            if (associatedTaiKhoan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim duoc email lien ket voi nhan vien");
+            }
+            toBeUpdated = nhanVienRepository.save(toBeUpdated);
+            associatedTaiKhoan.setEmail(nhanVien.getEmail());
+            taiKhoanRepository.save(associatedTaiKhoan);
+            //fetch again to get full object from db
+            //It should exist anyway, unless some jerk deletes it right after the save operation
+            toBeUpdated = nhanVienRepository.findById(toBeUpdated.getId()).orElse(null);
+            if (toBeUpdated == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update thanh cong, nhung that bai khi fetch object tu database de tra ve trong ResponseEntity");
+            }
+            return ResponseEntity.ok(toBeUpdated);
         }
         return response;
     }

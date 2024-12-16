@@ -1,6 +1,7 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.KhachHangRegister;
+import com.backend.cineboo.dto.UpdateKhachHangDTOWithEmailAndWithoutPhanLoaiTaiKhoanAndTaiKhoan;
 import com.backend.cineboo.entity.KhachHang;
 import com.backend.cineboo.entity.PhanLoaiKhachHang;
 import com.backend.cineboo.entity.PhanLoaiTaiKhoan;
@@ -94,6 +95,7 @@ public class KhachHangController {
             taiKhoan.setOtp("");//None
             taiKhoan.setPhanLoaiTaiKhoan(new PhanLoaiTaiKhoan(Long.valueOf("2"), "KhachHang", 0));//Khách hàng = 2
             taiKhoan.setTrangThaiTaiKhoan(0);//Chưa kích hoạt
+            taiKhoan.setEmail(khachHangRegister.getEmail());
             taiKhoanRepository.save(taiKhoan);//Tạo mới tài khoản
             String prefix = "KH00";
             //Create new KhachHang
@@ -106,7 +108,6 @@ public class KhachHangController {
             newKhachHang.setNgaySinh(khachHangRegister.getNgaySinh());
             newKhachHang.setSoDienThoai(khachHangRegister.getSoDienThoai());
             newKhachHang.setGioiTinh(khachHangRegister.getGioiTinh());
-            newKhachHang.setEmail(khachHangRegister.getEmail());
             newKhachHang.setDanToc(khachHangRegister.getDanToc());
             newKhachHang.setDiaChi(khachHangRegister.getDiaChi());
             newKhachHang.setDiem(0);
@@ -135,28 +136,36 @@ public class KhachHangController {
     @Operation(summary = "Cập nhật thông tin khách hàng",
             description = "Cập nhật thông tin khách hàng dựa trên ID khách hàng.")
     @PutMapping("/update/{id}")
-    public ResponseEntity updateKhachHang(@Valid @RequestBody KhachHang khachHang, BindingResult bindingResult, @PathVariable("id") Long id) {
+    public ResponseEntity updateKhachHang(@Valid @RequestBody UpdateKhachHangDTOWithEmailAndWithoutPhanLoaiTaiKhoanAndTaiKhoan khachHang, BindingResult bindingResult, @PathVariable("id") Long id) {
         Map<String, String> errors = EntityValidator.validateFields(bindingResult);
         if (MapUtils.isNotEmpty(errors)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-
+        if(khachHang.getId()!=id){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID Khong trung khop");
+        }
         ResponseEntity response = RepoUtility.findById(id, khachHangRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             KhachHang toBeUpdated = (KhachHang) response.getBody();
-//            toBeUpdated.setMaKhachHang(khachHang.getMaKhachHang());//Không cho SET
             toBeUpdated.setTen(khachHang.getTen());
             toBeUpdated.setTenDem(khachHang.getTenDem());
             toBeUpdated.setHo(khachHang.getHo());
             toBeUpdated.setNgaySinh(khachHang.getNgaySinh());
             toBeUpdated.setSoDienThoai(khachHang.getSoDienThoai());
             toBeUpdated.setGioiTinh(khachHang.getGioiTinh());
-            toBeUpdated.setEmail(khachHang.getEmail());
             toBeUpdated.setDanToc(khachHang.getDanToc());
             toBeUpdated.setDiaChi(khachHang.getDiaChi());
-//            toBeUpdated.setDiem(khachHang.getDiem());//Không cho SET
-//            toBeUpdated.setTrangThaiKhachHang(khachHang.getTrangThaiKhachHang());//Không cho SET
-
+            TaiKhoan associatedTaiKhoan = toBeUpdated.getTaiKhoan();
+            if (associatedTaiKhoan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim duoc email lien ket voi nhan vien");
+            }
+            toBeUpdated = khachHangRepository.save(toBeUpdated);
+            associatedTaiKhoan.setEmail(khachHang.getEmail());
+            taiKhoanRepository.save(associatedTaiKhoan);
+            toBeUpdated = khachHangRepository.findById(toBeUpdated.getId()).orElse(null);
+            if (toBeUpdated == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update thanh cong, nhung that bai khi fetch object tu database de tra ve trong ResponseEntity");
+            }
             return ResponseEntity.ok(khachHangRepository.save(toBeUpdated));
         }
         return response;

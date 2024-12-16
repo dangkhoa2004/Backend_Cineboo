@@ -1,6 +1,9 @@
 package com.backend.cineboo.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,4 +42,10 @@ public class TaiKhoan {
 
     @Column(name = "GHICHU")
     private String ghiChu;
+
+    @Column(name="EMAIL",nullable = false)
+    @NotBlank
+    @Size(min=6,max = 255 )
+    @Email
+    private String email;
 }

@@ -44,7 +44,7 @@ public class NhanVienRegister {
 
     @Email
     @NotBlank
-    @Size(max = 100)
+    @Size(max = 255,min =6)
     private String email;
 
     @Size(max = 50)
@@ -53,5 +53,9 @@ public class NhanVienRegister {
     @NotBlank
     @Size(max = 255)
     private String diaChi;
+
+    @Size(min=10,max=13)
+    @NotBlank
+    private String soDienThoai;
 
 }
