@@ -63,11 +63,7 @@ public class KhachHang {
     @Column(name = "GIOITINH", nullable = false)
     private Integer gioiTinh;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
-    @Column(name = "EMAIL", nullable = false)
-    private String email;
+
 
     @Size(max = 75)
     @Column(name = "DANTOC")

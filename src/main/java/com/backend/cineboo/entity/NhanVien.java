@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 
 /**
  *
@@ -61,9 +62,7 @@ public class NhanVien {
     @Column(name = "GIOITINH",nullable = false)
     private Integer gioiTinh;
 
-    @Email
-    @Column(name = "EMAIL",nullable = false)
-    private String email;
+
 
     @Size(max = 50)
     @Column(name = "DANTOC")
@@ -76,4 +75,8 @@ public class NhanVien {
 
     @Column(name = "TRANGTHAINHANVIEN")
     private Integer trangThai;
+
+
+    @Column(name = "SODIENTHOAI")
+    private String soDienThoai;
 }

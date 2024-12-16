@@ -40,7 +40,7 @@ public class KhachHangRegister {
 
     @NotBlank
     @Email
-    @Size(max = 255)
+    @Size(min=6, max = 255)
     private String email;
 
     @Size(max = 75)
