@@ -897,15 +897,6 @@ public class HoaDonController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
-    @GetMapping("/rawqr/{text}")
-    public ResponseEntity getQRText(@PathVariable String text){
-        try {
-            return ResponseEntity.ok(InvoiceGenerator.generateBase64QRCode(text));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ResponseEntity.ok("none");
-    }
 }
 
 
