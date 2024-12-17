@@ -453,6 +453,10 @@ public class SuatChieuController {
 
             List<SuatChieu> suatChieuList = suatChieuRepository.getAllAfterOrOnTodayAndById_PhongChieu(suatChieu.getId_PhongChieu().toString());
             boolean allowNewSuatChieu = false;
+            if (suatChieuList.size() == 0) {
+                allowNewSuatChieu = true;
+            }
+            else{
             for (int x = 0; x < suatChieuList.size(); x++) {
                 if (x == 0) { //Trước suất chiếu cũ nhất
                     if (thoiGianChieu.plusMinutes(suatChieu.getPhim().getThoiLuong())
@@ -496,6 +500,7 @@ public class SuatChieuController {
                     }
                 }
             }
+        }
             if (allowNewSuatChieu) {
                 try {
                     SuatChieu newlyAddedSuatChieu = suatChieuRepository.save(suatChieu);
