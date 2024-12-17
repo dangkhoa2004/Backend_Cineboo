@@ -25,10 +25,7 @@ import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.border.Border;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.LineSeparator;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.VerticalAlignment;
@@ -36,15 +33,22 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.web.client.RestTemplate;
 import vn.payos.type.PaymentLinkData;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.*;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -621,6 +625,48 @@ public class InvoiceGenerator {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    public static String generateBase64QRCode(String text) throws Exception {
+        // Set QR code hints
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M); // Medium error correction level
+
+        // Create BarcodeQRCode object
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(text, hints);
+
+        // Generate the QR code as a ToolkitImage
+        Image qrImage = barcodeQRCode.createAwtImage(Color.BLACK, Color.WHITE);
+
+        // Set desired size for the QR code
+        int scaleFactor = 5; // Adjust this for the desired size
+        int width = qrImage.getWidth(null) * scaleFactor;
+        int height = qrImage.getHeight(null) * scaleFactor;
+
+        // Convert the ToolkitImage to a BufferedImage with scaled size
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = bufferedImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
+        g2d.drawImage(qrImage, 0, 0, width, height, null);
+        g2d.dispose();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        param.setCompressionQuality(0.25f); // Adjust quality as needed
+        ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+        writer.setOutput(ios);
+        writer.write(null, new IIOImage(bufferedImage, null, null), param);
+        ios.flush();
+        ios.close();
+        // Convert the BufferedImage to byte array
+
+        byte[] imageBytes = baos.toByteArray();
+
+        // Encode byte array to Base64 and return it as a data URL
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
     }
 }
 
