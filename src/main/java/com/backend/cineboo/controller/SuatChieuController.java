@@ -453,7 +453,7 @@ public class SuatChieuController {
 
             List<SuatChieu> suatChieuList = suatChieuRepository.getAllAfterOrOnTodayAndById_PhongChieu(suatChieu.getId_PhongChieu().toString());
             boolean allowNewSuatChieu = false;
-            if (suatChieuList.size() == 0) {
+            if (suatChieuList.size() == 0)  {
                 allowNewSuatChieu = true;
             }
             else{
