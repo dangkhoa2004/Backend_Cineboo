@@ -2963,7 +2963,7 @@ CREATE TABLE `taikhoan` (
                             `MatKhau` varchar(100) NOT NULL,
                             `TrangThaiTaiKhoan` int(11) NOT NULL,
                             `ID_PhanLoaiTaiKhoan` int(11) NOT NULL,
-                            `OTP` varchar(50) DEFAULT NULL,
+                            `OTP` varchar(60) DEFAULT NULL,
                             `GhiChu` varchar(100) DEFAULT NULL,
                             `Email` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

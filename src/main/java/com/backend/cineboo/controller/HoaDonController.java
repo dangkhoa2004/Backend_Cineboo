@@ -47,6 +47,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -582,7 +583,16 @@ public class HoaDonController {
     public ResponseEntity find(@PathVariable Long id) {
         ResponseEntity response = RepoUtility.findById(id, hoaDonRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
-            return ResponseEntity.ok((HoaDon) response.getBody());
+            HoaDon hoaDon = (HoaDon) response.getBody();
+            Map map = new HashMap();
+            map.put("hoadon",hoaDon);
+            try {
+                map.put("qr",InvoiceGenerator.generateBase64QRCode(hoaDon.getMaHoaDon()));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Loi tao ma QR");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(map);
         }
         return response;
     }
@@ -886,6 +896,15 @@ public class HoaDonController {
             throw new RuntimeException(e);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+    @GetMapping("/rawqr/{text}")
+    public ResponseEntity getQRText(@PathVariable String text){
+        try {
+            return ResponseEntity.ok(InvoiceGenerator.generateBase64QRCode(text));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok("none");
     }
 }
 

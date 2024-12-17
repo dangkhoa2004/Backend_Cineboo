@@ -14,6 +14,9 @@ public class SecurityConfig {
     @Autowired
     TokenAuthenticationFilter tokenAuthenticationFilter;
 
+    @Autowired
+    RequestThrottleFilter requestThrottleFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults());
@@ -90,8 +93,8 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
 
                 .and()
-                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(requestThrottleFilter,TokenAuthenticationFilter.class);
         return http.build();
     }
 }
