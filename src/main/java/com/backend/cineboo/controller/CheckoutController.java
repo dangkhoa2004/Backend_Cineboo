@@ -152,7 +152,7 @@ public class CheckoutController {
                 //So NO EXPIRATION!
 
                 final String description = details.toString();
-                final String returnUrl = "http://localhost:3000";
+               final String returnUrl = baseUrl+"/hoadon/download/"+hoaDonId;
                 final String cancelUrl = baseUrl + "/payos/cancel";
                 final Integer quantity = hoaDon.getSoLuong();
 
