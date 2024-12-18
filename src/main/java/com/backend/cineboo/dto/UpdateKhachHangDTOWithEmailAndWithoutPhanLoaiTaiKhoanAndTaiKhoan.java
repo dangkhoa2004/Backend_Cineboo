@@ -57,4 +57,8 @@ public class UpdateKhachHangDTOWithEmailAndWithoutPhanLoaiTaiKhoanAndTaiKhoan {
     @Email
     private String email;
 
+    @Size(max = 100,message = "Ghi chu toi da 100 ky tu")
+    private String ghiChu;
+
+
 }

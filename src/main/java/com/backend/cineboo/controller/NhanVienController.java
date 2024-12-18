@@ -164,6 +164,7 @@ public class NhanVienController {
             }
             toBeUpdated = nhanVienRepository.save(toBeUpdated);
             associatedTaiKhoan.setEmail(nhanVien.getEmail());
+            associatedTaiKhoan.setGhiChu(nhanVien.getGhiChu());
             taiKhoanRepository.save(associatedTaiKhoan);
             //fetch again to get full object from db
             //It should exist anyway, unless some jerk deletes it right after the save operation

@@ -161,6 +161,7 @@ public class KhachHangController {
             }
             toBeUpdated = khachHangRepository.save(toBeUpdated);
             associatedTaiKhoan.setEmail(khachHang.getEmail());
+            associatedTaiKhoan.setGhiChu(khachHang.getGhiChu());
             taiKhoanRepository.save(associatedTaiKhoan);
             toBeUpdated = khachHangRepository.findById(toBeUpdated.getId()).orElse(null);
             if (toBeUpdated == null) {
