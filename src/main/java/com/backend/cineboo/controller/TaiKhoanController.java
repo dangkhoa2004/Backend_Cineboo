@@ -1,7 +1,13 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.ResetPasswordDTO;
+import com.backend.cineboo.dto.TaiKhoanWithKhachHang;
+import com.backend.cineboo.dto.TaiKhoanWithNhanVien;
+import com.backend.cineboo.entity.KhachHang;
+import com.backend.cineboo.entity.NhanVien;
 import com.backend.cineboo.entity.TaiKhoan;
+import com.backend.cineboo.repository.KhachHangRepository;
+import com.backend.cineboo.repository.NhanVienRepository;
 import com.backend.cineboo.repository.TaiKhoanRepository;
 import com.backend.cineboo.scheduledJobs.InvalidateOTPJob;
 import com.backend.cineboo.utility.EmailHelper;
@@ -23,7 +29,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,6 +45,11 @@ public class TaiKhoanController {
     @Autowired
     TaiKhoanRepository taiKhoanRepository;
     SecureRandom secureRandom = new SecureRandom();
+    @Autowired
+    KhachHangRepository khachHangRepository;
+
+    @Autowired
+    NhanVienRepository nhanVienRepository;
 
     @Autowired
     Scheduler scheduler;
@@ -54,7 +64,7 @@ public class TaiKhoanController {
         //So no regex validation for email
         //Also because there are weird ass emails out there that regex will fail to catch anyway
         emailAddress = emailAddress.trim();
-        if(StringUtils.isBlank(emailAddress)){
+        if (StringUtils.isBlank(emailAddress)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Khong xac dinh duoc email truyen vao");
         }
         Integer otpExist = taiKhoanRepository.checkIfOTPExistsByEmail(emailAddress, "");
@@ -65,11 +75,11 @@ public class TaiKhoanController {
         String hashedNumber = BCrypt.hashpw(originalNumber, BCrypt.gensalt());
         TaiKhoan taiKhoan = taiKhoanRepository.findByEmail(emailAddress).orElse(null);
         taiKhoan.setOtp(hashedNumber);
-       taiKhoan= taiKhoanRepository.save(taiKhoan);
-       if(taiKhoan.getOtp()!=hashedNumber){
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Loi luu OTP vao database");
-       }
-       EmailHelper emailHelper = new EmailHelper();
+        taiKhoan = taiKhoanRepository.save(taiKhoan);
+        if (taiKhoan.getOtp() != hashedNumber) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Loi luu OTP vao database");
+        }
+        EmailHelper emailHelper = new EmailHelper();
         try {
             emailHelper.sendEmail("huyvhpp02961@fpt.edu.vn", emailAddress, "Ma OTP dat lai mat khau CINEBOO", originalNumber);
         } catch (MessagingException e) {
@@ -77,12 +87,12 @@ public class TaiKhoanController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Loi gui email dat lai mat khau. Vui long thu lai sau");
         }
         try {
-                setSchedulerInvalidateOTP(emailAddress);
+            setSchedulerInvalidateOTP(emailAddress);
         } catch (SchedulerException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Loi tao su kien huy ma OTP");
         }
-        return ResponseEntity.ok("Da gui ma OTP toi dia chi email: "+emailAddress);
+        return ResponseEntity.ok("Da gui ma OTP toi dia chi email: " + emailAddress);
     }
 
     @Operation(summary = "Đặt lại mật khẩu của tài khoaản đi liền với email",
@@ -97,7 +107,7 @@ public class TaiKhoanController {
         String email = resetPasswordDTO.getEmail();
         String newPassword = resetPasswordDTO.getNewPassword();
         String retypePassword = resetPasswordDTO.getRetypePassword();
-        if(StringUtils.isBlank(email)|| StringUtils.isBlank(retypePassword)){
+        if (StringUtils.isBlank(email) || StringUtils.isBlank(retypePassword)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chua nhap vao mat khau");
         }
         if (StringUtils.compare(newPassword, retypePassword) != 0) {
@@ -135,12 +145,12 @@ public class TaiKhoanController {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String randomNumber = String.format("%06d", secureRandom.nextInt(999999));
         JobDetail invalidateOTPJob = JobBuilder.newJob(InvalidateOTPJob.class)
-                .withIdentity("InvalidateOTPJob" + randomNumber+timestamp, "taiKhoanGroup")
+                .withIdentity("InvalidateOTPJob" + randomNumber + timestamp, "taiKhoanGroup")
                 .build();
 
 
         SimpleTrigger invalidateOTPTrigger = newTrigger()
-                .withIdentity("InvalidateOTPTrigger" + randomNumber+timestamp, "taiKhoanGroup")
+                .withIdentity("InvalidateOTPTrigger" + randomNumber + timestamp, "taiKhoanGroup")
                 .forJob(invalidateOTPJob)
                 .usingJobData("email", email)
                 .startAt(startAtDate)
@@ -149,13 +159,49 @@ public class TaiKhoanController {
         scheduler.scheduleJob(invalidateOTPJob, invalidateOTPTrigger);
         System.out.println("OTP will be invalid on " + startAtDate);
     }
+
     @Operation(summary = "Find TaiKhoan by ID",
             description = "Finds a TaiKhoan record by its ID.")
     @GetMapping("/find/{id}")
     public ResponseEntity find(@PathVariable Long id) {
         ResponseEntity response = RepoUtility.findById(id, taiKhoanRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
-            return ResponseEntity.ok(response.getBody());
+            TaiKhoan taiKhoan = (TaiKhoan) response.getBody();
+            if (taiKhoan.getPhanLoaiTaiKhoan().getId() == 2) {//khachhang 1
+                TaiKhoanWithKhachHang taiKhoanWithKhachHang = new TaiKhoanWithKhachHang();
+                taiKhoanWithKhachHang.setMaTaiKhoan(taiKhoan.getMaTaiKhoan());
+                taiKhoanWithKhachHang.setTenDangNhap(taiKhoan.getTenDangNhap());
+                taiKhoanWithKhachHang.setMatKhau(taiKhoan.getMatKhau());
+                taiKhoanWithKhachHang.setTrangThaiTaiKhoan(taiKhoan.getTrangThaiTaiKhoan());
+                taiKhoanWithKhachHang.setPhanLoaiTaiKhoan(taiKhoan.getPhanLoaiTaiKhoan());
+                taiKhoanWithKhachHang.setOtp(taiKhoan.getOtp());
+                taiKhoanWithKhachHang.setGhiChu(taiKhoan.getGhiChu());
+                taiKhoanWithKhachHang.setEmail(taiKhoan.getEmail());
+                KhachHang khachHang = khachHangRepository.findByID_TaiKhoan(taiKhoan.getId().toString()).orElse(null);
+                if (khachHang == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim thay khach hang");
+                }
+                taiKhoanWithKhachHang.setKhachHang(khachHang);
+                return ResponseEntity.status(HttpStatus.OK).body(taiKhoanWithKhachHang);
+            }else if(taiKhoan.getPhanLoaiTaiKhoan().getId()==1){//nhanvien 0
+                NhanVien nhanVien = nhanVienRepository.findByID_TaiKhoan(taiKhoan.getId().toString()).orElse(null);
+                if (nhanVien == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim thay nhan vien");
+                }
+                TaiKhoanWithNhanVien taiKhoanWithNhanVien = new TaiKhoanWithNhanVien();
+                taiKhoanWithNhanVien.setMaTaiKhoan(taiKhoan.getMaTaiKhoan());
+                taiKhoanWithNhanVien.setTenDangNhap(taiKhoan.getTenDangNhap());
+                taiKhoanWithNhanVien.setMatKhau(taiKhoan.getMatKhau());
+                taiKhoanWithNhanVien.setTrangThaiTaiKhoan(taiKhoan.getTrangThaiTaiKhoan());
+                taiKhoanWithNhanVien.setPhanLoaiTaiKhoan(taiKhoan.getPhanLoaiTaiKhoan());
+                taiKhoanWithNhanVien.setOtp(taiKhoan.getOtp());
+                taiKhoanWithNhanVien.setGhiChu(taiKhoan.getGhiChu());
+                taiKhoanWithNhanVien.setEmail(taiKhoan.getEmail());
+                taiKhoanWithNhanVien.setNhanVien(nhanVien);
+                return ResponseEntity.status(HttpStatus.OK).body(taiKhoanWithNhanVien);
+            }else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tai khoan khong co profile nhanvien hay khachhang");
+            }
         }
         return response;
     }
