@@ -6,7 +6,10 @@ import com.backend.cineboo.repository.TaiKhoanRepository;
 import com.backend.cineboo.scheduledJobs.InvalidateOTPJob;
 import com.backend.cineboo.utility.EmailHelper;
 import com.backend.cineboo.utility.EntityValidator;
+import com.backend.cineboo.utility.RepoUtility;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,10 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -148,5 +148,26 @@ public class TaiKhoanController {
                 .build();
         scheduler.scheduleJob(invalidateOTPJob, invalidateOTPTrigger);
         System.out.println("OTP will be invalid on " + startAtDate);
+    }
+    @Operation(summary = "Find TaiKhoan by ID",
+            description = "Finds a TaiKhoan record by its ID.")
+    @GetMapping("/find/{id}")
+    public ResponseEntity find(@PathVariable Long id) {
+        ResponseEntity response = RepoUtility.findById(id, taiKhoanRepository);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.ok(response.getBody());
+        }
+        return response;
+    }
+
+    @Operation(summary = "Find TaiKhoan by column and value",
+            description = "Supports searching by column name and value.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Entity"),
+            @ApiResponse(responseCode = "404", description = "Not found"),
+            @ApiResponse(responseCode = "500", description = "Internal error")})
+    @GetMapping("/find/{columnName}/{value}")
+    public ResponseEntity findBy(@PathVariable String columnName, @PathVariable String value) {
+        return RepoUtility.findByCustomColumn(taiKhoanRepository, columnName, value);
     }
 }
