@@ -51,12 +51,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                         List<SimpleGrantedAuthority> roles=new ArrayList<>();
                         PhanLoaiTaiKhoan phanLoaiTaiKhoan = taiKhoan.getPhanLoaiTaiKhoan();
                         String tenPhanLoaiTaiKhoan = phanLoaiTaiKhoan.getTenLoaiTaiKhoan();
-                        if(phanLoaiTaiKhoan.getTenLoaiTaiKhoan().equalsIgnoreCase("NhanVien")){
-                            roles.add(new SimpleGrantedAuthority("NhanVien"));
+                        if(phanLoaiTaiKhoan.getTenLoaiTaiKhoan().equalsIgnoreCase(ERoles.GENERAL)){
+                            roles.add(new SimpleGrantedAuthority(ERoles.GENERAL));
                              singleRole = taiKhoanRepository.getPhanLoaiNhanVien(taiKhoan.getId().toString()).orElse("");
 
-                        }else if(tenPhanLoaiTaiKhoan.equalsIgnoreCase("KhachHang")){
-                            roles.add(new SimpleGrantedAuthority("KhachHang"));
+                        }else if(tenPhanLoaiTaiKhoan.equalsIgnoreCase(CRoles.GENERAL)){
+                            roles.add(new SimpleGrantedAuthority(CRoles.GENERAL));
                             singleRole=taiKhoanRepository.getPhanLoaiKhachHang(taiKhoan.getId().toString()).orElse("");
                         }
                         roles.add(new SimpleGrantedAuthority(singleRole));
