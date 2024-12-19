@@ -167,8 +167,9 @@ public class TaiKhoanController {
         ResponseEntity response = RepoUtility.findById(id, taiKhoanRepository);
         if (response.getStatusCode().is2xxSuccessful()) {
             TaiKhoan taiKhoan = (TaiKhoan) response.getBody();
-            if (taiKhoan.getPhanLoaiTaiKhoan().getId() == 2) {//khachhang 1
+            if (taiKhoan.getPhanLoaiTaiKhoan().getId() == 2) {//khachhang 2
                 TaiKhoanWithKhachHang taiKhoanWithKhachHang = new TaiKhoanWithKhachHang();
+                taiKhoanWithKhachHang.setId(taiKhoan.getId());
                 taiKhoanWithKhachHang.setMaTaiKhoan(taiKhoan.getMaTaiKhoan());
                 taiKhoanWithKhachHang.setTenDangNhap(taiKhoan.getTenDangNhap());
                 taiKhoanWithKhachHang.setMatKhau(taiKhoan.getMatKhau());
@@ -183,12 +184,13 @@ public class TaiKhoanController {
                 }
                 taiKhoanWithKhachHang.setKhachHang(khachHang);
                 return ResponseEntity.status(HttpStatus.OK).body(taiKhoanWithKhachHang);
-            }else if(taiKhoan.getPhanLoaiTaiKhoan().getId()==1){//nhanvien 0
+            }else if(taiKhoan.getPhanLoaiTaiKhoan().getId()==1){//nhanvien 1
                 NhanVien nhanVien = nhanVienRepository.findByID_TaiKhoan(taiKhoan.getId().toString()).orElse(null);
                 if (nhanVien == null) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim thay nhan vien");
                 }
                 TaiKhoanWithNhanVien taiKhoanWithNhanVien = new TaiKhoanWithNhanVien();
+                taiKhoanWithNhanVien.setId(taiKhoan.getId());
                 taiKhoanWithNhanVien.setMaTaiKhoan(taiKhoan.getMaTaiKhoan());
                 taiKhoanWithNhanVien.setTenDangNhap(taiKhoan.getTenDangNhap());
                 taiKhoanWithNhanVien.setMatKhau(taiKhoan.getMatKhau());
