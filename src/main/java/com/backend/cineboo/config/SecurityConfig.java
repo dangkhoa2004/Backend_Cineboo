@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .requestMatchers("/hoadon/price/**").permitAll()
                 .requestMatchers("/hoadon/print/**").hasAnyAuthority(ERoles.QL, ERoles.QTV, ERoles.NV_BV)//done
                 .requestMatchers("/hoadon/status/**").hasAnyAuthority(ERoles.QL, ERoles.QTV)
-                .requestMatchers("/hoadon/download/**").hasAnyAuthority(ERoles.GENERAL,CRoles.GENERAL)
+                .requestMatchers("/hoadon/download/**").permitAll()
 //
 //// API Prefix: /khachhang
                 .requestMatchers("/khachhang/add").permitAll()
