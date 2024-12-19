@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -56,7 +58,7 @@ public class SecurityConfig {
                 .requestMatchers("/hoadon/price/**").permitAll()
                 .requestMatchers("/hoadon/print/**").hasAnyAuthority(ERoles.QL, ERoles.QTV, ERoles.NV_BV)//done
                 .requestMatchers("/hoadon/status/**").hasAnyAuthority(ERoles.QL, ERoles.QTV)
-                .requestMatchers("/hoadon/download/**").permitAll()//done
+                .requestMatchers("/hoadon/download/**").hasAnyAuthority(ERoles.GENERAL,CRoles.GENERAL)
 //
 //// API Prefix: /khachhang
                 .requestMatchers("/khachhang/add").permitAll()
@@ -97,6 +99,7 @@ public class SecurityConfig {
                 .requestMatchers("/payos/create-payment-link/**").hasAnyAuthority(CRoles.GENERAL)
                 .requestMatchers("/payos/get/**").permitAll()
                 .requestMatchers("/payos/cancel/**").hasAnyAuthority(CRoles.GENERAL, ERoles.NV_BV, ERoles.QL)
+                .requestMatchers("/payos/confirm-webhook").permitAll()
 // API Prefix: /suatchieu (Showtimes)
                 .requestMatchers("/suatchieu/get/**", "/suatchieu/find/**", "/suatchieu/find/ID_Phim/**").permitAll()
                 .requestMatchers("/suatchieu/add","/suatchieu/add/**", "/suatchieu/update/**", "/suatchieu/disable/**").hasAnyAuthority(ERoles.QL, ERoles.QTV)
@@ -117,6 +120,20 @@ public class SecurityConfig {
                 .requestMatchers("/nhanvien/disable/**").hasAnyAuthority(ERoles.QL,ERoles.QTV)
                 //API Prefix: /hoanve
                 .requestMatchers("/hoanve/**").hasAnyAuthority(ERoles.QL,ERoles.QTV,ERoles.NV_KT_TOAN)
+
+                //API Prefix: /chitiethoadon
+                .requestMatchers("/cthoadon/get","/cthoadon/status/**","/cthoadon/update/**","/cthoadon/disable/**").hasAnyAuthority(ERoles.QTV,ERoles.QL,ERoles.NV_BV)
+                .requestMatchers( "/cthoadon/add","/cthoadon/find/**").permitAll()
+
+                //API Prefix: /dstl
+                .requestMatchers("/dstl/**").permitAll()
+
+                //API Prefix: /gheandsuatchieu
+                .requestMatchers("/gheandsuatchieu/get").permitAll()
+                .requestMatchers("/gheandsuatchieu/add").hasAnyAuthority(ERoles.QL,ERoles.QTV)
+                .requestMatchers("/gheandsuatchieu/update/**").hasAnyAuthority(ERoles.QL,ERoles.QTV)
+                .requestMatchers("/gheandsuatchieu/status/**").hasAnyAuthority(ERoles.QL,ERoles.QTV)
+                .requestMatchers("/gheandsuatchieu/find/**").permitAll()
                 .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
