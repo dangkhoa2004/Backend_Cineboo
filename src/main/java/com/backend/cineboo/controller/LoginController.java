@@ -1,6 +1,8 @@
 package com.backend.cineboo.controller;
 
 import com.backend.cineboo.dto.LoginDTO;
+import com.backend.cineboo.dto.TaiKhoanWithKhachHang;
+import com.backend.cineboo.dto.TaiKhoanWithNhanVien;
 import com.backend.cineboo.entity.KhachHang;
 import com.backend.cineboo.entity.NhanVien;
 import com.backend.cineboo.entity.TaiKhoan;
@@ -94,14 +96,36 @@ public class LoginController {
             if (phanLoaiTaiKhoan == 1) {
                 NhanVien nhanVien = nhanVienRepository.findByID_TaiKhoan(dbIdTaiKhoan.toString()).orElse(null);
                 if (nhanVien != null) {
-                    success.put("nhanVien", nhanVien);
+                    TaiKhoanWithNhanVien taiKhoanWithNhanVien = new TaiKhoanWithNhanVien();
+                    taiKhoanWithNhanVien.setId(taiKhoan.getId());
+                    taiKhoanWithNhanVien.setMaTaiKhoan(taiKhoan.getMaTaiKhoan());
+                    taiKhoanWithNhanVien.setTenDangNhap(taiKhoan.getTenDangNhap());
+                    taiKhoanWithNhanVien.setMatKhau("");
+                    taiKhoanWithNhanVien.setTrangThaiTaiKhoan(taiKhoan.getTrangThaiTaiKhoan());
+                    taiKhoanWithNhanVien.setPhanLoaiTaiKhoan(taiKhoan.getPhanLoaiTaiKhoan());
+                    taiKhoanWithNhanVien.setOtp("");
+                    taiKhoanWithNhanVien.setGhiChu(taiKhoan.getGhiChu());
+                    taiKhoanWithNhanVien.setEmail(taiKhoan.getEmail());
+                    taiKhoanWithNhanVien.setNhanVien(nhanVien);
+                    success.put("taiKhoan", taiKhoanWithNhanVien);
                 } else {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile không tồn tại");
                 }
             } else if (phanLoaiTaiKhoan == 2) {
                 KhachHang khachHang = khachHangRepository.findByID_TaiKhoan(dbIdTaiKhoan.toString()).orElse(null);
                 if (khachHang != null) {
-                    success.put("khachHang", khachHang);
+                    TaiKhoanWithKhachHang taiKhoanWithKhachHang = new TaiKhoanWithKhachHang();
+                    taiKhoanWithKhachHang.setId(taiKhoan.getId());
+                    taiKhoanWithKhachHang.setMaTaiKhoan(taiKhoan.getMaTaiKhoan());
+                    taiKhoanWithKhachHang.setTenDangNhap(taiKhoan.getTenDangNhap());
+                    taiKhoanWithKhachHang.setMatKhau("");
+                    taiKhoanWithKhachHang.setTrangThaiTaiKhoan(taiKhoan.getTrangThaiTaiKhoan());
+                    taiKhoanWithKhachHang.setPhanLoaiTaiKhoan(taiKhoan.getPhanLoaiTaiKhoan());
+                    taiKhoanWithKhachHang.setOtp("");
+                    taiKhoanWithKhachHang.setGhiChu(taiKhoan.getGhiChu());
+                    taiKhoanWithKhachHang.setEmail(taiKhoan.getEmail());
+                    taiKhoanWithKhachHang.setKhachHang(khachHang);
+                    success.put("taiKhoan", taiKhoanWithKhachHang);
                 } else {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile không tồn tại");
                 }
