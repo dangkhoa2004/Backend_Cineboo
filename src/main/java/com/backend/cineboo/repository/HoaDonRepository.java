@@ -4,7 +4,8 @@ import com.backend.cineboo.entity.HoaDon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,6 +22,9 @@ public interface HoaDonRepository extends JpaRepository<HoaDon,Long> {
             "         join ghe g2 on g.ID_GHE = g2.ID " +
             "where hoadon.id= ?  LIMIT 1", nativeQuery = true)
     Integer getIDPhongChieuByHoaDonId(String id_HoaDon);
+	
+	@Query(value="SELECT * FROM HoaDon WHERE ID_KhachHang = ?",nativeQuery=true)
+	List<HoaDon> findByID_KhachHang(String id_KhachHang);
 
 
 }
