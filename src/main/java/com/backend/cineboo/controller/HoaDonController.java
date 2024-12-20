@@ -46,10 +46,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.quartz.DateBuilder.futureDate;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
@@ -122,12 +119,15 @@ public class HoaDonController {
             JobDetail unbookGheAndSuatChieuJob = JobBuilder.newJob(UnreserveGheAndSuatChieuJobs.class)
                     .withIdentity("unreserveGheAndSuatChieuJob" + hoaDonId, "hoaDonGroup")
                     .build();
-
+            long currentTimeMillis = System.currentTimeMillis();
+            long fiveMinutesInMillis = 5 * 60 * 1000;
+            Date customStartDate = new Date(currentTimeMillis + fiveMinutesInMillis);
+            System.out.println("will fire job at: "+customStartDate.toString());
             SimpleTrigger trigger = newTrigger()
                     .withIdentity("unreserveGheAndSuatChieuTrigger" + hoaDonId, "hoaDonGroup")
                     .forJob(unbookGheAndSuatChieuJob)
                     .usingJobData("id", hoaDonId)
-                    .startAt(futureDate(5, DateBuilder.IntervalUnit.MINUTE))
+                    .startAt(customStartDate)
                     .withSchedule(simpleSchedule().withMisfireHandlingInstructionFireNow())
                     .build();
             scheduler.start();
