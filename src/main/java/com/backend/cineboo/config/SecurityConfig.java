@@ -99,7 +99,7 @@ public class SecurityConfig {
 // API Prefix: /payos (Payment-related APIs)
                 .requestMatchers("/payos/create-payment-link/**").hasAnyAuthority(CRoles.GENERAL)
                 .requestMatchers("/payos/get/**").permitAll()
-                .requestMatchers("/payos/cancel/**").hasAnyAuthority(CRoles.GENERAL, ERoles.NV_BV, ERoles.QL)
+                .requestMatchers("/payos/cancel/**").permitAll()
                 .requestMatchers("/payos/confirm-webhook").permitAll()
 // API Prefix: /suatchieu (Showtimes)
                 .requestMatchers("/suatchieu/get/**", "/suatchieu/find/**", "/suatchieu/find/ID_Phim/**").permitAll()
