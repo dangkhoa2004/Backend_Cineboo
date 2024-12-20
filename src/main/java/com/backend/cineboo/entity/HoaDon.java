@@ -57,7 +57,8 @@ public class HoaDon {
     )
     List<ChiTietHoaDon> chiTietHoaDonList;
 
-    @Column(name = "MAHOADON")
+    @Column(name = "MAHOADON",insertable = false, updatable = false)
+//    @Transient
     @Size(max=15)
     private String maHoaDon;
 

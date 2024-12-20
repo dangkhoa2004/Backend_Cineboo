@@ -234,7 +234,7 @@ public class HoaDonController {
             hoaDonToBeUpdated.setDiem(hoaDon.getDiem());
             hoaDonToBeUpdated.setTongSoTien(hoaDon.getTongSoTien());
             hoaDonToBeUpdated.setTrangThaiHoaDon(hoaDon.getTrangThaiHoaDon());
-            hoaDonToBeUpdated.setMaHoaDon(hoaDon.getMaHoaDon());
+//            hoaDonToBeUpdated.setMaHoaDon(hoaDon.getMaHoaDon());
             return ResponseEntity.ok(hoaDonRepository.save(hoaDonToBeUpdated));
         }
         return response;
@@ -487,7 +487,7 @@ public class HoaDonController {
                         .divide(BigDecimal.TEN.multiply(BigDecimal.TEN)))).intValue();
         blankHoaDon.setDiem(point);
         blankHoaDon.setTrangThaiHoaDon(0);//Hoá đơn mới
-        blankHoaDon.setMaHoaDon(hoaDonPrefix + hoaDonRepository.getMaxTableId());
+//        blankHoaDon.setMaHoaDon("");
         blankHoaDon.setPttt(null);
         blankHoaDon.setSoLuong(gheList.size());
         return hoaDonRepository.save(blankHoaDon);
