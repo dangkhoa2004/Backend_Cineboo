@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .requestMatchers("/khachhang/get/**").hasAnyAuthority(ERoles.QL, ERoles.QTV, ERoles.NV_KT_TOAN, ERoles.NV_BV, ERoles.NV_TN)
                 .requestMatchers("/khachhang/get").hasAnyAuthority(ERoles.QL, ERoles.QTV, ERoles.NV_KT_TOAN, ERoles.NV_BV, ERoles.NV_TN)
                 .requestMatchers("/khachhang/update/**", "/khachhang/disable/**").hasAnyAuthority(ERoles.QL,ERoles.QTV)
+                .requestMatchers("/khachhang/update/**").hasAnyAuthority(CRoles.GENERAL)
                 .requestMatchers("/khachhang/update", "/khachhang/disable").hasAnyAuthority(ERoles.QL,ERoles.QTV)
 
 //// API Prefix: /voucher
