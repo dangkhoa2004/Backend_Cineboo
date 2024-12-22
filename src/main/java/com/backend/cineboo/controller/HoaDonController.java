@@ -137,28 +137,6 @@ public class HoaDonController {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Đặt trạng thái HoaDon bằng 0.
-     *
-     * @param id
-     * @param trangThai
-     * @return Trả về Bad Request nếu ID Null.
-     * Trả về Not found nếu hoaDon không tồn tại.
-     * Trả về ResponseEntity.OK(String) nếu thành công
-     */
-    //0:Disable
-    //1:Enable
-    //Yêu cầu cần có sự thống nhất rõ ràng
-    //Vì không tách bảng trạng thai
-    @Operation(summary = "Thay đổi trạng thái hoá hoaDon",
-            description = "setTrangThai HoaDon\n\n" +
-                    "0: Chưa thanh toán\n\n" +
-                    "1: Đã thanh toán\n\n" +
-                    "2: Đã huỷ\n\n" +
-                    "3: Đã thanh toán và in vé\n\n" +
-                    "4: Đang chờ hoàn tiền\n\n" +
-                    "Các trạng thái khác sẽ báo lỗi và không update")
     @PutMapping("/status/{id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Entity"),
@@ -172,32 +150,32 @@ public class HoaDonController {
             switch (trangThai) {
                 case 0:
                     newStatus = "Hoá đơn rỗng";
-                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 1:
                     newStatus = "Hoá đơn đã thanh toán";
-                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 2:
                     newStatus = "Hoá đơn huỷ do khách không thanh toán";
-                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 3:
                     newStatus = "Đã thanh toán và in vé";
-                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 case 4:
                     newStatus = "Đang chờ hoàn tiền";
-                    hoaDon.setTrangThaiHoaDon(trangThai);
                     break;
                 default:
                     newStatus = "Trạng thái không xác định";
-                    //Không set Status
+                    // Không set Status
+                    return ResponseEntity.badRequest().body("Trạng thái không hợp lệ");
             }
-            return ResponseEntity.status(HttpStatus.OK).body("Đặt trạng thái hoá đơn: " + newStatus + " ID Hoá đơn sau khi đổi"+ hoaDon.getTrangThaiHoaDon());
+
+            hoaDon.setTrangThaiHoaDon(trangThai);
+            hoaDonRepository.save(hoaDon);
+            return ResponseEntity.ok("Đặt trạng thái hoá đơn: " + newStatus + " ID Hoá đơn sau khi đổi: " + hoaDon.getId());
         }
         return response;
     }
+
 
 
     /**
