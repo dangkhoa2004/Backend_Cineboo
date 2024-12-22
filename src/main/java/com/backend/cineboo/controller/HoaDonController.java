@@ -194,7 +194,7 @@ public class HoaDonController {
                     newStatus = "Trạng thái không xác định";
                     //Không set Status
             }
-            return ResponseEntity.status(HttpStatus.OK).body("Đặt trạng thái hoá đơn: " + newStatus);
+            return ResponseEntity.status(HttpStatus.OK).body("Đặt trạng thái hoá đơn: " + newStatus + " ID Hoá đơn sau khi đổi"+ hoaDon.getTrangThaiHoaDon());
         }
         return response;
     }
